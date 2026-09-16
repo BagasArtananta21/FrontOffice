@@ -23,6 +23,16 @@ class OpdResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'nama_opd';
 
+    protected static ?string $navigationLabel = 'Master OPD';
+
+    protected static ?string $modelLabel = 'OPD';
+
+    protected static ?string $pluralModelLabel = 'OPD';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $slug = 'opd';
+
     public static function form(Schema $schema): Schema
     {
         return OpdForm::configure($schema);
