@@ -33,18 +33,9 @@ class LoginController extends Controller{
         $request->session()->regenerate();
 
         return redirect()->intended(
-            $request->user()->isSuperAdmin()? route('super-admin.dashboard')
-            : filament()->getPanel('admin')->getUrl()
+            filament()
+                ->getPanel($request->user()->isSuperAdmin() ? 'super-admin' : 'admin')
+                ->getUrl()
         );
     }
-    public function destroy(Request $request): RedirectResponse
-    {
-        $this->authService->logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect()->route('login');
-    }
-
 }
