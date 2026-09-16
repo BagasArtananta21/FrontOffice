@@ -9,6 +9,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\ToggleColumn;
 
 class OpdsTable
 {
@@ -42,9 +43,8 @@ class OpdsTable
                     ->counts('users')
                     ->alignCenter(),
 
-                IconColumn::make('aktif')
-                    ->label('Aktif')
-                    ->boolean(),
+                ToggleColumn::make('aktif')
+                    ->label('Aktif'),
 
                 TextColumn::make('created_at')
                     ->label('Dibuat')

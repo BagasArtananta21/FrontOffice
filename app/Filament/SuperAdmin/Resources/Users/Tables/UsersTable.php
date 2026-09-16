@@ -8,6 +8,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\ToggleColumn;
 
 class UsersTable
 {
@@ -37,9 +38,8 @@ class UsersTable
                     ->label('OPD')
                     ->placeholder('—'),
 
-                IconColumn::make('aktif')
-                    ->label('Aktif')
-                    ->boolean(),
+                ToggleColumn::make('aktif')
+                    ->label('Aktif'),
             ])
             ->filters([
                 SelectFilter::make('role')

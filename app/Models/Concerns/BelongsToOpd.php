@@ -28,7 +28,7 @@ trait BelongsToOpd
             $opdId = static::currentOpdId();
 
             if ($opdId !== null) {
-                if ($model->opd_id !== null && (int) $model->opd_id !== $opdId) {
+                if ($model->opd_id !== null && (string) $model->opd_id !== $opdId) {
                     throw new AuthorizationException('OPD pada data tidak sesuai dengan konteks aktif.');
                 }
 
@@ -42,12 +42,12 @@ trait BelongsToOpd
         });
     }
 
-    protected static function currentOpdId(): ?int
+    protected static function currentOpdId(): ?string
     {
         if (app()->bound('current_opd_id')) {
             $opdId = app('current_opd_id');
 
-            return $opdId !== null ? (int) $opdId : null;
+            return $opdId !== null ? (string) $opdId : null;
         }
 
         $user = Auth::user();
