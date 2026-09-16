@@ -31,11 +31,9 @@ class LoginController extends Controller{
         }
 
         $request->session()->regenerate();
+        $request->session()->forget('url.intended');
 
-        return redirect()->intended(
-            filament()
-                ->getPanel($request->user()->isSuperAdmin() ? 'super-admin' : 'admin')
-                ->getUrl()
-        );
+        return redirect()->to($this->authService->panelUrlFor($request->user()));
+
     }
 }

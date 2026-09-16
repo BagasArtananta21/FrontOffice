@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('display_devices', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('opd_id')->constrained('opd')->restrictOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
             $table->string('nama');                       
             $table->string('ip_address', 45)->unique();    
             $table->string('token_hash', 64)->nullable()->unique();

@@ -9,9 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('nomor_counters', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('opd_id')->constrained('opd')->restrictOnDelete();
-            $table->foreignId('jenis_surat_id')->constrained('jenis_surat')->restrictOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
+            $table->foreignUuid('jenis_surat_id')->constrained('jenis_surat')->restrictOnDelete();
 
             $table->unsignedSmallInteger('tahun');
             $table->unsignedInteger('nomor_terakhir')->default(0);

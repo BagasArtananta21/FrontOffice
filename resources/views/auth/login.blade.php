@@ -43,9 +43,6 @@
                             ])
                         >
                     </div>
-                    @error('email')
-                        <p class="mt-1.5 text-sm text-danger">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <div>
@@ -76,9 +73,6 @@
                             <img x-show="show" x-cloak src="{{ asset('images/icons/eye-off.svg') }}" alt="" class="size-5">
                         </button>
                     </div>
-                    @error('password')
-                        <p class="mt-1.5 text-sm text-danger">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <button
@@ -88,6 +82,14 @@
                     Masuk ke Akun
                     <img src="{{ asset('images/icons/arrow-right.svg') }}" alt="" class="size-4">
                 </button>
+                @if ($errors->any())
+                    <div role="alert" class="rounded-md bg-danger/5 px-3 py-2 text-center">
+                        @foreach ($errors->all() as $message)
+                            <p class="text-sm font-medium text-danger">{{ $message }}</p>
+                        @endforeach
+                    </div>
+                @endif
+
             </form>
 
             <div class="my-5 flex items-center gap-3">

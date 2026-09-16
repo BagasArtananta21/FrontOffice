@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
 {
     Schema::create('jenis_surat', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('opd_id')->constrained('opd')->restrictOnDelete();
+        $table->uuid('id')->primary();
+        $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
 
         $table->string('kode_klasifikasi', 20);   // contoh: 005, 800
         $table->string('nama');

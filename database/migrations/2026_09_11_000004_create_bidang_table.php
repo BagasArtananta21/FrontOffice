@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('bidang', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('opd_id')->constrained('opd')->restrictOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
             $table->string('kode_bidang', 20)->nullable();
             $table->string('nama_bidang');
             $table->boolean('aktif')->default(true);

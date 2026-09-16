@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class AuthService
 {
@@ -20,6 +21,13 @@ class AuthService
         ], $remember);
     }
 
+
+    public function panelUrlFor(User $user): string
+    {
+        return filament()
+            ->getPanel($user->isSuperAdmin() ? 'super-admin' : 'admin')
+            ->getUrl();
+    }
 
     public function logout(): void {
         Auth::logout();

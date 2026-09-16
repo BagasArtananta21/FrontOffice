@@ -9,9 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pegawai', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('opd_id')->constrained('opd')->restrictOnDelete();
-            $table->foreignId('bidang_id')->nullable()->constrained('bidang')->restrictOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
+            $table->foreignUuid('bidang_id')->nullable()->constrained('bidang')->restrictOnDelete();
             $table->string('nip')->nullable();
             $table->string('nama_pegawai');
             $table->string('jabatan')->nullable();

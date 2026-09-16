@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('kategori_kunjungan', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('opd_id')->constrained('opd')->restrictOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
             $table->string('nama_kategori');
             $table->unsignedSmallInteger('urutan')->default(0);
             $table->boolean('aktif')->default(true);

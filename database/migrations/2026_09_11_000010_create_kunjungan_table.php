@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('kunjungan', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('opd_id')->constrained('opd')->restrictOnDelete();
-            $table->foreignId('tamu_id')->constrained('tamu')->restrictOnDelete();
-            $table->foreignId('bidang_id')->nullable()->constrained('bidang')->restrictOnDelete();
-            $table->foreignId('pegawai_id')->nullable()->constrained('pegawai')->restrictOnDelete();
-            $table->foreignId('kategori_kunjungan_id')->nullable()->constrained('kategori_kunjungan')->restrictOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
+            $table->foreignUuid('tamu_id')->constrained('tamu')->restrictOnDelete();
+            $table->foreignUuid('bidang_id')->nullable()->constrained('bidang')->restrictOnDelete();
+            $table->foreignUuid('pegawai_id')->nullable()->constrained('pegawai')->restrictOnDelete();
+            $table->foreignUuid('kategori_kunjungan_id')->nullable()->constrained('kategori_kunjungan')->restrictOnDelete();
 
             $table->text('keperluan')->nullable();
             $table->unsignedSmallInteger('jumlah_orang')->default(1);
@@ -27,7 +27,7 @@ return new class extends Migration
             $table->boolean('sudah_dihubungi')->default(false);
             $table->text('catatan_petugas')->nullable();
             $table->string('sumber_input')->default('display'); //display || manual
-            $table->foreignId('dicatat_oleh')->nullable()->constrained('users')->restrictOnDelete();
+            $table->foreignUuid('dicatat_oleh')->nullable()->constrained('users')->restrictOnDelete();
             $table->timestamps();
 
             $table->index(['opd_id', 'status']);
