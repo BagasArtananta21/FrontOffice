@@ -1,0 +1,27 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+.fi-sidebar {
+    background-color: #0F2C59;
+}
+
+.fi-sidebar .fi-sidebar-group-label,
+.fi-sidebar .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-item-icon {
+    color: rgb(255 255 255 / 0.75);
+}
+
+.fi-sidebar .fi-sidebar-item-btn:hover {
+    background-color: rgb(255 255 255 / 0.08);
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-btn {
+    background-color: rgb(255 255 255 / 0.12);
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
+    color: #ffffff;
+}
