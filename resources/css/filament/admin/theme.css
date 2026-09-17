@@ -25,3 +25,34 @@
 .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
     color: #ffffff;
 }
+
+.fi-no-notifications { display: none; }
+
+.swal2-popup.swal-popup {
+    width: 26rem;
+    padding: 2rem 1.5rem 1.5rem;
+    border-radius: 0.75rem;
+    border-top: 4px solid var(--swal-accent, #0F2C59);
+}
+
+.swal-popup--success { --swal-accent: #16A34A; }
+.swal-popup--error   { --swal-accent: #DC2626; }
+.swal-popup--warning { --swal-accent: #F59E0B; }
+.swal-popup--info    { --swal-accent: #1E3A8A; }
+
+.swal2-title.swal-title {
+    padding-top: 0.25rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #0F2C59;
+}
+
+.swal2-html-container.swal-text {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #334155;
+}
+
+.swal2-timer-progress-bar.swal-progress {
+    background-color: var(--swal-accent);
+}

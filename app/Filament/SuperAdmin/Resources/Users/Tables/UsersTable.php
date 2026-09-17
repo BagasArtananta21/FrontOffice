@@ -9,6 +9,10 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\ToggleColumn;
+use App\Models\User;
+use App\Filament\Support\SweetAlert;
+use Illuminate\Database\QueryException;
+
 
 class UsersTable
 {
@@ -38,8 +42,9 @@ class UsersTable
                     ->label('OPD')
                     ->placeholder('—'),
 
-                ToggleColumn::make('aktif')
+                IconColumn::make('aktif')
                     ->label('Aktif'),
+                    
             ])
             ->filters([
                 SelectFilter::make('role')
@@ -52,7 +57,47 @@ class UsersTable
                 TernaryFilter::make('aktif')->label('Status aktif'),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->successNotification(null)
+                    ->using(function (User $record, Array $data, $livewire, EditAction $action){
+                        try {
+                            $record->forceFill($data)->save();
+                            return $record;
+
+                        } catch (QueryException $e){
+                            report($e);
+                            SweetAlert::error(
+                                $livewire,
+                                'Gagal memperbarui Pengguna',
+                                'Terjadi kesalahan saat memperbarui Pengguna. Silakan coba lagi'
+                            );
+                            $action->halt();
+                        }
+                    })
+                    ->after(function ($livewire, User $record){
+                        if(! $record->wasChanged()){
+                            SweetAlert::info(
+                                $livewire,
+                                'Tidak ada perubahan',
+                                'Data Pengguna tetap sama seperti sebelumnya.');
+                            return;
+                        }
+
+                        if($record->wasChanged('aktif') && ! $record->aktif){
+                            SweetAlert::warning(
+                                $livewire,
+                                'Pengguna dinonaktifkan',
+                                "Data Pengguna {$record->nama_opd} telah dinonaktifkan, Pengguna tidak bisa login sampai data diaktifkan kembali."
+                            );
+                            return;
+                        }
+
+                        SweetAlert::success(
+                            $livewire,
+                            'Perubahan tersimpan',
+                            "Data {$record->nama_opd} sudah diperbarui."
+                        );
+                    })
             ]);
     }
 }

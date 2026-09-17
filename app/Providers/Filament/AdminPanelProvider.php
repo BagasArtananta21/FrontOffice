@@ -18,6 +18,8 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\Facades\Blade;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -31,6 +33,19 @@ class AdminPanelProvider extends PanelProvider
             ->brandName(config('app.name'))
             ->brandLogo(asset('images/logo.jpeg'))
             ->darkMode(false)
+            ->globalSearch(false)
+            ->brandName(config('app.name'))
+            ->brandLogo(fn () => view('filament.brand'))
+            ->brandLogoHeight('2.25rem')
+            ->renderHook(
+                PanelsRenderHook::USER_MENU_BEFORE,
+                fn () => view('filament.topbar.user-info'),
+            )
+            ->renderHook(
+                PanelsRenderHook::SCRIPTS_AFTER,
+                fn () => Blade::render("@vite('resources/js/filament.js')"),
+            )
+
             ->colors([
                 'primary' => '#0F2C59',
                 'secondary' => '#CA8A04',
@@ -64,5 +79,6 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+            
     }
 }

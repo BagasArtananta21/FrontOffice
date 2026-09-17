@@ -16,6 +16,13 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    input: [
+        'resources/css/app.css',
+        'resources/js/app.js',
+        'resources/js/filament.js',
+        'resources/css/filament/admin/theme.css',
+    ],
+
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],

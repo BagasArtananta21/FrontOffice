@@ -3,13 +3,10 @@
 namespace App\Filament\Resources\Bidangs;
 
 use App\Filament\Resources\Bidangs\Pages\ManageBidangs;
+use App\Filament\Support\SweetAlert;
 use App\Models\Bidang;
 use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
@@ -22,6 +19,7 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Validation\Rules\Unique;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\QueryException;
 
 class BidangResource extends Resource
 {
@@ -82,7 +80,7 @@ class BidangResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                ToggleColumn::make('aktif')
+                IconColumn::make('aktif')
                     ->label('Aktif'),
 
                 TextColumn::make('created_at')
@@ -102,7 +100,41 @@ class BidangResource extends Resource
                     ->label('Aktif')
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                ->successNotification(null)
+                ->using(function (Bidang $record, array $data, $livewire, EditAction $action) {
+                    try {
+                        $record->update($data);
+                        return $record;
+                    } catch(QueryException $e) {
+                        report($e);
+                        SweetAlert::error(
+                            $livewire,
+                            'Gagal memperbarui Bidang',
+                            'Terjadi kesalahan saat memperbarui Bidang. Silakan coba lagi'
+                        );
+                        $action->halt();
+                    }
+                })
+                ->after(function ($livewire, Bidang $record) {
+                    if (! $record->wasChanged()) {
+                        SweetAlert::info(
+                            $livewire, 
+                            'Tidak ada perubahan', 
+                            'Data bidang tetap seperti sebelumnya.');
+                        return;
+                    }
+                    if ($record->wasChanged('aktif') && ! $record->aktif) {
+                        SweetAlert::warning(
+                            $livewire, 
+                            'Bidang dinonaktifkan', 
+                            "{$record->nama_bidang} tidak lagi muncul di pilihan tujuan tamu.");
+                        return;
+                    }
+
+                    SweetAlert::success($livewire, 'Perubahan tersimpan', "Data {$record->nama_bidang} sudah diperbarui.");
+                }),
+
             ]);
     }
 

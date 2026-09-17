@@ -3,6 +3,7 @@
 namespace App\Filament\SuperAdmin\Resources\Opds\Tables;
 
 use App\Models\Opd;
+use App\Filament\Support\SweetAlert;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
@@ -10,6 +11,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\ToggleColumn;
+use Illuminate\Database\QueryException;
 
 class OpdsTable
 {
@@ -43,7 +45,7 @@ class OpdsTable
                     ->counts('users')
                     ->alignCenter(),
 
-                ToggleColumn::make('aktif')
+                IconColumn::make('aktif')
                     ->label('Aktif'),
 
                 TextColumn::make('created_at')
@@ -63,11 +65,47 @@ class OpdsTable
             ])
             ->recordActions([
                 EditAction::make()
-                    ->using(function (Opd $record, Array $data): Opd {
-                        $record->forceFill($data)->save();
+                    ->successNotification(null)
+                    ->using(function (Opd $record, Array $data, $livewire, EditAction $action){
+                        try {
+                            $record->forceFill($data)->save();
+                            return $record;
 
-                        return $record;
+                        } catch (QueryException $e){
+                            report($e);
+                            SweetAlert::error(
+                                $livewire,
+                                'Gagal memperbarui OPD',
+                                'Terjadi kesalahan saat memperbarui OPD. Silakan coba lagi'
+                            );
+                            $action->halt();
+                        }
                     })
+                    ->after(function ($livewire, Opd $record){
+                        if(! $record->wasChanged()){
+                            SweetAlert::info(
+                                $livewire,
+                                'Tidak ada perubahan',
+                                'Data OPD tetap seperti sebelumnya.');
+                            return;
+                        }
+
+                        if($record->wasChanged('aktif') && ! $record->aktif){
+                            SweetAlert::warning(
+                                $livewire,
+                                'OPD dinonaktifkan',
+                                "Seluruh Admin FO milik {$record->nama_opd} tidak bisa login sampai OPD diaktifkan kembali."
+                            );
+                            return;
+                        }
+
+                        SweetAlert::success(
+                            $livewire,
+                            'Perubahan tersimpan',
+                            "Data {$record->nama_opd} sudah diperbarui."
+                        );
+                    })
+                        
             ]);
     }
 }
