@@ -6,7 +6,12 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/css/filament/admin/theme.css'],
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.js',
+                'resources/js/filament.js',
+                'resources/css/filament/admin/theme.css',
+            ],
             refresh: true,
             fonts: [
                 bunny('Inter', {
@@ -15,12 +20,6 @@ export default defineConfig({
             ],
         }),
         tailwindcss(),
-    ],
-    input: [
-        'resources/css/app.css',
-        'resources/js/app.js',
-        'resources/js/filament.js',
-        'resources/css/filament/admin/theme.css',
     ],
 
     server: {

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\Bidangs;
+namespace App\Filament\Admin\Resources\Bidangs;
 
-use App\Filament\Resources\Bidangs\Pages\ManageBidangs;
+use App\Filament\Admin\Resources\Bidangs\Pages\ManageBidangs;
 use App\Filament\Support\SweetAlert;
 use App\Models\Bidang;
 use BackedEnum;

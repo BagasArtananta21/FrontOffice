@@ -12,12 +12,11 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
             $table->string('nama');                       
-            $table->string('ip_address', 45)->unique();    
-            $table->string('token_hash', 64)->nullable()->unique();
+            $table->string('token_hash', 64)->unique();
             $table->boolean('tampilkan_form')->default(false);
             $table->timestamp('terakhir_aktif')->nullable();
 
-            $table->boolean('aktif')->default(true);
+            $table->boolean('aktif')->default(false);
             $table->timestamps();
         });
     }

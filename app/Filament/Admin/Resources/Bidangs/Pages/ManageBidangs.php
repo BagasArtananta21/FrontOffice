@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\Bidangs\Pages;
+namespace App\Filament\Admin\Resources\Bidangs\Pages;
 
-use App\Filament\Resources\Bidangs\BidangResource;
+use App\Filament\Admin\Resources\Bidangs\BidangResource;
 use App\Filament\Support\SweetAlert;
 use App\Models\Bidang;
 use Filament\Actions\CreateAction;
