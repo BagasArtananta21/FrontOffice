@@ -13,6 +13,8 @@ class ManageBidangs extends ManageRecords
 {
     protected static string $resource = BidangResource::class;
 
+    protected static ?string $title = 'Kelola Bidang';
+
     protected function getHeaderActions(): array
     {
         return [

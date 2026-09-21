@@ -14,6 +14,8 @@ class ManageOpds extends ManageRecords
 {
     protected static string $resource = OpdResource::class;
 
+    protected static ?string $title = 'Kelola OPD';
+
     protected function getHeaderActions(): array
     {
         return [

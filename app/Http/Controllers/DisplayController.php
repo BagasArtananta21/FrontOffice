@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Cookie;
 
 class DisplayController extends Controller
 {
@@ -50,5 +51,9 @@ class DisplayController extends Controller
             ->withCookie(cookie()->forever(DisplayDevice::COOKIE, $validated['token']));
     }
 
+    public function unpair(): RedirectResponse {
+        Cookie::expire(DisplayDevice::COOKIE);
+        return redirect()->route('display.pair');
+    }
     
 }

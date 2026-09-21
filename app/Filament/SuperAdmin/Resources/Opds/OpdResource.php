@@ -19,11 +19,11 @@ class OpdResource extends Resource
 {
     protected static ?string $model = Opd::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingLibrary;
 
     protected static ?string $recordTitleAttribute = 'nama_opd';
 
-    protected static ?string $navigationLabel = 'Master OPD';
+    protected static ?string $navigationLabel = 'Kelola OPD';
 
     protected static ?string $modelLabel = 'OPD';
 

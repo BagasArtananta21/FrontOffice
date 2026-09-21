@@ -11,15 +11,18 @@ document.addEventListener('livewire:init', () => {
     Livewire.on('swal', (event) => {
         const payload = Array.isArray(event) ? event[0] : event;
         const icon = payload.icon ?? 'success';
-
+        const timer = payload.timer === null ? undefined : payload.timer ?? 2500;
+        
         Swal.fire({
             icon,
             iconColor: ICON_COLORS[icon],
             title: payload.title,
             text: payload.text ?? '',
-            timer: payload.timer ?? 2500,
-            timerProgressBar: true,
-            showConfirmButton: false,
+            timer,
+            timerProgressBar: timer !== undefined,
+            showConfirmButton: timer === undefined,
+            confirmButtonText: 'Tutup',
+            confirmButtonColor: '#0F2C59',
             customClass: {
                 popup: `swal-popup swal-popup--${icon}`,
                 title: 'swal-title',

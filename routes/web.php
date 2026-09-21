@@ -23,10 +23,6 @@ Route::middleware(['not_display', 'guest'])->group(function (){
     Route::post('/login', [LoginController::class, 'store']) -> name('login.store');
 });
 
-Route::get('/display/pair/{token}', [DisplayController::class, 'pair'])
-    ->middleware('throttle:10,1')
-    ->name('display.pair');
-
 Route::get('/display/pair', [DisplayController::class, 'pairForm'])
     ->name('display.pair');
 
@@ -40,4 +36,5 @@ Route::middleware('display')
     ->group(function(){
         Route::get('/', [DisplayController::class, 'show'])->name('show');
         Route::get('/status', [DisplayController::class, 'status'])->name('status');
+        Route::get('/unpair', [DisplayController::class, 'unpair'])->name('unpair');
     });

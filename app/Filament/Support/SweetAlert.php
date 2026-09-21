@@ -34,4 +34,14 @@ class SweetAlert
             'text' => $text,
         ]);
     }
+
+    public static function token(Component $livewire, string $title, string $token): void 
+    {
+        $livewire->dispatch('swal', [
+            'icon' => 'info',
+            'title' => $title,
+            'text' => "Token: {$token}",
+            'timer' => null,
+        ]);
+    }
 }
