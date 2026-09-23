@@ -37,4 +37,11 @@ Route::middleware('display')
         Route::get('/', [DisplayController::class, 'show'])->name('show');
         Route::get('/status', [DisplayController::class, 'status'])->name('status');
         Route::get('/unpair', [DisplayController::class, 'unpair'])->name('unpair');
+        
+        Route::post('/kunjungan', [DisplayController::class, 'storeVisit'])
+            ->middleware('throttle:display-submit')
+            ->name('kunjungan.store');
+        
+        Route::get('/terima-kasih', [DisplayController::class, 'confirmation'])
+            ->name('confirmation');
     });

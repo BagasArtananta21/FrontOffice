@@ -282,3 +282,71 @@ Halaman yang menghadap tamu tidak mengikuti ukuran panel admin. Tamu berdiri, ja
 Ukuran teks minimal dua kali lipat panel admin. Tombol minimal 56px tinggi, lebar penuh atau mendekati. Satu layar satu fokus, jangan padat. Tanpa sidebar, tanpa menu, tanpa navigasi apa pun. Kontras tinggi, jangan pakai abu tipis untuk teks.
 
 Layar idle memakai warna primary sebagai latar penuh dengan logo instansi di tengah — berbeda jelas dari form supaya petugas bisa melihat statusnya dari kejauhan.
+
+Ini bagian yang tinggal kamu tempel di bagian bawah `CLAUDE.md`:
+
+---
+
+## Update 1 — Hasil Wawancara FO (23 September 2026)
+
+### Konfirmasi e-Surat
+
+Kekhawatiran duplikasi **terjawab**. e-Surat hanya menangani surat masuk, disposisi pimpinan, dan surat keluar. **Penomoran surat masih manual di semua OPD**, berupa buku fisik.
+
+Kendala yang disebutkan FO: saat hari libur, nomor surat tidak bisa diterbitkan karena buku arsipnya ada di kantor. Ini alasan konkret kenapa modul penomoran dibutuhkan.
+
+Ke depan ada kemungkinan modul ini digabung ke e-Surat, tapi **e-Surat bukan tanggung jawab saya**. Kalau digabung, itu pekerjaan tim e-Surat, dan yang saya serahkan adalah rancangan beserta sistem yang sudah jalan sebagai acuan. Posisi akhirnya masih akan didiskusikan dengan mentor.
+
+### Perubahan peran — sekarang tiga role
+
+| Role | Akses |
+|---|---|
+| `admin_fo` | Buku tamu |
+| `staff` | Penomoran surat saja. Semua staff bisa akses |
+| `super_admin` | Kelola master data dan rekap |
+
+Staff tidak boleh melihat data buku tamu. Panel penomoran dipisah dari panel admin FO.
+
+**Belum diputuskan:** apakah staff punya akun masing-masing, atau satu akun bersama dengan nama diketik manual di form. Catatan wawancara menyebut "diisi namanya". Akun per staff lebih baik untuk audit, dan akan terselesaikan sendiri kalau SSO jadi dipasang.
+
+### Perubahan modul buku tamu
+
+**Field form tamu (fix):** tanggal datang, nama, keperluan, keterangan, bidang, pegawai.
+
+**Kategori keperluan dibatalkan.** Tabel `kategori_kunjungan` di-drop. Keperluan jadi teks bebas.
+
+**Perlu diperjelas:** beda kolom `keperluan` dan `keterangan`. Jangan sampai dua kolom untuk hal yang sama.
+
+**Master pegawai jadi wajib**, bukan opsional lagi.
+
+**Status kunjungan lebih dari dua.** Selain "di dalam" dan "selesai", ada kondisi seperti tamu yang mencari pegawai yang sedang tidak ada, sehingga statusnya jadi semacam "akan berkunjung lagi". Daftar lengkap statusnya **masih perlu dipastikan ke FO** — jangan dikarang sendiri.
+
+**Alur penanganan tamu:** kalau sudah ada janji, tamu langsung diantar. Kalau belum, pegawai yang dituju dihubungi dulu.
+
+### Perubahan modul penomoran surat
+
+**Format nomor Diskominfo:**
+
+```
+KODE/NO/BIDANG/KODEOPD/BULAN_ROMAWI/TAHUN
+```
+
+Kode klasifikasi ada di **posisi paling depan**, bukan nomor urut. Catatan sebelumnya keliru dan sudah dikoreksi.
+
+Format ini hanya berlaku untuk Diskominfo. OPD lain bisa berbeda, jadi tetap disimpan sebagai template per OPD di master.
+
+Penanda yang perlu ditambahkan: `{bidang}` dan `{bulan_romawi}`.
+
+**Kasus nomor susulan (penting).** Kalau ada surat mundur yang butuh nomor di posisi yang sudah terlewat, nomornya diberi akhiran titik. Contoh: surat tertanggal 8 Agustus diminta pada 19 Agustus, sedangkan posisi 8 Agustus seharusnya nomor 102 yang sudah terpakai — maka nomornya jadi `102.1`.
+
+Implikasi ke skema: tambahkan kolom `sub_nomor` (nullable integer) di tabel `nomor_surat`. Unique constraint berubah jadi gabungan OPD, jenis surat, tahun, `nomor_urut`, dan `sub_nomor`. Pilihan ini diambil supaya urutan numerik tetap terjaga untuk counter dan pengurutan.
+
+**Kode klasifikasi diinput manual**, berlaku untuk semua jenis surat. **Perlu diperjelas:** apakah master jenis surat masih dipakai, atau semua diketik manual.
+
+**Pencarian arsip surat keluar** memakai kata kunci perihal dan kode surat.
+
+### Rencana ke depan
+
+1. Selesaikan modul buku tamu terlebih dahulu — sudah fix dan tidak ada yang menghalangi.
+2. Bereskan sebelum masuk form tamu: drop tabel `kategori_kunjungan`, tambahkan `staff` ke role, pastikan daftar status kunjungan ke FO.
+3. Modul penomoran menunggu hasil diskusi dengan mentor soal posisinya terhadap e-Surat. Kalau tetap dikerjakan, jadwal minggu keenam masih berlaku.

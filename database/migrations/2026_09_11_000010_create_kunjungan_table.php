@@ -17,10 +17,8 @@ return new class extends Migration
             $table->foreignUuid('tamu_id')->constrained('tamu')->restrictOnDelete();
             $table->foreignUuid('bidang_id')->nullable()->constrained('bidang')->restrictOnDelete();
             $table->foreignUuid('pegawai_id')->nullable()->constrained('pegawai')->restrictOnDelete();
-            $table->foreignUuid('kategori_kunjungan_id')->nullable()->constrained('kategori_kunjungan')->restrictOnDelete();
 
             $table->text('keperluan')->nullable();
-            $table->unsignedSmallInteger('jumlah_orang')->default(1);
             $table->timestamp('waktu_datang');
             $table->timestamp('waktu_keluar')->nullable();
             $table->string('status')->default('di_dalam'); // di_dalam || selesai || ditutup_otomatis
@@ -29,6 +27,7 @@ return new class extends Migration
             $table->string('sumber_input')->default('display'); //display || manual
             $table->foreignUuid('dicatat_oleh')->nullable()->constrained('users')->restrictOnDelete();
             $table->timestamps();
+
 
             $table->index(['opd_id', 'status']);
             $table->index(['opd_id', 'waktu_datang']);

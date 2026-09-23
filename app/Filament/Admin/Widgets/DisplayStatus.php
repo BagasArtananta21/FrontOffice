@@ -11,25 +11,17 @@ class DisplayStatus extends Widget
 {
     protected string $view = 'filament.admin.widgets.display-status';
 
-    protected static ?string $pollingInterval = '10s';
-
     protected int|string|array $columnSpan = 1;
 
     protected static ?int $sort = 1;
 
-    public function toggleForm(): void
-    {
+    public function setDisplayForm(bool $tampilkan): void{
         $devices = $this->devices();
 
         if ($devices->isEmpty()) {
-            SweetAlert::warning(
-                $this, 
-                'Display Belum Terdaftar', 
-                'Belum ada perangkat display aktif untuk OPD ini');
+            SweetAlert::warning($this, 'Display Belum Terdaftar', 'Belum ada perangkat display aktif untuk OPD ini');
             return;
         }
-
-        $tampilkan = ! $devices->first()->tampilkan_form;
 
         DisplayDevice::query()->where('aktif', true)->update(['tampilkan_form' => $tampilkan]);
 
@@ -39,17 +31,11 @@ class DisplayStatus extends Widget
         }
 
         if (! $devices->contains(fn (DisplayDevice $device) => $device->isConnected())) {
-            SweetAlert::warning(
-                $this, 
-                'Display Tidak Terhubung', 
-                'Form akan tampil begitu display terhubung kembali');
+            SweetAlert::warning($this, 'Display Tidak Terhubung', 'Form akan tampil begitu display terhubung kembali');
             return;
         }
 
-        SweetAlert::success(
-            $this, 
-            'Form Tamu Ditampilkan', 
-            'Form tamu akan tampil di layar display dalam beberapa detik');
+        SweetAlert::success($this, 'Form Tamu Ditampilkan', 'Form tamu akan tampil di layar display dalam beberapa detik');
     }
 
     protected function devices(): Collection

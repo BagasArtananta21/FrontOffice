@@ -1,9 +1,10 @@
 import Alpine from "alpinejs";
 
 window.Alpine = Alpine;
-Alpine.data('displayScreen', (statusUrl) => ({
-    showForm: false,
+Alpine.data('displayScreen', (statusUrl, initialShowForm = false) => ({
+    showForm: initialShowForm,
     offline: false,
+    submitting: false,
 
     start(){
         this.poll();
@@ -11,6 +12,10 @@ Alpine.data('displayScreen', (statusUrl) => ({
     },
 
     async poll(){
+        if (this.submitting){
+            return;
+        }
+        
         try {
             const response = await fetch(statusUrl, {headers: {Accept: 'application/json'}});
 
@@ -18,6 +23,10 @@ Alpine.data('displayScreen', (statusUrl) => ({
                 throw new Error(`HTTP ${response.status}`);
             }
             const data = await response.json();
+
+            if (this.showForm && !data.tampilkan_form){
+                this.$refs.guestForm?.reset();
+            }
 
             this.showForm = data.tampilkan_form;
             this.offline = false;

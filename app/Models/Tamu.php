@@ -8,14 +8,14 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable('nama_tamu', 'jenis_kelamin', 'no_hp', 'instansi', 'alamat', 'pekerjaan')]
+#[Fillable(['nama_tamu', 'jenis_kelamin', 'no_hp', 'instansi_asal', 'alamat'])]
 class Tamu extends Model
 {
     use BelongsToOpd, HasUuids;
     
     protected $table = 'tamu';
 
-    public const JENIS_KELAMING = [
+    public const JENIS_KELAMIN = [
         'laki_laki' => 'Laki-laki',
         'perempuan' => 'Perempuan',
     ];

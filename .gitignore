@@ -21,6 +21,7 @@
 /public/hot
 /public/js/filament
 /public/storage
+/public/videos
 /storage/*.key
 /storage/pail
 /vendor
@@ -28,3 +29,5 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/database/data/data_pegawai.csv
+

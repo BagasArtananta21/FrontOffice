@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable('bidang_id', 'keperluan', 'jumlah_orang', 'waktu_datang')]
+#[Fillable(['bidang_id', 'pegawai_id', 'keperluan', 'waktu_datang'])]
 class Kunjungan extends Model
 {
     use BelongsToOpd, HasUuids;
@@ -28,9 +28,14 @@ class Kunjungan extends Model
         return $this->belongsTo(Bidang::class);
     }
 
+    public function pegawai(): BelongsTo
+    {
+        return $this->belongsTo(Pegawai::class);
+    }
+
     public function petugas(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'dicatat_oleh');
+    return $this->belongsTo(User::class, 'dicatat_oleh');
     }
 
     protected function casts(): array
@@ -38,7 +43,6 @@ class Kunjungan extends Model
         return [
             'waktu_datang' => 'datetime',
             'waktu_keluar' => 'datetime',
-            'jumlah_orang' => 'integer',
             'sudah_dihubungi' => 'boolean',
         ];
     }

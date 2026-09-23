@@ -8,3 +8,4 @@ class NomorCounter extends Model
 {
     //
 }
+    

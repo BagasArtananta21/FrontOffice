@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use League\Uri\Builder;
+use Illuminate\Database\Eloquent\Builder;
 
 #[Fillable(['kode_bidang', 'nama_bidang', 'aktif'])]
 class Bidang extends Model

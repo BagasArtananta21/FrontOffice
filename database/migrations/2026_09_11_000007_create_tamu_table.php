@@ -16,10 +16,9 @@ return new class extends Migration
             $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
             $table->string('nama_tamu');
             $table->string('jenis_kelamin', 10);
-            $table->string('no_hp', 15);
+            $table->string('no_hp', 15)->nullable();
             $table->string('instansi_asal')->nullable();
             $table->string('alamat')->nullable();
-            $table->string('pekerjaan')->nullable();
             $table->timestamps();
 
             $table->index(['opd_id', 'nama_tamu']);

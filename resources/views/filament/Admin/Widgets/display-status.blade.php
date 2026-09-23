@@ -1,4 +1,4 @@
-<x-filament-widgets::widget>
+<x-filament-widgets::widget wire:poll.10s>
     <x-filament::section>
         <x-slot name="heading">Display Lobi</x-slot>
 
@@ -19,7 +19,7 @@
             </p>
 
             <x-filament::button
-                wire:click="toggleForm"
+                wire:click="setDisplayForm({{ $menampilkanForm ? 'false' : 'true' }})"
                 :color="$menampilkanForm ? 'gray' : 'primary'"
                 class="mt-4 w-full"
             >

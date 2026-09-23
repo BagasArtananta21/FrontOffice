@@ -32,3 +32,9 @@
         display: none;
     }
 }
+
+@layer components {
+    .display-input {
+        @apply w-full rounded-md border border-inactive bg-white px-5 py-4 text-xl text-ink focus:border-tertiary focus:outline-none;
+    }
+}
