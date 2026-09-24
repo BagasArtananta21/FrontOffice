@@ -132,7 +132,10 @@ class BidangResource extends Resource
                         return;
                     }
 
-                    SweetAlert::success($livewire, 'Perubahan tersimpan', "Data {$record->nama_bidang} sudah diperbarui.");
+                    SweetAlert::success(
+                        $livewire, 
+                        'Perubahan tersimpan', 
+                        "Data {$record->nama_bidang} sudah diperbarui.");
                 }),
 
             ]);

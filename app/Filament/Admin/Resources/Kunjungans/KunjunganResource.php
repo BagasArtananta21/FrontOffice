@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Kunjungans;
 
 use App\Filament\Admin\Resources\Kunjungans\Pages\ManageKunjungans;
+use App\Filament\Support\SweetAlert;
 use App\Models\Kunjungan;
 use App\Models\Pegawai;
 use App\Models\Bidang;
@@ -31,6 +32,11 @@ use Filament\Forms\Components\Radio;
 use Filament\Schemas\Components\Utilities\{Get, Set};
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Support\Enums\Width;
+use Filament\Tables\Columns\CheckboxColumn;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Arr;
 
 class KunjunganResource extends Resource
 {
@@ -61,11 +67,12 @@ class KunjunganResource extends Resource
                             ->label('Nama Tamu')
                             ->required()
                             ->maxLength(255)
+                            ->autocomplete(false)
                             ->columnSpanFull(),
 
                         Radio::make('jenis_kelamin')
                             ->label('Jenis Kelamin')
-                            ->options(Tamu::JENIS_KELAMIN)
+                            ->options(Kunjungan::JENIS_KELAMIN)
                             ->required()
                             ->inline(),
 
@@ -73,14 +80,17 @@ class KunjunganResource extends Resource
                             ->label('Nomor HP')
                             ->tel()
                             ->maxLength(15)
+                            ->autocomplete(false)
                             ->helperText('Diisi bila tamu perlu dihubungi kembali'),
 
                         TextInput::make('instansi_asal')
                             ->label('Instansi Asal')
+                            ->autocomplete(false)
                             ->maxLength(255),
 
                         TextInput::make('alamat')
                             ->label('Alamat')
+                            ->autocomplete(false)
                             ->maxLength(255),
                     ]),
 
@@ -123,6 +133,7 @@ class KunjunganResource extends Resource
                             ->required()
                             ->maxLength(1000)
                             ->rows(3)
+                            ->autocomplete(false)
                             ->columnSpanFull(),
 
                         Textarea::make('catatan_petugas')
@@ -130,6 +141,7 @@ class KunjunganResource extends Resource
                             ->maxLength(1000)
                             ->rows(2)
                             ->helperText('Catatan dari petugas, tidak diisi tamu')
+                            ->autocomplete(false)
                             ->columnSpanFull(),
                     ]),
             ]);
@@ -139,9 +151,10 @@ class KunjunganResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->poll('10s')
             ->defaultSort('waktu_datang', 'desc')
             ->modifyQueryUsing(fn (Builder $query) => $query
-                ->with(['tamu', 'bidang', 'pegawai'])
+                ->with(['bidang', 'pegawai'])
                 ->whereBetween('waktu_datang', [now()->startOfDay(), now()->endOfDay()]))
             ->columns([
                 TextColumn::make('waktu_datang')
@@ -149,17 +162,17 @@ class KunjunganResource extends Resource
                     ->dateTime('H:i')
                     ->sortable(),
 
-                TextColumn::make('tamu.nama_tamu')
+                TextColumn::make('nama_tamu')
                     ->label('Nama Tamu')
                     ->searchable()
-                    ->description(fn (Kunjungan $record) => $record->tamu->instansi_asal),
+                    ->description(fn (Kunjungan $record) => $record->instansi_asal),
                 
-                TextColumn::make('tamu.no_hp')
+                TextColumn::make('no_hp')
                     ->label('Nomor HP')
                     ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
                 
-                TextColumn::make('tamu.alamat')
+                TextColumn::make('alamat')
                     ->label('Alamat')
                     ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -180,14 +193,14 @@ class KunjunganResource extends Resource
                     ->limit(60)
                     ->searchable(),
 
-                ToggleColumn::make('sudah_dihubungi')
+                CheckboxColumn::make('sudah_dihubungi')
                     ->label('Dihubungi'),
 
                 TextColumn::make('sumber_input')
                     ->label('Sumber')
                     ->badge()
-                    ->formatStateUsing(fn (string $state) => $state === 'manual' ? 'Manual' : 'Display')
-                    ->color(fn (string $state) => $state === 'manual' ? 'gray' : 'info'),
+                    ->formatStateUsing(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'FrontOffice' : 'Display')
+                    ->color(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'gray' : 'info'),
 
                 TextColumn::make('petugas.name')
                     ->label('Dicatat Oleh')
@@ -210,15 +223,49 @@ class KunjunganResource extends Resource
                 SelectFilter::make('sumber_input')
                     ->label('Sumber')
                     ->options([
-                        'display' => 'Display',
-                        'manual' => 'Manual',
+                        Kunjungan::SUMBER_FRONT_OFFICE => 'FrontOffice',
+                        Kunjungan::SUMBER_DISPLAY => 'Display',
                     ]),
             ])
-            ->recordActions([])
+            ->recordActions([
+                EditAction::make()
+                    ->modalHeading('Ubah Data Kunjungan')
+                    ->modalSubmitActionLabel('Simpan')
+                    ->modalWidth(Width::SixExtraLarge)
+                    ->successNotification(null)
+                    ->using(function (Kunjungan $record, array $data, $livewire, EditAction $action){
+                        try {
+                            $record->update($data);
+                            return $record;
+                        } catch (QueryException $e) {
+                            report ($e);
+                            SweetAlert::error(
+                                $livewire,
+                                'Gagal memperbarui data Kunjungan',
+                                'Terjadi Kesalahan saat memperbarui Data. Silahkan coba lagi.'
+                            );
+                            $action->halt();
+                        }
+                    })
+                    ->after(function ($livewire, Kunjungan $record){
+                        if (! $record->wasChanged()) {
+                            SweetAlert::info(
+                                $livewire, 
+                                'Tidak ada perubahan', 
+                                'Data kunjungan tetap seperti sebelumnya.'
+                            );
+                            return;
+                        }
+                        SweetAlert::success(
+                            $livewire,
+                            'Data Kunjungan berhasil diperbarui',
+                            "Data kunjungan {$record->nama_tamu} sudah diperbarui."
+                        );
+                    }), 
+            ])
             ->toolbarActions([])
             ->defaultPaginationPageOption(25)
-            ->emptyStateHeading('Belum ada tamu hari ini');
-
+            ->emptyState(view('filament.admin.tables.kunjungan-empty'));
     }
 
     public static function getPages(): array

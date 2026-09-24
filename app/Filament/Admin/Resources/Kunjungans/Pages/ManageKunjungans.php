@@ -28,12 +28,12 @@ class ManageKunjungans extends ManageRecords
                 ->modalSubmitActionLabel('Simpan')
                 ->createAnother(false)
                 ->modalWidth(Width::SixExtraLarge)
-                ->successNotificationTitle(null)
+                ->successNotification(null)
                 ->using(function (array $data, $livewire, CreateAction $action){
                     try {
                         return app(KunjunganService::class)->record(
                             $data,
-                            Kunjungan::SUMBER_MANUAL,
+                            Kunjungan::SUMBER_FRONT_OFFICE,
                             Auth::id(),
                         );
                     } catch (\Exception $e) {
@@ -49,7 +49,7 @@ class ManageKunjungans extends ManageRecords
                 ->after(fn ($livewire, Kunjungan $record) => SweetAlert::success(
                     $livewire,
                     'Tamu berhasil ditambahkan',
-                    "Data {$record->tamu->nama_tamu} sudah masuk ke daftar kunjungan."
+                    "Data {$record->nama_tamu} sudah masuk ke daftar kunjungan."
                 )),
         ];
     }

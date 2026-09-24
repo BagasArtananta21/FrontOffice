@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['bidang_id', 'pegawai_id', 'keperluan', 'waktu_datang'])]
+#[Fillable(['nama_tamu', 'jenis_kelamin', 'instansi_asal', 'no_hp', 'alamat', 'bidang_id', 'pegawai_id', 'keperluan', 'catatan_petugas', 'waktu_datang', 'sudah_dihubungi'])]
 class Kunjungan extends Model
 {
     use BelongsToOpd, HasUuids;
@@ -16,12 +16,12 @@ class Kunjungan extends Model
     protected $table = 'kunjungan';
 
     public const SUMBER_DISPLAY = 'display';
-    public const SUMBER_MANUAL = 'manual';
+    public const SUMBER_FRONT_OFFICE = 'frontoffice';
 
-    public function tamu(): BelongsTo
-    {
-        return $this->belongsTo(Tamu::class);
-    }
+    public const JENIS_KELAMIN = [
+        'laki_laki' => 'Laki-laki',
+        'perempuan' => 'Perempuan',
+    ];
 
     public function bidang(): BelongsTo
     {
@@ -42,7 +42,6 @@ class Kunjungan extends Model
     {
         return [
             'waktu_datang' => 'datetime',
-            'waktu_keluar' => 'datetime',
             'sudah_dihubungi' => 'boolean',
         ];
     }

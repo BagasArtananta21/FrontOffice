@@ -9,7 +9,7 @@ use Filament\Widgets\StatsOverviewWidget\Card;
 
 class GuestStats extends StatsOverviewWidget
 {
-    protected ?string $pollingInterval = '30s';
+    protected ?string $pollingInterval = '10s';
 
     protected int|string|array $columnSpan = 2;
 

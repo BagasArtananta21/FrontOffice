@@ -167,7 +167,11 @@ class PegawaiResource extends Resource
                             return;
                         }
 
-                        SweetAlert::success($livewire, 'Perubahan tersimpan', "Data {$record->nama_pegawai} sudah diperbarui.");
+                        SweetAlert::success(
+                            $livewire, 
+                            'Perubahan tersimpan', 
+                            "Data {$record->nama_pegawai} sudah diperbarui."
+                        );
                     }),
             ]);
             

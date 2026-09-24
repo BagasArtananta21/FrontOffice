@@ -5,8 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Models\Tamu;
-use Override;
+use App\Models\Kunjungan;
 
 class StoreKunjunganRequest extends FormRequest
 {
@@ -27,7 +26,7 @@ class StoreKunjunganRequest extends FormRequest
     public function rules(): array{
         return [
             'nama_tamu' => ['required', 'string', 'max:255'],
-            'jenis_kelamin' => ['required', Rule::in(array_keys(Tamu::JENIS_KELAMIN))],
+            'jenis_kelamin' => ['required', Rule::in(array_keys(Kunjungan::JENIS_KELAMIN))],
             'no_hp' => ['nullable', 'regex:/^0[0-9]{8,13}$/'],
             'instansi_asal' => ['nullable', 'string', 'max:255'],
             'alamat' => ['nullable', 'string', 'max:255'],

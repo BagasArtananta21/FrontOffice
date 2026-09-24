@@ -46,7 +46,7 @@
 
                 <x-display.field name="jenis_kelamin" label="Jenis kelamin" required>
                     <div class="grid grid-cols-2 gap-4">
-                        @foreach (\App\Models\Tamu::JENIS_KELAMIN as $value => $label)
+                        @foreach (\App\Models\Kunjungan::JENIS_KELAMIN as $value => $label)
                             <label class="flex h-16 cursor-pointer items-center justify-center rounded-md border border-inactive bg-white text-xl font-medium text-ink has-checked:border-primary has-checked:bg-primary has-checked:text-white has-focus-visible:ring-2 has-focus-visible:ring-tertiary">
                                 <input
                                     type="radio"
@@ -63,7 +63,7 @@
                 </x-display.field>
 
                 <x-display.field name="no_hp" label="Nomor HP">
-                    <input id="no_hp" name="no_hp" type="tel" inputmode="numeric" value="{{ old('no_hp') }}" autocomplete="off" required class="display-input">
+                    <input id="no_hp" name="no_hp" type="tel" inputmode="numeric" value="{{ old('no_hp') }}" autocomplete="off" class="display-input">
                 </x-display.field>
 
                 <x-display.field name="instansi_asal" label="Instansi asal">

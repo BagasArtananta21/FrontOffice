@@ -29,7 +29,7 @@ class DisplayController extends Controller
 
         return view('display.index', [
             'bidang' => Bidang::active()->orderBy('nama_bidang')->get(['id', 'nama_bidang']),
-            'pegawai' => Pegawai::active()->orderBy('nama_pegawai')->get(['id', 'nama_pegawai']),
+            'pegawai' => Pegawai::active()->orderBy('nama_pegawai')->get(['id', 'nama_pegawai', 'jabatan', 'bidang_id']),
             'initialShowForm' => $device->tampilkan_form,
         ]);
     }
