@@ -1,23 +1,29 @@
-<x-filament-widgets::widget wire:poll.10s>
+<x-filament-widgets::widget wire:poll.5s>
     <x-filament::section>
-        <x-slot name="heading">Display Lobi</x-slot>
+        <div class="flex w-full items-start justify-between gap-4">
+            <div>
+                @if (! $terdaftar)
+                    <p class="text-sm text-gray-500">Belum ada perangkat display aktif untuk OPD ini.</p>
+                @else
+                    <div class="flex items-center gap-2">
+                        <span @class([
+                            'h-2.5 w-2.5 rounded-full',
+                            'bg-success-500' => $terhubung,
+                            'bg-gray-300' => ! $terhubung,
+                        ])></span>
+                        <span class="text-sm font-medium">{{ $terhubung ? 'Terhubung' : 'Tidak terhubung' }}</span>
+                    </div>
 
-        @if (! $terdaftar)
-            <p class="text-sm text-gray-500">Belum ada perangkat display aktif untuk OPD ini.</p>
-        @else
-            <div class="flex items-center gap-2">
-                <span @class([
-                    'h-2.5 w-2.5 rounded-full',
-                    'bg-success-500' => $terhubung,
-                    'bg-gray-300' => ! $terhubung,
-                ])></span>
-                <span class="text-sm font-medium">{{ $terhubung ? 'Terhubung' : 'Tidak terhubung' }}</span>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Tampilan: <span class="font-medium text-gray-950">{{ $menampilkanForm ? 'Form tamu' : 'Layar idle' }}</span>
+                    </p>
+                @endif
             </div>
 
-            <p class="mt-2 text-sm text-gray-500">
-                Tampilan: <span class="font-medium text-gray-950">{{ $menampilkanForm ? 'Form tamu' : 'Layar idle' }}</span>
-            </p>
+            <span class="ms-auto shrink-0 text-sm text-gray-500">Display Lobi</span>
+        </div>
 
+        @if ($terdaftar)
             <x-filament::button
                 wire:click="setDisplayForm({{ $menampilkanForm ? 'false' : 'true' }})"
                 :color="$menampilkanForm ? 'gray' : 'primary'"
