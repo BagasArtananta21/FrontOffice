@@ -190,7 +190,7 @@ class KunjunganResource extends Resource
                 TextColumn::make('keperluan')
                     ->label('Keperluan')
                     ->wrap()
-                    ->limit(60)
+                    ->limit(40)
                     ->searchable(),
 
                 CheckboxColumn::make('sudah_dihubungi')
