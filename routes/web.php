@@ -36,7 +36,10 @@ Route::middleware('display')
     ->group(function(){
         Route::get('/', [DisplayController::class, 'show'])->name('show');
         Route::get('/status', [DisplayController::class, 'status'])->name('status');
-        Route::get('/unpair', [DisplayController::class, 'unpair'])->name('unpair');
+        
+        if (app()->isLocal()) {
+            Route::get('/unpair', [DisplayController::class, 'unpair'])->name('unpair');
+        }
         
         Route::post('/kunjungan', [DisplayController::class, 'storeVisit'])
             ->middleware('throttle:display-submit')
