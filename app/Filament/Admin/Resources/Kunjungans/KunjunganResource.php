@@ -13,6 +13,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -29,6 +30,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Radio;
+use Filament\Infolists\Components\IconEntry;
 use Filament\Schemas\Components\Utilities\{Get, Set};
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -37,6 +39,7 @@ use Filament\Tables\Columns\CheckboxColumn;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Arr;
+use Filament\Infolists\Components\TextEntry;
 
 class KunjunganResource extends Resource
 {
@@ -144,8 +147,78 @@ class KunjunganResource extends Resource
                             ->autocomplete(false)
                             ->columnSpanFull(),
                     ]),
+            
             ]);
 
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return $schema->components([
+            Section::make('Data Tamu')
+                ->columns(2)
+                ->schema([
+                    TextEntry::make('nama_tamu')
+                        ->label('Nama Tamu'),
+
+                    TextEntry::make('jenis_kelamin')
+                        ->label('Jenis Kelamin')
+                        ->formatStateUsing(fn (string $state) => Kunjungan::JENIS_KELAMIN[$state] ?? $state),
+
+                    TextEntry::make('no_hp')
+                        ->label('Nomor HP')
+                        ->placeholder('—')
+                        ->copyable(),
+
+                    TextEntry::make('instansi_asal')
+                        ->label('Instansi Asal')
+                        ->placeholder('—'),
+
+                    TextEntry::make('alamat')
+                        ->label('Alamat')
+                        ->placeholder('—')
+                        ->columnSpanFull(),
+                ]),
+                
+            Section::make('Kunjungan')
+                    ->columns(2)
+                    ->schema([
+                        TextEntry::make('waktu_datang')
+                            ->label('Waktu Datang')
+                            ->dateTime('l, d F Y · H:i'),
+                        
+                        TextEntry::make('sumber_input')
+                            ->label('Sumber')
+                            ->badge()
+                            ->formatStateUsing(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'Front Office' : 'Display')
+                            ->color(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'gray' : 'info'),
+
+                        TextEntry::make('bidang.nama_bidang')
+                            ->label('Bidang yang Dituju')
+                            ->placeholder('-'),
+
+                        TextEntry::make('pegawai.nama_pegawai')
+                            ->label('Pegawai yang Dituju')
+                            ->placeholder('-'),
+
+                        TextEntry::make('keperluan')
+                            ->label('Keperluan')
+                            ->columnSpanFull(),
+
+                        TextEntry::make('catatan_petugas')
+                            ->label('Keterangan')
+                            ->placeholder('-')
+                            ->columnSpanFull(),
+
+                        IconEntry::make('sudah_dihubungi')
+                            ->label('Sudah Dihubungi')
+                            ->boolean(),
+
+                        TextEntry::make('petugas.name')
+                            ->label('Dicatat Oleh')
+                            ->placeholder('-'),
+                    ]),
+        ]);
     }
 
     public static function table(Table $table): Table
@@ -228,6 +301,10 @@ class KunjunganResource extends Resource
                     ]),
             ])
             ->recordActions([
+                ViewAction::make()
+                    ->label('Detail')
+                    ->modalheading(fn (Kunjungan $record) => "Detail Kunjungan - {$record->nama_tamu}")
+                    ->modalWidth(Width::FourExtraLarge),
                 EditAction::make()
                     ->modalHeading('Ubah Data Kunjungan')
                     ->modalSubmitActionLabel('Simpan')
@@ -265,6 +342,7 @@ class KunjunganResource extends Resource
             ])
             ->toolbarActions([])
             ->defaultPaginationPageOption(25)
+            ->recordAction('view')
             ->emptyState(view('filament.admin.tables.kunjungan-empty'));
     }
 
