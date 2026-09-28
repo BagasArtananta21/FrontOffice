@@ -19,6 +19,11 @@ Alpine.data('displayScreen', (statusUrl, initialShowForm = false) => ({
         try {
             const response = await fetch(statusUrl, {headers: {Accept: 'application/json'}});
 
+            if (response.status === 403) {
+                window.location.reload();
+                return;
+            }
+
             if (!response.ok){
                 throw new Error(`HTTP ${response.status}`);
             }

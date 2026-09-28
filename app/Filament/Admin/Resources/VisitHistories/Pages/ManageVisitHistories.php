@@ -3,9 +3,7 @@
 namespace App\Filament\Admin\Resources\VisitHistories\Pages;
 
 use App\Filament\Admin\Resources\VisitHistories\VisitHistoryResource;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
-use Override;
 
 class ManageVisitHistories extends ManageRecords
 {

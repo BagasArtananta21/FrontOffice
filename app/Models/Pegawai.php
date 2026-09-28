@@ -37,7 +37,7 @@ class Pegawai extends Model
         return $query->where('aktif', true);
     }
 
-    public function casts(): array
+    protected function casts(): array
     {
         return [
             'aktif' => 'boolean',

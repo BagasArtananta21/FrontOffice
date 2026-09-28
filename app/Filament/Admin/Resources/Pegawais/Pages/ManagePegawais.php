@@ -8,7 +8,6 @@ use App\Filament\Support\SweetAlert;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 use illuminate\Database\QueryException;
-use Livewire\Livewire;
 
 class ManagePegawais extends ManageRecords
 {

@@ -8,7 +8,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
-use Filament\Tables\Columns\ToggleColumn;
 use App\Models\User;
 use App\Filament\Support\SweetAlert;
 use Illuminate\Database\QueryException;

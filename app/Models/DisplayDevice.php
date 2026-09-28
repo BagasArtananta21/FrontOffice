@@ -38,7 +38,7 @@ class DisplayDevice extends Model
 
     public function isConnected(): bool {
         return $this->terakhir_aktif !== null 
-        && $this->terakhir_aktif->greaterThanOrEqualTo(now()->subSecond(30));
+        && $this->terakhir_aktif->greaterThanOrEqualTo(now()->subSeconds(30));
     }
 
     protected function casts(): array {

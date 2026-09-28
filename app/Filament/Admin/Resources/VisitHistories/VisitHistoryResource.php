@@ -7,11 +7,6 @@ use App\Filament\Admin\Resources\VisitHistories\Pages\ManageVisitHistories;
 use App\Models\Kunjungan;
 use App\Models\Bidang;
 use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -25,9 +20,6 @@ use Carbon\Carbon;
 use Filament\Actions\ViewAction;
 use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Schemas\Components\Section;
-use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\IconEntry;
 
 class VisitHistoryResource extends Resource
 {
@@ -56,71 +48,7 @@ class VisitHistoryResource extends Resource
 
     public static function infolist(Schema $schema): Schema
     {
-        return $schema->components([
-            Section::make('Data Tamu')
-                ->columns(2)
-                ->schema([
-                    TextEntry::make('nama_tamu')
-                        ->label('Nama Tamu'),
-
-                    TextEntry::make('jenis_kelamin')
-                        ->label('Jenis Kelamin')
-                        ->formatStateUsing(fn (string $state) => Kunjungan::JENIS_KELAMIN[$state] ?? $state),
-
-                    TextEntry::make('no_hp')
-                        ->label('Nomor HP')
-                        ->placeholder('—')
-                        ->copyable(),
-
-                    TextEntry::make('instansi_asal')
-                        ->label('Instansi Asal')
-                        ->placeholder('—'),
-
-                    TextEntry::make('alamat')
-                        ->label('Alamat')
-                        ->placeholder('—')
-                        ->columnSpanFull(),
-                ]),
-
-            Section::make('Kunjungan')
-                ->columns(2)
-                ->schema([
-                    TextEntry::make('waktu_datang')
-                        ->label('Waktu Datang')
-                        ->dateTime('l, d F Y · H:i'),
-
-                    TextEntry::make('sumber_input')
-                        ->label('Sumber')
-                        ->badge()
-                        ->formatStateUsing(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'Front Office' : 'Display')
-                        ->color(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'gray' : 'info'),
-
-                    TextEntry::make('bidang.nama_bidang')
-                        ->label('Bidang yang Dituju')
-                        ->placeholder('—'),
-
-                    TextEntry::make('pegawai.nama_pegawai')
-                        ->label('Pegawai yang Dituju')
-                        ->placeholder('—'),
-
-                    TextEntry::make('keperluan')
-                        ->label('Keperluan')
-                        ->columnSpanFull(),
-
-                    TextEntry::make('catatan_petugas')
-                        ->label('Keterangan')
-                        ->placeholder('—')
-                        ->columnSpanFull(),
-
-                    IconEntry::make('sudah_dihubungi')
-                        ->label('Sudah Dihubungi')
-                        ->boolean(),
-
-                    TextEntry::make('petugas.name')
-                        ->label('Dicatat Oleh')
-                        ->placeholder('—'),
-                ]),
-        ]);
+        return KunjunganResource::infolist($schema);
     }
 
     public static function table(Table $table): Table

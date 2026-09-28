@@ -3,9 +3,6 @@
 namespace App\Services;
 
 use App\Models\Kunjungan;
-use App\Models\Tamu;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
 
 class KunjunganService
 {

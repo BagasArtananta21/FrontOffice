@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Filament\Support\SweetAlert;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 
 class ManageUsers extends ManageRecords

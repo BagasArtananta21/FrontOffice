@@ -10,7 +10,6 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
-use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Database\QueryException;
 
 class OpdsTable

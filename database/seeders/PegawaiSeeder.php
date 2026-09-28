@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Opd;
 use App\Models\Bidang;
 use App\Models\Pegawai;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;

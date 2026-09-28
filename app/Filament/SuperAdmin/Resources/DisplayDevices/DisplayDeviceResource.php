@@ -7,7 +7,6 @@ use App\Filament\Support\SweetAlert;
 use App\Models\DisplayDevice;
 use BackedEnum;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -20,7 +19,6 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
-use Livewire\Livewire;
 use Filament\Actions\Action;
 use Illuminate\Support\Str;
 

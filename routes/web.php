@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\DisplayController;
 use App\Http\Controllers\Auth\LoginController;
-use Illuminate\Foundation\Http\Attributes\RedirectTo;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
