@@ -8,6 +8,7 @@ use Carbon\CarbonPeriod;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Str;
 
 class GuestSummaryStats extends StatsOverviewWidget
 {
@@ -56,7 +57,11 @@ class GuestSummaryStats extends StatsOverviewWidget
             Stat::make('Mengisi sendiri di Display', $total > 0 ? round($fromDisplay / $total * 100).'%' : '-') 
                 ->description("{$fromDisplay} dari {$total} tamu"),
             
-            Stat::make('Bidang Tersering', $topBidang?->bidang?->kode_bidang ?? '-')
+            Stat::make('Bidang Tersering', $topBidang ? match(true) {
+                        $topBidang->bidang === null => '-', 
+                        filled($topBidang->bidang->kode_bidang) => $topBidang->bidang->kode_bidang,
+                        default => Str::limit($topBidang->bidang->nama_bidang, 20)
+                    } : '-')
                 ->description($topBidang ? "{$topBidang->total} kunjungan" : 'belum ada data')
         ];
     }

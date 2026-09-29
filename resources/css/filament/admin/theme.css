@@ -28,6 +28,11 @@
 
 .fi-no-notifications { display: none; }
 
+.fi-wi-stats-overview-stat,
+.fi-wi-widget > .fi-section {
+    border-top: 3px solid #CA8A04;
+}
+
 .swal2-popup.swal-popup {
     width: 26rem;
     padding: 2rem 1.5rem 1.5rem;
