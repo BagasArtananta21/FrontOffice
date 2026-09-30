@@ -18,8 +18,9 @@ use Filament\Panel;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasUuids;
+
+    protected $table = 'users';
 
     public function canAccessPanel(Panel $panel): bool
     {
@@ -33,9 +34,6 @@ class User extends Authenticatable implements FilamentUser
             default => false,
         };
     }
-
-    use HasUUids;
-    protected $table = 'users';
 
     public function opd(): BelongsTo
     {

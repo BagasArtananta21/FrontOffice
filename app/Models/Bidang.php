@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 #[Fillable(['kode_bidang', 'nama_bidang', 'aktif'])]
 class Bidang extends Model
@@ -31,6 +32,13 @@ class Bidang extends Model
         return [
             'aktif' => 'boolean',
         ];
+    }
+
+    public function shortLabel(): string
+    {
+        return filled($this->kode_bidang) 
+            ? $this->kode_bidang
+            : Str::limit($this->nama_bidang, 20);
     }
 
 }

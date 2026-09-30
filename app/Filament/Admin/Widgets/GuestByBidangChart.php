@@ -6,7 +6,6 @@ use App\Filament\Admin\Widgets\Concerns\ResolvesDateRange;
 use App\Models\Kunjungan;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\ChartWidget;
-use Illuminate\Support\Str;
 
 class GuestByBidangChart extends ChartWidget
 {
@@ -44,11 +43,7 @@ class GuestByBidangChart extends ChartWidget
                 'borderRadius' => 4,
                 'maxBarThickness' => 24,
             ]],
-            'labels' => $rows->map(fn (Kunjungan $row) => match(true) {
-                $row->bidang === null => 'Tanpa Bidang',
-                filled($row->bidang->kode_bidang) => $row->bidang->kode_bidang,
-                default => Str::limit($row->bidang->nama_bidang, 20),
-            })->all(),
+            'labels' => $rows->map(fn (Kunjungan $row) => $row->bidang?->shortLabel() ?? 'Tanpa Bidang')->all(),
         ];
     }
 

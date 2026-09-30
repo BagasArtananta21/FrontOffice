@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('bidang', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
-            $table->string('kode_bidang', 20)->nullable();
+            $table->string('kode_bidang', 20);
             $table->string('nama_bidang');
             $table->boolean('aktif')->default(true);
             $table->timestamps();

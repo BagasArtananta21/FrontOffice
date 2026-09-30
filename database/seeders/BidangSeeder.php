@@ -9,11 +9,11 @@ use App\Models\Bidang;
 class BidangSeeder extends Seeder
 {
     public const BIDANG = [
-        'Tata Kelola dan Sumber Daya Manusia Sistem Pemerintahan Berbasis Elektronik',
-        'Infrastruktur dan Layanan Sistem Pemerintahan Berbasis Elektronik',
-        'Persandian dan Statistik',
-        'Pengelolaan Komunikasi Publik',
-        'Pengelolaan dan Layanan Informasi Publik',
+        'Tata Kelola dan Sumber Daya Manusia Sistem Pemerintahan Berbasis Elektronik' => 'TATAKELOLA',
+        'Infrastruktur dan Layanan Sistem Pemerintahan Berbasis Elektronik' => 'INFRASTRUKTUR',
+        'Persandian dan Statistik' => 'PERSANDIAN',
+        'Pengelolaan Komunikasi Publik' => 'PKP',
+        'Pengelolaan dan Layanan Informasi Publik' => 'PLIP',
     ];
 
     public function run(): void
@@ -22,11 +22,11 @@ class BidangSeeder extends Seeder
 
         app()->instance('current_opd_id', $opd->id);
 
-        foreach (self::BIDANG as $nama) {
-            Bidang::updateOrCreate([
-                'nama_bidang' => $nama,
-                'aktif' => true,
-            ]);
+        foreach (self::BIDANG as $nama => $kode) {
+            Bidang::updateOrCreate(
+                ['nama_bidang' => $nama],
+                ['kode_bidang' => $kode, 'aktif' => true]
+            );
         }
 
         app()->forgetInstance('current_opd_id');
