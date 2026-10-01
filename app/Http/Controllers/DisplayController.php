@@ -28,6 +28,7 @@ class DisplayController extends Controller
         $device = $request->attributes->get('display_device');
 
         return view('display.index', [
+            'opd' => $device->opd,
             'bidang' => Bidang::active()->orderBy('nama_bidang')->get(['id', 'nama_bidang']),
             'pegawai' => Pegawai::active()->orderBy('nama_pegawai')->get(['id', 'nama_pegawai', 'jabatan', 'bidang_id']),
             'initialShowForm' => $device->tampilkan_form,
@@ -38,9 +39,11 @@ class DisplayController extends Controller
         /** @var DisplayDevice $device */
         $device = $request->attributes->get('display_device');
 
-        $device->timestamps = false;
-        $device->terakhir_aktif = now();
-        $device->saveQuietly();
+        if ($device->terakhir_aktif === null || $device->terakhir_aktif->lessThan(now()->subSeconds(10))){
+            $device->timestamps = false;
+            $device->terakhir_aktif = now();
+            $device->saveQuietly();
+        }
 
         return response()->json([
             'status' => 'ok',
@@ -75,7 +78,7 @@ class DisplayController extends Controller
         $device = $request->attributes->get('display_device');
 
         try {
-            $kunjunganService->record($request->validated(), Kunjungan::SUMBER_DISPLAY);
+            $kunjunganService->recordFromDisplay($request->validated());
         } catch (QueryException $e) {
             report($e);
 

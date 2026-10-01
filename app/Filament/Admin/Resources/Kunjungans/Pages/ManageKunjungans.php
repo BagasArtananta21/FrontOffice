@@ -31,10 +31,9 @@ class ManageKunjungans extends ManageRecords
                 ->successNotification(null)
                 ->using(function (array $data, $livewire, CreateAction $action){
                     try {
-                        return app(KunjunganService::class)->record(
+                        return app(KunjunganService::class)->recordByStaff(
                             $data,
-                            Kunjungan::SUMBER_FRONT_OFFICE,
-                            Auth::id(),
+                            Auth::user()
                         );
                     } catch (\Exception $e) {
                         report ($e);

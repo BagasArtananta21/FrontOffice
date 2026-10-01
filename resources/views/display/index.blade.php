@@ -15,7 +15,7 @@
     {{-- Layar idle --}}
    <section x-show="! showForm" x-cloak class="fixed inset-0 bg-black">
         <video
-            src="{{ asset('videos/xqc.mp4') }}"
+            src="{{ asset('videos/profil.mp4') }}"
             x-effect="showForm ? $el.pause() : $el.play().catch(() => {})"
             autoplay
             muted
@@ -27,10 +27,10 @@
     </section>
 
 
-    {{-- Form tamu (placeholder, menunggu hasil wawancara) --}}
+    {{-- Form tamu --}}
     <section x-show="showForm" x-cloak class="min-h-screen bg-page px-8 py-12">
         <div class="mx-auto max-w-3xl">
-            <h1 class="text-4xl font-semibold text-primary">Formulir Buku Tamu</h1>
+            <h1 class="text-4xl font-semibold text-primary">Formulir Buku Tamu - {{ $opd->kode_opd }}</h1>
             <p class="mt-3 text-xl text-ink">Kolom bertanda <span class="text-danger">*</span> wajib diisi.</p>
 
             @error('form')
@@ -113,7 +113,7 @@
     </section>
 
 
-    {{-- Penanda kalau server tidak terjangkau --}}
+    {{-- Lost Connection --}}
     <p x-show="offline" x-cloak class="fixed bottom-6 right-6 rounded-md bg-danger px-5 py-3 text-xl font-medium text-white">
         Tidak terhubung ke server
     </p>
