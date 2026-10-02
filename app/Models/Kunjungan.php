@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['nama_tamu', 'jenis_kelamin', 'instansi_asal', 'no_hp', 'alamat', 'bidang_id', 'pegawai_id', 'keperluan', 'catatan_petugas', 'waktu_datang', 'sudah_dihubungi'])]
+#[Fillable(['nama_tamu', 'jenis_kelamin', 'instansi_asal', 'no_hp', 'alamat', 'bidang_id', 'pegawai_id', 'keperluan', 'tanda_tangan', 'catatan_petugas', 'waktu_datang', 'sudah_dihubungi'])]
 class Kunjungan extends Model
 {
     use BelongsToOpd, HasUuids;

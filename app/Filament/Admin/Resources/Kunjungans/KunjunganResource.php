@@ -31,6 +31,7 @@ use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\CheckboxColumn;
 use Illuminate\Database\QueryException;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ImageEntry;
 
 class KunjunganResource extends Resource
 {
@@ -168,6 +169,14 @@ class KunjunganResource extends Resource
                     TextEntry::make('alamat')
                         ->label('Alamat')
                         ->placeholder('—')
+                        ->columnSpanFull(),
+                    
+                    ImageEntry::make('tanda_tangan')
+                        ->label('Tanda Tangan')
+                        ->disk('local')
+                        ->visibility('private')
+                        ->imageHeight(120)
+                        ->placeholder('input manual')
                         ->columnSpanFull(),
                 ]),
                 

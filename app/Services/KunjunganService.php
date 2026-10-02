@@ -7,6 +7,8 @@ use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
+use Storage;
 
 class KunjunganService
 {
@@ -16,11 +18,10 @@ class KunjunganService
 
    public function recordFromDisplay(array $data): Kunjungan
    {
-        return $this->store(
-            Arr::only($data, self::GUEST_FIELDS),
-            Kunjungan::SUMBER_DISPLAY,
-            now(),
-        );
+        $attributes = Arr::only($data, self::GUEST_FIELDS);
+        $attributes['tanda_tangan'] = $this->storeSignature($data['tanda_tangan']);
+
+        return $this->store($attributes, Kunjungan::SUMBER_DISPLAY, now());
    }
 
    public function recordByStaff(array $data, User $petugas): Kunjungan
@@ -32,6 +33,16 @@ class KunjunganService
             $petugas->id,
         );
    }    
+
+   private function storeSignature(string $dataUrl): string
+   {
+          $binary = base64_decode(Str::after($dataUrl, 'base64,'), true);
+          $path = 'tanda-tangan/'.now()->format('Y/m').'/'.Str::uuid().'.png';
+
+          Storage::disk('local')->put($path, $binary);
+
+          return $path;
+   }
 
    private function store(array $attributes, string $sumberInput, CarbonInterface $waktuDatang, ?string $dicatatOleh = null): Kunjungan
    {

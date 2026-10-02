@@ -1,4 +1,5 @@
 import Alpine from "alpinejs";
+import SignaturePad from "signature_pad";
 
 window.Alpine = Alpine;
 Alpine.data('displayScreen', (statusUrl, initialShowForm = false) => ({
@@ -40,6 +41,53 @@ Alpine.data('displayScreen', (statusUrl, initialShowForm = false) => ({
         }
     },
 }))
+
+Alpine.data('signaturePad', (initial = null) => ({
+    pad: null,
+    value: initial ?? '',
+
+    init(){
+        this.pad = new SignaturePad(this.$refs.canvas, {
+            penColor: 'rgb(0, 0, 0)',
+            backgroundColor: 'rgb(255, 255, 255)',
+        });
+
+        this.pad.addEventListener('endStroke', () => {
+            this.value = this.pad.toDataURL('image/png');
+        });
+
+        this.$el.closest('form')?.addEventListener('reset', () => this.clear());
+        this.$watch('showForm', (visible) => visible && this.$nextTick(() => this.resize()));
+        window.addEventListener('resize', () => this.resize());
+        this.$nextTick(() => this.resize());
+    },
+
+    resize(){
+        const canvas = this.$refs.canvas;
+
+        if (canvas.offsetWidth === 0) {
+            return;
+        }
+
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext('2d').scale(ratio, ratio);
+
+        this.pad.clear();
+
+        if (this.value) {
+            this.pad.fromDataURL(this.value, {ratio});
+        }
+    },
+
+    clear(){
+        this.pad.clear();
+        this.value = '';
+    },
+
+}))
+
 Alpine.start();
 
 

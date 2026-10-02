@@ -70,4 +70,9 @@
     .display-input {
         @apply w-full rounded-md border border-inactive bg-white px-5 py-4 text-xl text-ink focus:border-tertiary focus:outline-none;
     }
+
+    input.display-input,
+    select.display-input {
+        @apply h-14 py-0;
+    }
 }

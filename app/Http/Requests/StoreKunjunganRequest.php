@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Models\Kunjungan;
+use Closure;
 
 class StoreKunjunganRequest extends FormRequest
 {
@@ -42,6 +43,22 @@ class StoreKunjunganRequest extends FormRequest
                     ->where('aktif', true),
             ],
             'keperluan' => ['required', 'string', 'max:1000'],
+            'tanda_tangan' => [
+                'required',
+                'string',
+                'max:500000',
+
+                function (string $attribute, mixed $value, Closure $fail) {
+                    $prefix = 'data:image/png;base64,';
+                    $binary = str_starts_with($value, $prefix)
+                        ? base64_decode(substr($value, strlen($prefix)), true)
+                        : false;
+                    
+                    if ($binary === false || ! str_starts_with($binary, "\x89PNG")) {
+                        $fail('Tanda tangan tidak valid. Silahkan ulangi.');
+                    }
+                }
+            ]
         ];
     }
 

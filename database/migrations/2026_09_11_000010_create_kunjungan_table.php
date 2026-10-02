@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('no_hp')->nullable();
             $table->text('alamat')->nullable();
             $table->text('keperluan')->nullable();
+            $table->string('tanda_tangan')->nullable();
             $table->timestamp('waktu_datang');
             $table->boolean('sudah_dihubungi')->default(false);
             $table->text('catatan_petugas')->nullable();
