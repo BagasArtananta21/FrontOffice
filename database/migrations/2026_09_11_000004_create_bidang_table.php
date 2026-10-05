@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('nama_bidang');
             $table->boolean('aktif')->default(true);
             $table->timestamps();
-            $table->unique(['opd_id', 'nama_bidang']);
+            $table->unique(['opd_id', 'kode_bidang']);
         });
     }
 

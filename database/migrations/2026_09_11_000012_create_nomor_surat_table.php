@@ -14,22 +14,25 @@ return new class extends Migration
         Schema::create('nomor_surat', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
-            $table->foreignUuid('jenis_surat_id')->constrained('jenis_surat')->restrictOnDelete();
+            $table->foreignUuid('format_nomor_surat_id')->constrained('format_nomor_surat')->restrictOnDelete();
+            $table->foreignUuid('bidang_id')->nullable()->constrained('bidang')->restrictOnDelete();
             $table->unsignedSmallInteger('tahun');
             $table->unsignedInteger('nomor_urut');
+            $table->unsignedSmallInteger('sub_nomor')->default(0);
             $table->string('nomor_lengkap');
+            $table->string('kode_klasifikasi', 20);
             $table->string('perihal');
             $table->string('tujuan_surat')->nullable();
-            $table->foreignUuid('bidang_id')->nullable()->constrained('bidang')->restrictOnDelete();
             $table->string('nama_peminta')->nullable();
             $table->date('tanggal_surat');
+            $table->timestamp('tanggal_terbit');
             $table->string('status', 20)->default('terbit');
             $table->string('alasan_batal')->nullable();
             $table->foreignUuid('dibuat_oleh')->constrained('users')->restrictOnDelete();
             $table->timestamps();
 
-            $table->unique(['opd_id', 'jenis_surat_id', 'tahun', 'nomor_urut'], 'nomor_unik');
-            $table->index(['opd_id', 'tahun']);
+            $table->unique(['opd_id', 'tahun', 'nomor_urut', 'sub_nomor'], 'nomor_unit');
+            $table->index(['opd_id', 'tanggal_terbit']);
         });
     }
 

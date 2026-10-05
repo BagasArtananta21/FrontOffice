@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             BidangSeeder::class,
             PegawaiSeeder::class,
             DisplayDeviceSeeder::class,
+            FormatNomorSuratSeeder::class,
         ]);
     }
 }

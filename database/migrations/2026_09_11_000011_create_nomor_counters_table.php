@@ -11,13 +11,12 @@ return new class extends Migration
         Schema::create('nomor_counters', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
-            $table->foreignUuid('jenis_surat_id')->constrained('jenis_surat')->restrictOnDelete();
 
             $table->unsignedSmallInteger('tahun');
             $table->unsignedInteger('nomor_terakhir')->default(0);
             $table->timestamps();
 
-            $table->unique(['opd_id', 'jenis_surat_id', 'tahun'], 'counter_unik');
+            $table->unique(['opd_id', 'tahun'], 'counter_unik');
         });
     }
 

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\DisplayDevice;
 use App\Models\Bidang;
 use App\Models\Pegawai;
-use App\Models\Kunjungan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
