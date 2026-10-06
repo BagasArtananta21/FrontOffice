@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignUuid('bidang_id')->nullable()->constrained('bidang')->restrictOnDelete();
             $table->foreignUuid('pegawai_id')->nullable()->constrained('pegawai')->restrictOnDelete();
             
+            $table->string('nomor_kunjungan', 13)->nullable();
             $table->string('nama_tamu');
             $table->string('jenis_kelamin', 10);
             $table->string('instansi_asal')->nullable();
@@ -33,6 +34,7 @@ return new class extends Migration
 
             $table->index(['opd_id', 'waktu_datang']);
             $table->index(['opd_id', 'nama_tamu']);
+            $table->unique(['opd_id', 'nomor_kunjungan']);
         });
     }
 

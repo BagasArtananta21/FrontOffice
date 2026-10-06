@@ -6,6 +6,7 @@ use App\Filament\Support\SweetAlert;
 use App\Models\DisplayDevice;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class DisplayStatus extends Widget
 {
@@ -23,7 +24,12 @@ class DisplayStatus extends Widget
             return;
         }
 
-        DisplayDevice::query()->where('aktif', true)->update(['tampilkan_form' => $tampilkan]);
+        DisplayDevice::query()->where('aktif', true)->update(
+            $tampilkan
+                ? ['tampilkan_form' => true, 'ditampilkan_oleh' => Auth::id()]
+                : ['tampilkan_form' => false],
+        );
+
 
         if (! $tampilkan) {
             SweetAlert::info($this, 'Display Kembali ke Layar Idle');

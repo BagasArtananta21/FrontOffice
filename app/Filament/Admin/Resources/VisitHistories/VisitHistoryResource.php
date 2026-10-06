@@ -55,12 +55,18 @@ class VisitHistoryResource extends Resource
     {
         return $table
             ->defaultSort('created_at', 'desc')
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['bidang', 'pegawai']))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['bidang', 'pegawai', 'petugas']))
             ->columns([
+                TextColumn::make('nomor_kunjungan')
+                    ->label('Nomor Kunjungan')
+                    ->sortable()
+                    ->searchable(),
+                    
                 TextColumn::make('waktu_datang')
                     ->label('Waktu Datang')
                     ->dateTime('d/m/Y H:i:s')
                     ->sortable(),
+
 
                 TextColumn::make('nama_tamu')
                     ->label('Nama Tamu')
@@ -94,6 +100,11 @@ class VisitHistoryResource extends Resource
                     ->badge()
                     ->formatStateUsing(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'Front Office' : 'Display')
                     ->color(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'gray' : 'info'),
+                
+                TextColumn::make('petugas.name')
+                    ->label('Ditampilkan/Dicatat Oleh')
+                    ->placeholder('-'),
+                    
             ])
             ->filters([
                 Filter::make('rentang_tanggal')

@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('nama');                       
             $table->string('token_hash', 64)->unique();
             $table->boolean('tampilkan_form')->default(false);
+            $table->foreignUuid('ditampilkan_oleh')->nullable()->constrained('users')->restrictOnDelete();
             $table->timestamp('terakhir_aktif')->nullable();
 
             $table->boolean('aktif')->default(false);

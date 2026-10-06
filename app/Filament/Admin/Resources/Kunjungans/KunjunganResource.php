@@ -97,7 +97,8 @@ class KunjunganResource extends Resource
                             ->seconds(false)
                             ->default(now())
                             ->required()
-                            ->maxDate(now()),
+                            ->maxDate(now())
+                            ->disabledOn('edit'),
 
                         Select::make('bidang_id')
                             ->label('Bidang yang Dituju')
@@ -150,6 +151,9 @@ class KunjunganResource extends Resource
             Section::make('Data Tamu')
                 ->columns(2)
                 ->schema([
+                    TextEntry::make('nomor_kunjungan')
+                        ->label('Nomor Kunjungan'),
+
                     TextEntry::make('nama_tamu')
                         ->label('Nama Tamu'),
 
@@ -215,7 +219,7 @@ class KunjunganResource extends Resource
                             ->boolean(),
 
                         TextEntry::make('petugas.name')
-                            ->label('Dicatat Oleh')
+                            ->label('Ditampilkan/Dicatat Oleh')
                             ->placeholder('-'),
                     ]),
         ]);
@@ -230,6 +234,11 @@ class KunjunganResource extends Resource
                 ->with(['bidang', 'pegawai'])
                 ->whereBetween('waktu_datang', [now()->startOfDay(), now()->endOfDay()]))
             ->columns([
+                TextColumn::make('nomor_kunjungan')
+                    ->label('Nomor Kunjungan')
+                    ->placeholder('-')
+                    ->sortable(),
+
                 TextColumn::make('waktu_datang')
                     ->label('Jam')
                     ->dateTime('H:i')
@@ -242,22 +251,22 @@ class KunjunganResource extends Resource
                 
                 TextColumn::make('no_hp')
                     ->label('Nomor HP')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(isToggledHiddenByDefault: true),
                 
                 TextColumn::make('alamat')
                     ->label('Alamat')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('bidang.nama_bidang')
-                    ->label('Bidang')
-                    ->placeholder('—')
+                    ->label('Bidang yang dituju')
+                    ->placeholder('-')
                     ->searchable(),
 
                 TextColumn::make('pegawai.nama_pegawai')
-                    ->label('Pegawai')
-                    ->placeholder('—')
+                    ->label('Pegawai yang dituju')
+                    ->placeholder('-')
                     ->searchable(),
 
                 TextColumn::make('keperluan')
@@ -274,11 +283,6 @@ class KunjunganResource extends Resource
                     ->badge()
                     ->formatStateUsing(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'FrontOffice' : 'Display')
                     ->color(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'gray' : 'info'),
-
-                TextColumn::make('petugas.name')
-                    ->label('Dicatat Oleh')
-                    ->placeholder('—')
-                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('created_at')
                     ->label('Dibuat Pada')

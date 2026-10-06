@@ -63,8 +63,13 @@ class KunjunganSeeder extends Seeder
 
         $bidangIds = Bidang::active()->pluck('id');
         $pegawai = Pegawai::active()->get(['id', 'bidang_id']);
+        
+        $arrivals = collect(range(1, self::TOTAL))
+            ->map(fn (int $index) => $this->arrivalTime($index <= self::TOTAL_TODAY))
+            ->sort()
+            ->values();
 
-        foreach (range(1, self::TOTAL) as $index) {
+        foreach ($arrivals as $waktuDatang) {
             $bidangId = fake()->boolean(80) ? $bidangIds->random() : null;
 
             $candidates = $pegawai->filter(
@@ -86,12 +91,12 @@ class KunjunganSeeder extends Seeder
                 'keperluan' => fake()->randomElement(self::KEPERLUAN),
                 'catatan_petugas' => fake()->boolean(15) ? fake()->randomElement(self::CATATAN) : null,
                 'sudah_dihubungi' => fake()->boolean(70),
-                'waktu_datang' => $this->arrivalTime($index <= self::TOTAL_TODAY),
+                'waktu_datang' => $waktuDatang,
             ]);
 
             $kunjungan->forceFill([
                 'sumber_input' => $fromDisplay ? Kunjungan::SUMBER_DISPLAY : Kunjungan::SUMBER_FRONT_OFFICE,
-                'dicatat_oleh' => $fromDisplay ? null : $adminFo->id,
+                'dicatat_oleh' => $adminFo->id,
             ])->save();
         }
 

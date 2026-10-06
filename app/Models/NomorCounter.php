@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-#[Fillable(['tahun'])]
+#[Fillable(['jenis', 'periode'])]
 class NomorCounter extends Model
 {
     use BelongsToOpd, HasUuids;
@@ -17,7 +17,6 @@ class NomorCounter extends Model
     protected function casts(): array
     {
         return [
-            'tahun' => 'integer',
             'nomor_terakhir' => 'integer',
         ];
     }

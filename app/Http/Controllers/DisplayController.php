@@ -77,7 +77,7 @@ class DisplayController extends Controller
         $device = $request->attributes->get('display_device');
 
         try {
-            $kunjunganService->recordFromDisplay($request->validated());
+            $kunjunganService->recordFromDisplay($request->validated(), $device->ditampilkan_oleh);
         } catch (QueryException $e) {
             report($e);
 

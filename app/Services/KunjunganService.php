@@ -16,12 +16,12 @@ class KunjunganService
         'nama_tamu', 'jenis_kelamin', 'no_hp', 'instansi_asal', 'alamat', 'bidang_id', 'pegawai_id', 'keperluan',
    ];
 
-   public function recordFromDisplay(array $data): Kunjungan
+   public function recordFromDisplay(array $data, ?string $petugasId): Kunjungan
    {
         $attributes = Arr::only($data, self::GUEST_FIELDS);
         $attributes['tanda_tangan'] = $this->storeSignature($data['tanda_tangan']);
 
-        return $this->store($attributes, Kunjungan::SUMBER_DISPLAY, now());
+        return $this->store($attributes, Kunjungan::SUMBER_DISPLAY, now(), $petugasId);
    }
 
    public function recordByStaff(array $data, User $petugas): Kunjungan
