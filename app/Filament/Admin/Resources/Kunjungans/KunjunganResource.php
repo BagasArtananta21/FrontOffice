@@ -199,11 +199,11 @@ class KunjunganResource extends Resource
 
                         TextEntry::make('bidang.nama_bidang')
                             ->label('Bidang yang Dituju')
-                            ->placeholder('-'),
+                            ->placeholder('—'),
 
                         TextEntry::make('pegawai.nama_pegawai')
                             ->label('Pegawai yang Dituju')
-                            ->placeholder('-'),
+                            ->placeholder('—'),
 
                         TextEntry::make('keperluan')
                             ->label('Keperluan')
@@ -211,7 +211,7 @@ class KunjunganResource extends Resource
 
                         TextEntry::make('catatan_petugas')
                             ->label('Keterangan')
-                            ->placeholder('-')
+                            ->placeholder('—')
                             ->columnSpanFull(),
 
                         IconEntry::make('sudah_dihubungi')
@@ -220,7 +220,7 @@ class KunjunganResource extends Resource
 
                         TextEntry::make('petugas.name')
                             ->label('Ditampilkan/Dicatat Oleh')
-                            ->placeholder('-'),
+                            ->placeholder('—'),
                     ]),
         ]);
     }
@@ -236,7 +236,7 @@ class KunjunganResource extends Resource
             ->columns([
                 TextColumn::make('nomor_kunjungan')
                     ->label('Nomor Kunjungan')
-                    ->placeholder('-')
+                    ->placeholder('—')
                     ->sortable(),
 
                 TextColumn::make('waktu_datang')
@@ -251,22 +251,22 @@ class KunjunganResource extends Resource
                 
                 TextColumn::make('no_hp')
                     ->label('Nomor HP')
-                    ->placeholder('-')
+                    ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
                 
                 TextColumn::make('alamat')
                     ->label('Alamat')
-                    ->placeholder('-')
+                    ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('bidang.nama_bidang')
                     ->label('Bidang yang dituju')
-                    ->placeholder('-')
+                    ->placeholder('—')
                     ->searchable(),
 
                 TextColumn::make('pegawai.nama_pegawai')
                     ->label('Pegawai yang dituju')
-                    ->placeholder('-')
+                    ->placeholder('—')
                     ->searchable(),
 
                 TextColumn::make('keperluan')

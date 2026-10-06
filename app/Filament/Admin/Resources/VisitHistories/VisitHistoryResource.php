@@ -54,7 +54,7 @@ class VisitHistoryResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->defaultSort('created_at', 'desc')
+            ->defaultSort('nomor_kunjungan', 'desc')
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['bidang', 'pegawai', 'petugas']))
             ->columns([
                 TextColumn::make('nomor_kunjungan')
@@ -67,7 +67,6 @@ class VisitHistoryResource extends Resource
                     ->dateTime('d/m/Y H:i:s')
                     ->sortable(),
 
-
                 TextColumn::make('nama_tamu')
                     ->label('Nama Tamu')
                     ->searchable()
@@ -77,12 +76,12 @@ class VisitHistoryResource extends Resource
                     ->label('Bidang yang dituju')
                     ->wrap()
                     ->searchable()
-                    ->placeholder('-'),
+                    ->placeholder('—'),
 
                 TextColumn::make('pegawai.nama_pegawai')
                     ->label('Pegawai yang dituju')
                     ->searchable()
-                    ->placeholder('-'),
+                    ->placeholder('—'),
 
                 TextColumn::make('keperluan')
                     ->label('Keperluan')
@@ -103,7 +102,7 @@ class VisitHistoryResource extends Resource
                 
                 TextColumn::make('petugas.name')
                     ->label('Ditampilkan/Dicatat Oleh')
-                    ->placeholder('-'),
+                    ->placeholder('—'),
                     
             ])
             ->filters([
