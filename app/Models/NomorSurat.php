@@ -38,6 +38,11 @@ class NomorSurat extends Model
         return $this->belongsTo(User::class, 'dibuat_oleh');
     }
 
+    public function pembatal(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'dibatalkan_oleh');
+    }
+
     protected function casts(): array
     {
         return [
@@ -46,6 +51,7 @@ class NomorSurat extends Model
             'sub_nomor' => 'integer',
             'tanggal_surat' => 'date',
             'tanggal_terbit' => 'datetime',
+            'batal_pada' => 'datetime',
         ];
     }
 }

@@ -3,11 +3,13 @@
 namespace App\Filament\Admin\Resources\NomorSurats;
 
 use App\Filament\Admin\Resources\NomorSurats\Pages\ManageNomorSurats;
+use App\Filament\Support\SweetAlert;
 use App\Models\NomorSurat;
 use App\Models\Bidang;
 use App\Models\User;
 use App\Models\FormatNomorSurat;
 use App\Services\LetterNumberFormatter;
+use App\Services\LetterNumberService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
@@ -31,7 +33,9 @@ use Filament\Schemas\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Illuminate\Support\Carbon;
 use Filament\Schemas\Components\Utilities\Set;
-
+use Filament\Actions\Action;
+use Filament\Forms\Components\Textarea;
+use Livewire\Livewire;
 
 class NomorSuratResource extends Resource
 {
@@ -199,13 +203,45 @@ class NomorSuratResource extends Resource
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state) => $state === NomorSurat::STATUS_BATAL ? 'danger' : 'success'),
+                    ->color(fn (string $state) => $state === NomorSurat::STATUS_BATAL ? 'danger' : 'success')
+                    ->formatStateUsing(fn (string $state) => $state === NomorSurat::STATUS_BATAL ? 'Dibatalkan' : 'Terbit'),
             ])
             ->recordActions([
                 ViewAction::make()
                     ->label('Detail')
                     ->modalHeading(fn (NomorSurat $record) => "Detail Nomor Surat - {$record->nomor_lengkap}")
                     ->modalWidth(Width::TwoExtraLarge),
+                
+                Action::make('cancel')
+                    ->label('Batalkan')
+                    ->color('danger')
+                    ->visible( fn (NomorSurat $record) => $record->status === NomorSurat::STATUS_TERBIT)
+                    ->modalHeading( fn (NomorSurat $record) => "Batalkan Nomor {$record->nomor_lengkap}?")
+                    ->modalDescription('Nomor yang dibatalkan tidak dipakai ulang dan tidak bisa dipulihkan.')
+                    ->modalSubmitActionLabel('Batalkan Nomor')
+                    ->schema([
+                        Textarea::make('alasan_batal')
+                            ->label('Alasan Pembatalan')
+                            ->required()
+                            ->maxLength(255)
+                            ->rows(3),
+                    ])
+                    ->action(function (NomorSurat $record, array $data, $livewire ){
+                        $berhasil = app(LetterNumberService::class)->cancel($record, $data['alasan_batal'], Auth::user());
+                        
+                        $berhasil 
+                            ? SweetAlert::success(
+                                $livewire,
+                                'Nomor Surat Dibatalkan',
+                                $record->nomor_lengkap,
+                            )
+                            : SweetAlert::warning(
+                                $livewire,
+                                'Sudah Dibatalkan',
+                                'Nomor surat ini sudah dibatalkan sebelumnya.',
+                            );
+
+                    }),
             ])
             ->recordAction('view')
             ->defaultPaginationPageOption(25)
@@ -246,14 +282,38 @@ class NomorSuratResource extends Resource
                     TextEntry::make('nama_peminta')
                         ->label('Nama Peminta')
                         ->placeholder('-'),
-
-                    TextEntry::make('pembuat.name')
+                    ]),
+                Section::make()
+                    ->columns(2)
+                    ->schema([
+                        
+                        TextEntry::make('pembuat.name')
                         ->label('Dicatat Oleh'),
-
-                    TextEntry::make('tanggal_terbit')
-                        ->label('Diterbitkan Pada')
-                        ->dateTime('d F Y · H:i'),
-                ]),
+    
+                        TextEntry::make('tanggal_terbit')
+                            ->label('Diterbitkan Pada')
+                            ->dateTime('d F Y · H:i'),
+                        
+                        TextEntry::make('status')
+                            ->label('Status')
+                            ->badge()
+                            ->formatStateUsing(fn (string $state) => $state === NomorSurat::STATUS_BATAL ? 'Dibatalkan' : 'Terbit')
+                            ->color(fn (string $state) => $state === NomorSurat::STATUS_BATAL ? 'danger' : 'success'),
+    
+                        TextEntry::make('alasan_batal')
+                            ->label('Alasan Pembatalan')
+                            ->columnSpanFull()
+                            ->visible(fn (NomorSurat $record) => $record->status === NomorSurat::STATUS_BATAL),
+                            
+                        TextEntry::make('pembatal.name')
+                            ->label('Dibatalkan Oleh')
+                            ->visible(fn (NomorSurat $record) => $record->status === NomorSurat::STATUS_BATAL),
+                        
+                        TextEntry::make('batal_pada')
+                            ->label('Dibatalkan Pada')
+                            ->dateTime('d F Y · H:i')
+                            ->visible(fn (NomorSurat $record) => $record->status === NomorSurat::STATUS_BATAL),
+                    ]),
         ]);
     }
 

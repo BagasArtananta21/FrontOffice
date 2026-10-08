@@ -29,7 +29,9 @@ return new class extends Migration
             $table->string('status', 20)->default('terbit');
             $table->string('alasan_batal')->nullable();
             $table->foreignUuid('dibuat_oleh')->constrained('users')->restrictOnDelete();
+            $table->foreignUuid('dibatalkan_oleh')->nullable()->constrained('users')->restrictOnDelete();
             $table->timestamps();
+            $table->timestamp('batal_pada')->nullable();
 
             $table->unique(['opd_id', 'tahun', 'nomor_urut', 'sub_nomor'], 'nomor_unit');
             $table->index(['opd_id', 'tanggal_terbit']);

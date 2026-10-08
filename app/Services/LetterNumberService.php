@@ -26,7 +26,7 @@ class LetterNumberService
             if ( ! $format) {
                 throw new LetterFormatNotFoundException();
             }
-            
+
             $tanggalSurat = Carbon::parse($data['tanggal_surat']);
             $batas = $tanggalSurat->copy()->endOfDay();
             $nomorInduk = 0;
@@ -89,5 +89,20 @@ class LetterNumberService
             ['opd_id', 'jenis', 'periode'],
             ['nomor_terakhir', 'updated_at']
         );
+    }
+
+    public function cancel(NomorSurat $nomorSurat, string $alasan, User $petugas): bool 
+    {
+        $berubah = NomorSurat::query()
+            ->whereKey($nomorSurat->getKey())
+            ->where('status', NomorSurat::STATUS_TERBIT)
+            ->update([
+                'status' => NomorSurat::STATUS_BATAL,
+                'alasan_batal' => $alasan,
+                'dibatalkan_oleh' => $petugas->id,
+                'batal_pada' => now(),
+            ]);
+        
+        return $berubah === 1;
     }
 }

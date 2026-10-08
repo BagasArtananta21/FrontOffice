@@ -14,6 +14,7 @@ class BidangSeeder extends Seeder
         'Persandian dan Statistik' => 'PERSANDIAN',
         'Pengelolaan Komunikasi Publik' => 'PKP',
         'Pengelolaan dan Layanan Informasi Publik' => 'PLIP',
+        'Kesekretariatan' => 'SEKRE',
     ];
 
     public function run(): void

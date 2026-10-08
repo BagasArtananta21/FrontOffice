@@ -54,7 +54,6 @@ return new class extends Migration
                     SET NEW.nomor_urut = v_nomor;
                     SET NEW.sub_nomor = 0;
                 ELSE
-                    -- kunci counter supaya dua susulan dengan induk yang sama tidak berebut sub-nomor
                     SELECT nomor_terakhir INTO v_nomor
                     FROM nomor_counters
                     WHERE opd_id = NEW.opd_id AND jenis = 'surat' AND periode = CONCAT(NEW.tahun)
@@ -87,6 +86,31 @@ return new class extends Migration
                 END IF;
             END
         SQL);
+
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER nomor_surat_before_update
+            BEFORE UPDATE ON nomor_surat
+            FOR EACH ROW
+            BEGIN
+                IF NEW.tahun <> OLD.tahun OR NEW.nomor_urut <> OLD.nomor_urut OR NEW.sub_nomor <> OLD.sub_nomor
+                    OR (OLD.nomor_lengkap IS NOT NULL AND NOT (NEW.nomor_lengkap <=> OLD.nomor_lengkap)) THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Nomor surat tidak boleh diubah';
+                END IF;
+
+                IF OLD.status = 'batal' AND NEW.status <> 'batal' THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Nomor yang dibatalkan tidak bisa dipulihkan';
+                END IF;
+            END
+        SQL);
+
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER nomor_surat_before_delete
+            BEFORE DELETE ON nomor_surat
+            FOR EACH ROW
+            BEGIN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Nomor surat tidak boleh dihapus, gunakan pembatalan';
+            END
+        SQL);
     }
 
     public function down(): void
@@ -94,6 +118,8 @@ return new class extends Migration
         DB::unprepared('DROP TRIGGER IF EXISTS kunjungan_before_insert');
         DB::unprepared('DROP TRIGGER IF EXISTS nomor_surat_before_insert');
         DB::unprepared('DROP TRIGGER IF EXISTS nomor_counters_before_update');
+        DB::unprepared('DROP TRIGGER IF EXISTS nomor_surat_before_update');
+        DB::unprepared('DROP TRIGGER IF EXISTS nomor_surat_before_delete');
     }
 
 };
