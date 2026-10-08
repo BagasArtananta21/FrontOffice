@@ -17,9 +17,9 @@ return new class extends Migration
             $table->foreignUuid('format_nomor_surat_id')->constrained('format_nomor_surat')->restrictOnDelete();
             $table->foreignUuid('bidang_id')->nullable()->constrained('bidang')->restrictOnDelete();
             $table->unsignedSmallInteger('tahun');
-            $table->unsignedInteger('nomor_urut');
+            $table->unsignedInteger('nomor_urut')->default(0);
             $table->unsignedSmallInteger('sub_nomor')->default(0);
-            $table->string('nomor_lengkap');
+            $table->string('nomor_lengkap')->nullable();
             $table->string('kode_klasifikasi', 20);
             $table->string('perihal');
             $table->string('tujuan_surat')->nullable();

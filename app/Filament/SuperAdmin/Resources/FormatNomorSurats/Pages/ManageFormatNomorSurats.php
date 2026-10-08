@@ -26,7 +26,7 @@ protected function getHeaderActions(): array
             ->label('Tambah Versi Format')
             ->modalHeading('Tambah Versi Format')
             ->modalSubmitActionLabel('Simpan')
-            ->modalWidth(Width::FourExtraLarge)
+            ->modalWidth(Width::FiveExtraLarge)
             ->createAnother(false)
             ->successNotification(null)
             ->using(function (array $data, $livewire, CreateAction $action) {

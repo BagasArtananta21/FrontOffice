@@ -23,6 +23,11 @@ class NomorSurat extends Model
         return $this->belongsTo(FormatNomorSurat::class, 'format_nomor_surat_id');
     }
 
+    public function opd(): BelongsTo
+    {
+        return $this->belongsTo(Opd::class);
+    }
+
     public function bidang(): BelongsTo
     {
         return $this->belongsTo(Bidang::class);
@@ -40,7 +45,7 @@ class NomorSurat extends Model
             'nomor_urut' => 'integer',
             'sub_nomor' => 'integer',
             'tanggal_surat' => 'date',
-            'diterbitkan_pada' => 'datetime',
+            'tanggal_terbit' => 'datetime',
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Carbon\CarbonInterface;
+use InvalidArgumentException;
 
 class LetterNumberFormatter
 {
@@ -18,7 +19,7 @@ class LetterNumberFormatter
         'teks' => 'Teks tetap',
     ];
 
-    private const ROMAN_MONTHS = [
+    public const ROMAN_MONTHS = [
         1 => 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII',
     ];
 
@@ -29,19 +30,29 @@ class LetterNumberFormatter
     public function format(array $susunan, array $nilai): string
     {
         return collect($susunan)
-            ->map(fn (array $bagian) => match ($bagian['jenis'] ?? null) {
-                'klasifikasi' => $nilai['klasifikasi'],
-                'urut' => $this->formatUrut($nilai['nomor_urut'], $nilai['sub_nomor']),
-                'bidang' => $nilai['bidang'] ?? '',
-                'kode_opd' => $nilai['kode_opd'],
-                'bulan_romawi' => self::ROMAN_MONTHS[$nilai['tanggal']->month],
-                'tahun' => (string) $nilai['tanggal']->year,
-                'teks' => $bagian['teks'] ?? '',
-                default => '',
+            ->map(function (array $bagian) use ($nilai) {
+                $jenis = $bagian['jenis'] ?? null;
+
+                $teks = match ($jenis) {
+                    'klasifikasi' => $nilai['klasifikasi'],
+                    'urut' => $this->formatUrut($nilai['nomor_urut'], $nilai['sub_nomor']),
+                    'bidang' => $nilai['bidang'],
+                    'kode_opd' => $nilai['kode_opd'],
+                    'bulan_romawi' => self::ROMAN_MONTHS[$nilai['tanggal']->month],
+                    'tahun' => (string) $nilai['tanggal']->year,
+                    'teks' => $bagian['teks'] ?? null,
+                    default => null,
+                };
+
+                if (blank($teks)) {
+                    throw new InvalidArgumentException("Nilai segmen [{$jenis}] kosong.");
+                }
+
+                return $teks;
             })
-            ->filter(fn (string $teks) => $teks !== '')
             ->implode(self::SEPARATOR);
     }
+
 
     public function preview(array $susunan, ?string $kodeOpd = null): string
     {
