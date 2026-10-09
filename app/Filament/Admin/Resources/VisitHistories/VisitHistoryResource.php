@@ -112,7 +112,7 @@ class VisitHistoryResource extends Resource
                         DatePicker::make('from')->label('Dari tanggal'),
                         DatePicker::make('until')->label('Sampai tanggal'),
                     ])
-                    ->query(fn (Builder $query, array $data) => $query
+                ->query(fn (Builder $query, array $data) => $query
                         ->when($data['from'] ?? null, fn (Builder $q, string $date) => $q->where('waktu_datang', '>=', Carbon::parse($date)->startOfDay()))
                         ->when($data['until'] ?? null, fn (Builder $q, string $date) => $q->where('waktu_datang', '<=', Carbon::parse($date)->endOfDay()))),
 

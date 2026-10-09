@@ -90,7 +90,6 @@ class KunjunganSeeder extends Seeder
                 'pegawai_id' => fake()->boolean(60) && $candidates->isNotEmpty() ? $candidates->random()->id : null,
                 'keperluan' => fake()->randomElement(self::KEPERLUAN),
                 'catatan_petugas' => fake()->boolean(15) ? fake()->randomElement(self::CATATAN) : null,
-                'sudah_dihubungi' => fake()->boolean(70),
                 'waktu_datang' => $waktuDatang,
             ]);
 

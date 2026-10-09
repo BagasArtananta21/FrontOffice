@@ -9,14 +9,16 @@ trait ResolvesDateRange
     /**
      * @return array{0: Carbon, 1: Carbon}
      */
-    protected function dateRange(): array
+    protected function dateRange(?array $filters = null): array
     {
-        $start = filled($this->pageFilters['startDate'] ?? null)
-            ? Carbon::parse($this->pageFilters['startDate'])->startOfDay()
+        $filters ??= $this->pageFilters ?? [];
+
+        $start = filled($filters['startDate'] ?? null)
+            ? Carbon::parse($filters['startDate'])->startOfDay()
             : now()->startOfMonth();
 
-        $end = filled($this->pageFilters['endDate'] ?? null)
-            ? Carbon::parse($this->pageFilters['endDate'])->endOfDay()
+        $end = filled($filters['endDate'] ?? null)
+            ? Carbon::parse($filters['endDate'])->endOfDay()
             : now()->endOfDay();
 
         return [$start, $end];

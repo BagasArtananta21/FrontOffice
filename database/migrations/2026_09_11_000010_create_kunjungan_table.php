@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignUuid('bidang_id')->nullable()->constrained('bidang')->restrictOnDelete();
             $table->foreignUuid('pegawai_id')->nullable()->constrained('pegawai')->restrictOnDelete();
             
-            $table->string('nomor_kunjungan', 13)->nullable();
+            $table->string('nomor_kunjungan', 13);
             $table->string('nama_tamu');
             $table->string('jenis_kelamin', 10);
             $table->string('instansi_asal')->nullable();
@@ -26,7 +26,6 @@ return new class extends Migration
             $table->text('keperluan')->nullable();
             $table->string('tanda_tangan')->nullable();
             $table->timestamp('waktu_datang');
-            $table->boolean('sudah_dihubungi')->default(false);
             $table->text('catatan_petugas')->nullable();
             $table->string('sumber_input')->default('display'); //display || manual
             $table->foreignUuid('dicatat_oleh')->nullable()->constrained('users')->restrictOnDelete();

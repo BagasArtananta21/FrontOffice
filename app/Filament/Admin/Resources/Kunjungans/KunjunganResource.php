@@ -214,10 +214,6 @@ class KunjunganResource extends Resource
                             ->placeholder('—')
                             ->columnSpanFull(),
 
-                        IconEntry::make('sudah_dihubungi')
-                            ->label('Sudah Dihubungi')
-                            ->boolean(),
-
                         TextEntry::make('petugas.name')
                             ->label('Ditampilkan/Dicatat Oleh')
                             ->placeholder('—'),
@@ -274,9 +270,6 @@ class KunjunganResource extends Resource
                     ->wrap()
                     ->limit(40)
                     ->searchable(),
-
-                CheckboxColumn::make('sudah_dihubungi')
-                    ->label('Dihubungi'),
 
                 TextColumn::make('sumber_input')
                     ->label('Sumber')

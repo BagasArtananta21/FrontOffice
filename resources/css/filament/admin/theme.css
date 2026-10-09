@@ -7,6 +7,10 @@
     background-color: #0F2C59;
 }
 
+.fi-sidebar .fi-sidebar-header .fi-logo {
+    color : #ffffff;
+}
+
 .fi-sidebar .fi-sidebar-group-label,
 .fi-sidebar .fi-sidebar-item-label,
 .fi-sidebar .fi-sidebar-item-icon {
