@@ -5,7 +5,6 @@ namespace App\Filament\Admin\Resources\Kunjungans;
 use App\Filament\Admin\Resources\Kunjungans\Pages\ManageKunjungans;
 use App\Filament\Support\SweetAlert;
 use App\Models\Kunjungan;
-use App\Models\Pegawai;
 use App\Models\Bidang;
 use BackedEnum;
 use Filament\Actions\EditAction;
@@ -24,11 +23,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Radio;
-use Filament\Infolists\Components\IconEntry;
-use Filament\Schemas\Components\Utilities\{Get, Set};
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Support\Enums\Width;
-use Filament\Tables\Columns\CheckboxColumn;
 use Illuminate\Database\QueryException;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ImageEntry;
@@ -74,9 +70,13 @@ class KunjunganResource extends Resource
                         TextInput::make('no_hp')
                             ->label('Nomor HP')
                             ->tel()
-                            ->maxLength(15)
                             ->autocomplete(false)
+                            ->mutateStateForValidationUsing(fn (?string $state) => Kunjungan::normalizePhone($state))
+                            ->dehydrateStateUsing(fn (?string $state) => Kunjungan::normalizePhone($state))
+                            ->regex(Kunjungan::NO_HP_PATTERN)
+                            ->validationMessages(['regex' => 'Format Nomor HP tidak valid.'])
                             ->helperText('Diisi bila tamu perlu dihubungi kembali'),
+
 
                         TextInput::make('instansi_asal')
                             ->label('Instansi Asal')
@@ -104,25 +104,12 @@ class KunjunganResource extends Resource
                             ->label('Bidang yang Dituju')
                             ->options(fn () => Bidang::active()->orderBy('nama_bidang')->pluck('nama_bidang', 'id'))
                             ->searchable()
-                            ->live()
-                            ->afterStateUpdated(fn (Set $set) => $set('pegawai_id', null))
                             ->rule(fn () => Rule::exists('bidang', 'id')->where('opd_id', Auth::user()->opd_id)),
 
-                        Select::make('pegawai_id')
+                        TextInput::make('pegawai_tujuan')
                             ->label('Pegawai yang Dituju')
-                            ->options(function (Get $get) {
-                                return Pegawai::active()
-                                    ->when(
-                                        $get('bidang_id'),
-                                        fn (Builder $query, $bidangId) => $query->where(
-                                            fn (Builder $sub) => $sub->where('bidang_id', $bidangId)->orWhereNull('bidang_id'),
-                                        ),
-                                    )
-                                    ->orderBy('nama_pegawai')
-                                    ->pluck('nama_pegawai', 'id');
-                            })
-                            ->searchable()
-                            ->rule(fn () => Rule::exists('pegawai', 'id')->where('opd_id', Auth::user()->opd_id)),
+                            ->maxLength(255)
+                            ->autocomplete(false),
 
                         Textarea::make('keperluan')
                             ->label('Keperluan')
@@ -201,7 +188,7 @@ class KunjunganResource extends Resource
                             ->label('Bidang yang Dituju')
                             ->placeholder('—'),
 
-                        TextEntry::make('pegawai.nama_pegawai')
+                        TextEntry::make('pegawai_tujuan')
                             ->label('Pegawai yang Dituju')
                             ->placeholder('—'),
 
@@ -227,7 +214,7 @@ class KunjunganResource extends Resource
             ->poll('10s')
             ->defaultSort('waktu_datang', 'desc')
             ->modifyQueryUsing(fn (Builder $query) => $query
-                ->with(['bidang', 'pegawai'])
+                ->with(['bidang'])
                 ->whereBetween('waktu_datang', [now()->startOfDay(), now()->endOfDay()]))
             ->columns([
                 TextColumn::make('nomor_kunjungan')
@@ -260,7 +247,7 @@ class KunjunganResource extends Resource
                     ->placeholder('—')
                     ->searchable(),
 
-                TextColumn::make('pegawai.nama_pegawai')
+                TextColumn::make('pegawai_tujuan')
                     ->label('Pegawai yang dituju')
                     ->placeholder('—')
                     ->searchable(),
@@ -300,7 +287,7 @@ class KunjunganResource extends Resource
             ->recordActions([
                 ViewAction::make()
                     ->label('Detail')
-                    ->modalheading(fn (Kunjungan $record) => "Detail Kunjungan - {$record->nama_tamu}")
+                    ->modalHeading(fn (Kunjungan $record) => "Detail Kunjungan - {$record->nama_tamu}")
                     ->modalWidth(Width::FourExtraLarge),
                 EditAction::make()
                     ->modalHeading('Ubah Data Kunjungan')

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['nama_tamu', 'jenis_kelamin', 'instansi_asal', 'no_hp', 'alamat', 'bidang_id', 'pegawai_id', 'keperluan', 'tanda_tangan', 'catatan_petugas', 'waktu_datang'])]
+#[Fillable(['nama_tamu', 'jenis_kelamin', 'instansi_asal', 'no_hp', 'alamat', 'bidang_id', 'pegawai_tujuan', 'keperluan', 'tanda_tangan', 'catatan_petugas', 'waktu_datang'])]
 class Kunjungan extends Model
 {
     use BelongsToOpd, HasUuids;
@@ -23,19 +23,23 @@ class Kunjungan extends Model
         'perempuan' => 'Perempuan',
     ];
 
+    public const NO_HP_PATTERN = '/^0[0-9]{8,13}$/';
+    
+    public static function normalizePhone(?string $value): ?string
+    {
+        $digits = preg_replace('/[^0-9+]/', '', (string) $value);
+
+        return $digits === '' ? null : preg_replace('/^(\+62|62)/', '0', $digits);
+    }
+
     public function bidang(): BelongsTo
     {
         return $this->belongsTo(Bidang::class);
     }
 
-    public function pegawai(): BelongsTo
-    {
-        return $this->belongsTo(Pegawai::class);
-    }
-
     public function petugas(): BelongsTo
     {
-    return $this->belongsTo(User::class, 'dicatat_oleh');
+        return $this->belongsTo(User::class, 'dicatat_oleh');
     }
 
     protected function casts(): array

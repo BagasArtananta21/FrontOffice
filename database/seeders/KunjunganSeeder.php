@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Bidang;
 use App\Models\Kunjungan;
 use App\Models\Opd;
-use App\Models\Pegawai;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -62,7 +61,6 @@ class KunjunganSeeder extends Seeder
         app()->instance('current_opd_id', $opd->id);
 
         $bidangIds = Bidang::active()->pluck('id');
-        $pegawai = Pegawai::active()->get(['id', 'bidang_id']);
         
         $arrivals = collect(range(1, self::TOTAL))
             ->map(fn (int $index) => $this->arrivalTime($index <= self::TOTAL_TODAY))
@@ -71,12 +69,6 @@ class KunjunganSeeder extends Seeder
 
         foreach ($arrivals as $waktuDatang) {
             $bidangId = fake()->boolean(80) ? $bidangIds->random() : null;
-
-            $candidates = $pegawai->filter(
-                fn (Pegawai $item) => $bidangId === null
-                    || $item->bidang_id === $bidangId
-                    || $item->bidang_id === null
-            );
 
             $fromDisplay = fake()->boolean(80);
 
@@ -87,7 +79,7 @@ class KunjunganSeeder extends Seeder
                 'instansi_asal' => fake()->boolean(60) ? fake()->randomElement(self::INSTANSI) : null,
                 'alamat' => fake()->boolean(30) ? fake()->address() : null,
                 'bidang_id' => $bidangId,
-                'pegawai_id' => fake()->boolean(60) && $candidates->isNotEmpty() ? $candidates->random()->id : null,
+                'pegawai_tujuan' => fake()->boolean(60) ? fake()->name() : null,
                 'keperluan' => fake()->randomElement(self::KEPERLUAN),
                 'catatan_petugas' => fake()->boolean(15) ? fake()->randomElement(self::CATATAN) : null,
                 'waktu_datang' => $waktuDatang,

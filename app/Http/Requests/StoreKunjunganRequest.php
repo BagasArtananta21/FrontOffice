@@ -16,10 +16,8 @@ class StoreKunjunganRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $noHp = preg_replace('/[^0-9+]/', '', (string) $this->input('no_hp'));
-
         $this->merge([
-            'no_hp' => $noHp === '' ? null : preg_replace('/^(\+62|62)/', '0', $noHp),
+            'no_hp' => Kunjungan::normalizePhone($this->input('no_hp')),
         ]);
     }
 
@@ -27,7 +25,7 @@ class StoreKunjunganRequest extends FormRequest
         return [
             'nama_tamu' => ['required', 'string', 'max:255'],
             'jenis_kelamin' => ['required', Rule::in(array_keys(Kunjungan::JENIS_KELAMIN))],
-            'no_hp' => ['nullable', 'regex:/^0[0-9]{8,13}$/'],
+            'no_hp' => ['nullable', 'regex:'.Kunjungan::NO_HP_PATTERN],
             'instansi_asal' => ['nullable', 'string', 'max:255'],
             'alamat' => ['nullable', 'string', 'max:255'],
             'bidang_id' => [
@@ -36,12 +34,7 @@ class StoreKunjunganRequest extends FormRequest
                     ->where('opd_id', app('current_opd_id'))
                     ->where('aktif', true),
             ],
-            'pegawai_id' => [
-                'nullable',
-                Rule::exists('pegawai', 'id')
-                    ->where('opd_id', app('current_opd_id'))
-                    ->where('aktif', true),
-            ],
+            'pegawai_tujuan' => ['nullable', 'string', 'max:255'],
             'keperluan' => ['required', 'string', 'max:1000'],
             'tanda_tangan' => [
                 'required',
@@ -70,7 +63,7 @@ class StoreKunjunganRequest extends FormRequest
             'instansi_asal' => 'Instansi Asal',
             'alamat' => 'Alamat',
             'bidang_id' => 'Bidang yang Dituju',
-            'pegawai_id' => 'Pegawai yang Dituju',
+            'pegawai_tujuan' => 'Pegawai yang Dituju',
             'keperluan' => 'Keperluan Kunjungan',
         ];
     }

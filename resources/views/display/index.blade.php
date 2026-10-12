@@ -45,7 +45,7 @@
                         <input id="nama_tamu" name="nama_tamu" type="text" value="{{ old('nama_tamu') }}" autocomplete="off" required class="display-input">
                     </x-display.field>
 
-                    <x-display.field name="jenis_kelamin" label="Jenis kelamin" required>
+                    <x-display.field name="jenis_kelamin" label="Jenis kelamin" required :for="false">
                         <div class="grid grid-cols-2 gap-4">
                             @foreach (\App\Models\Kunjungan::JENIS_KELAMIN as $value => $label)
                                 <label class="flex h-16 cursor-pointer items-center justify-center rounded-md border border-inactive bg-white text-xl font-medium text-ink has-checked:border-primary has-checked:bg-primary has-checked:text-white has-focus-visible:ring-2 has-focus-visible:ring-tertiary">
@@ -76,40 +76,25 @@
                     </x-display.field>
                 </div>
 
-                {{-- Kolom kanan: tujuan kunjungan --}}
                 <div class="space-y-5">
-                    <div
-                        x-data="{
-                            bidang: @js(old('bidang_id')),
-                            pegawai: @js($pegawai),
-                            terpilih: @js(old('pegawai_id')),
-                        }"
-                        class="space-y-5"
-                    >
-                        <x-display.field name="bidang_id" label="Bidang yang dituju">
-                            <select id="bidang_id" name="bidang_id" x-model="bidang" class="display-input">
-                                <option value="">Belum tahu</option>
-                                @foreach ($bidang as $item)
-                                    <option value="{{ $item->id }}">{{ $item->nama_bidang }}</option>
-                                @endforeach
-                            </select>
-                        </x-display.field>
+                    <x-display.field name="bidang_id" label="Bidang yang dituju">
+                        <select id="bidang_id" name="bidang_id" class="display-input">
+                            <option value="">Belum tahu</option>
+                            @foreach ($bidang as $item)
+                                <option value="{{ $item->id }}" @selected(old('bidang_id') === $item->id)>{{ $item->nama_bidang }}</option>
+                            @endforeach
+                        </select>
+                    </x-display.field>
 
-                        <x-display.field name="pegawai_id" label="Pegawai yang dituju">
-                            <select id="pegawai_id" name="pegawai_id" class="display-input">
-                                <option value="">Belum tahu</option>
-                                <template x-for="orang in pegawai.filter(p => ! bidang || ! p.bidang_id || p.bidang_id === bidang)" :key="orang.id">
-                                    <option :value="orang.id" :selected="orang.id === terpilih" x-text="orang.nama_pegawai"></option>
-                                </template>
-                            </select>
-                        </x-display.field>
-                    </div>
+                    <x-display.field name="pegawai_tujuan" label="Pegawai yang dituju">
+                        <input id="pegawai_tujuan" name="pegawai_tujuan" type="text" value="{{ old('pegawai_tujuan') }}" maxlength="255" autocomplete="off" class="display-input">
+                    </x-display.field>
 
                     <x-display.field name="keperluan" label="Keperluan" required>
                         <textarea id="keperluan" name="keperluan" rows="2" maxlength="1000" required class="display-input">{{ old('keperluan') }}</textarea>
                     </x-display.field>
 
-                    <x-display.field name="tanda_tangan" label="Tanda tangan" required>
+                    <x-display.field name="tanda_tangan" label="Tanda tangan" required :for="false">
                         <div x-data="signaturePad(@js(old('tanda_tangan')))" class="relative">
                             <canvas x-ref="canvas" class="h-48 w-full touch-none rounded-md border border-inactive bg-white"></canvas>
 

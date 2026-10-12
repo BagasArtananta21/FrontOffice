@@ -1,7 +1,7 @@
-@props(['name', 'label', 'required' => false])
+@props(['name', 'label', 'required' => false, 'for' => null])
 
 <div>
-    <label for="{{ $name }}" class="mb-2 block text-xl font-medium text-primary">
+    <label @if ($for !== false) for="{{ $name }}" @endif class="mb-2 block text-xl font-medium text-primary">
         {{ $label }}
         @if ($required)
             <span class="text-danger">*</span>

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\DisplayDevice;
 use App\Models\Bidang;
-use App\Models\Pegawai;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
@@ -29,7 +28,6 @@ class DisplayController extends Controller
         return view('display.index', [
             'opd' => $device->opd,
             'bidang' => Bidang::active()->orderBy('nama_bidang')->get(['id', 'nama_bidang']),
-            'pegawai' => Pegawai::active()->orderBy('nama_pegawai')->get(['id', 'nama_pegawai', 'jabatan', 'bidang_id']),
             'initialShowForm' => $device->tampilkan_form,
         ]);
     }

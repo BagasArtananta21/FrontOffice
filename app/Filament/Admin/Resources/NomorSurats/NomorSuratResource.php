@@ -14,12 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
 use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -35,7 +30,6 @@ use Illuminate\Support\Carbon;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
-use Livewire\Livewire;
 
 class NomorSuratResource extends Resource
 {
@@ -189,7 +183,7 @@ class NomorSuratResource extends Resource
 
                 TextColumn::make('bidang.nama_bidang')
                     ->label('Dari')
-                    ->placeholder('-'),
+                    ->placeholder('—'),
 
                 TextColumn::make('nomor_lengkap')
                     ->label('No Surat')
@@ -272,16 +266,16 @@ class NomorSuratResource extends Resource
 
                     TextEntry::make('tujuan_surat')
                         ->label('Tujuan Surat')
-                        ->placeholder('-')
+                        ->placeholder('—')
                         ->columnSpanFull(),
 
                     TextEntry::make('bidang.nama_bidang')
                         ->label('Dari Bidang')
-                        ->placeholder('-'),
+                        ->placeholder('—'),
 
                     TextEntry::make('nama_peminta')
                         ->label('Nama Peminta')
-                        ->placeholder('-'),
+                        ->placeholder('—'),
                     ]),
                 Section::make()
                     ->columns(2)

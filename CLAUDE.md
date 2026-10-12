@@ -1,4 +1,6 @@
-# Konteks Proyek — Sistem Buku Tamu & Penomoran Surat
+# Konteks Proyek — Sistem Buku Tamu & Penomoran Surat (E-FO)
+
+Terakhir diperbarui: 12 Oktober 2026.
 
 ## Cara kerja kita
 
@@ -10,235 +12,315 @@
 * Jangan menambah fitur yang tidak diminta. Kalau menurutmu ada yang kurang, sebutkan sebagai saran terpisah, jangan langsung dimasukkan.
 * Jangan langsung menggunakan logo/label/icon dari library seperti google font, etc, buatkan saja placeholder di <img> yang akan anda buat sebagai label/logo/icon.
 
+Pengecualian yang sudah disepakati untuk aturan ikon:
+
+* Font Inter boleh dipakai.
+* Di dalam panel Filament, Heroicons bawaan Filament boleh dipakai.
+* Ikon atau animasi bawaan sebuah komponen UI utuh (misalnya SweetAlert2) boleh dipakai apa adanya.
+* Halaman non-Filament (login, display) tetap memakai placeholder `<img>`.
+
+Konvensi penulisan kode:
+
+* Semua kode (variabel, function, method, scope, class service) memakai bahasa Inggris.
+* Bahasa Indonesia hanya untuk nama model, nama tabel, dan nama field tabel.
+* Nama method relasi Eloquent mengikuti nama model: `bidang()`, `opd()`, `petugas()`, `pembuat()`, `pembatal()`.
+* Nama kolom memakai awalan yang jelas: `kode_opd`, `nama_opd`, `kode_bidang`, `nama_bidang`, `nama_tamu`. Jangan disingkat.
+
 ---
 
 ## Tentang proyek
 
 Proyek magang di Diskominfo (Diskominfosanti) Kabupaten Buleleng, Bali.
 
-Di lobi kantor ada PC yang menghadap ke tamu, selama ini hanya menampilkan company profile. PC itu akan dimanfaatkan jadi form buku tamu digital. Sekalian dibuat modul penomoran surat untuk menggantikan buku agenda manual.
+Di lobi kantor ada PC yang menghadap ke tamu, selama ini hanya menampilkan company profile. PC itu dimanfaatkan jadi form buku tamu digital. Sekalian dibuat modul penomoran surat untuk menggantikan buku agenda manual.
 
-Sistem dirancang agar nantinya bisa dipakai OPD lain (multi-tenant), tapi untuk sekarang hanya Diskominfo.
+Sistem dirancang multi-tenant agar bisa dipakai OPD lain, tapi data awal hanya untuk Diskominfosanti.
 
-**Timeline:** Rencana diberikan 7 September 2026. Target 31 Oktober 2026 berupa **prototipe**, belum produksi. Magang berakhir 31 Desember 2026. Sisa waktu setelah sistem jadi dipakai untuk dokumentasi.
+**Timeline:** rencana diberikan 7 September 2026. Target 31 Oktober 2026 berupa **prototipe**, belum produksi. Magang berakhir 31 Desember 2026. Sisa waktu setelah sistem jadi dipakai untuk dokumentasi.
 
-**Peran saya:** developer tunggal, fullstack. Mentor berperan sebagai pengarah, bukan ikut ngoding.
+**Peran saya:** developer tunggal, fullstack.
+
+**Dua pihak pengarah, jangan tertukar:**
+
+* **Mentor** — pihak kantor. Memutuskan hal operasional dan hak akses, bersama petugas Front Office (FO).
+* **Dosbing** — dosen pembimbing kampus. Memberi arahan rancangan (lihat bagian "Arahan dosbing"). Bukan pemutus aturan kantor.
 
 ---
 
 ## Tech stack
 
-* Laravel (backend)
-* Blade + Alpine.js (frontend). Tidak pakai framework frontend terpisah.
-* MySQL lokal untuk development. Server produksi kemungkinan MySQL atau MariaDB.
-* Hindari raw query yang spesifik vendor, agar aman kalau nanti pindah ke PostgreSQL. Khususnya: jangan pakai `DATE_FORMAT`/`YEAR()` di raw query (hitung rentang tanggal pakai Carbon lalu `whereBetween`), pakai `true`/`false` untuk boolean, bukan 1/0.
+* Laravel 13, PHP 8.3
+* **Filament v5** (di atas Livewire 4) untuk panel admin FO dan panel super admin
+* Blade + Alpine.js untuk halaman login dan halaman display
+* Tailwind v4, Vite, `laravel-vite-plugin` v3 (font Inter diunduh saat build lewat fitur `fonts`, jadi PC display tidak butuh internet)
+* SweetAlert2 untuk notifikasi di panel (notifikasi bawaan Filament disembunyikan)
+* `signature_pad` untuk tanda tangan tamu
+* OpenSpout untuk export Excel
+* MySQL 8.4 lokal. Server produksi kemungkinan MySQL atau MariaDB.
+
+Aturan query: hindari raw query yang spesifik vendor di kode aplikasi. Jangan pakai `DATE_FORMAT`/`YEAR()` di raw query (hitung rentang tanggal pakai Carbon lalu `whereBetween`), dan pakai `true`/`false` untuk boolean.
+
+**Satu pengecualian yang disengaja:** trigger penomoran ditulis dalam SQL MySQL/MariaDB dan dikurung di satu migration (`create_numbering_triggers`). Lihat bagian "Penomoran di sisi database".
 
 ---
 
-## Lingkup yang sudah dikunci
+## Lingkup
 
 ### Modul 1 — Buku Tamu
 
 * Tamu mengisi form di PC display yang menghadap ke lobi.
-* **PC admin dan PC display adalah dua komputer terpisah.** Keduanya tidak bisa saling memerintah langsung, komunikasinya lewat database.
+* **PC admin dan PC display adalah dua komputer terpisah.** Komunikasinya lewat database.
 * Admin login di PC-nya, menekan tombol "Tampilkan form", lalu PC display berpindah dari layar idle ke form.
-* PC display melakukan polling ke server setiap beberapa detik untuk membaca status tampilan. Setiap polling juga memperbarui `terakhir_aktif`.
-* Dashboard admin menampilkan dua status terpisah: **status koneksi** (dari `terakhir_aktif`, kurang dari 30 detik = terhubung) dan **status tampilan** (form atau idle).
-* PC display dikunci berdasarkan **IP address** + token perangkat opsional. PC admin **tidak** dikunci IP, cukup login biasa, supaya bisa diakses dari mana saja.
-* Setelah tamu submit, tampil halaman konfirmasi tanpa menampilkan data yang baru diisi, lalu otomatis kembali ke layar idle.
+* PC display melakukan polling `/display/status` tiap 3 detik. `terakhir_aktif` ditulis hanya kalau sudah lebih dari 10 detik.
+* Panel admin menampilkan dua status terpisah: **status koneksi** (`terakhir_aktif` kurang dari 30 detik = terhubung) dan **status tampilan** (form atau idle).
+* PC display dikunci dengan **token**, bukan IP. Pairing lewat `/display/pair`, token disimpan di cookie `display_token`. Token menentukan OPD.
+* PC admin tidak dikunci, cukup login biasa.
+* Form display muat satu layar tanpa scroll (dua kolom) dan mewajibkan tanda tangan.
+* Setelah submit, tampil halaman konfirmasi tanpa data pribadi, lalu kembali ke layar idle.
+* Input oleh FO (manual) memakai form di panel admin, tanpa tanda tangan.
+* Setiap kunjungan mendapat **nomor kunjungan** otomatis `YYYYMMDD-NNNN`, reset tiap bulan.
+* Setiap kunjungan mencatat petugas: untuk input manual adalah FO yang mengetik, untuk input display adalah FO yang terakhir menekan "Tampilkan form".
+* Buku tamu hanya mencatat **siapa datang dan perlu apa**. Tidak ada check-out, status kunjungan, maupun tanda "sudah dihubungi".
 
 ### Modul 2 — Penomoran Surat
 
 * **Hanya menerbitkan nomor, bukan membuat surat.** Sistem tidak pernah menyentuh file dokumen.
-* Surat dibuat sendiri oleh masing-masing bidang di luar sistem. Mereka minta nomor ke FO, admin FO input, nomor keluar, lalu diketik sendiri ke dokumen mereka.
+* Surat dibuat masing-masing bidang di luar sistem. Mereka minta nomor ke FO, FO menginput, nomor keluar, lalu diketik sendiri ke dokumen.
 * Fungsinya seperti buku agenda digital.
-* Semua input dilakukan admin FO. Pegawai bidang tidak punya akses ke sistem.
+* Modul ini **tidak berhubungan dengan e-Surat** dan pasti dibuat. e-Surat hanya menangani surat masuk, disposisi, dan surat keluar. Penomoran di semua OPD masih memakai buku fisik.
 
 ### Peran pengguna
 
 | Peran | Akses |
 |---|---|
 | Tamu | Hanya form di PC display. Tanpa login |
-| Admin FO | Seluruh operasional satu OPD: buku tamu, nomor surat, master data, laporan |
-| Super Admin | Kelola OPD, kelola user, dashboard rekap, log aktivitas |
+| `admin_fo` | Panel `/admin`: buku tamu, nomor surat, master bidang, rekap |
+| `super_admin` | Panel `/super-admin`: kelola OPD, pengguna, display, format nomor surat |
 
-Kolom `role` bertipe string dengan nilai `admin_fo` atau `super_admin`. **Tidak pakai kolom `is_super_admin` terpisah** — satu sumber kebenaran saja.
-
-Pembagian pengelolaan master data: yang milik satu OPD (bidang, pegawai, jenis surat) dikelola admin FO. Yang menentukan OPD mana yang ada dan siapa boleh masuk (daftar OPD, user) dikelola super admin.
+* Kolom `role` bertipe string. Tidak ada kolom `is_super_admin`.
+* Super admin **tidak punya akses** ke panel admin FO, dan `users.opd_id`-nya selalu null. `opd_id` berarti batas data, bukan asal instansi orangnya.
+* Akses panel diatur `User::canAccessPanel()`, bukan middleware peran.
+* Peran `staff` **belum ada**. Lihat "Keputusan yang belum pasti".
 
 ---
 
 ## Aturan teknis yang wajib dipegang
 
-* Semua tabel milik OPD punya kolom `opd_id`, meski sekarang hanya satu instansi.
-* **`opd_id` tidak pernah diambil dari input request.** Selalu dari sesi user yang login, atau dari baris `display_devices` berdasarkan IP.
-* Satu-satunya pengecualian adalah panel super admin saat membuat user atau OPD baru.
-* Pakai trait `BelongsToOpd` dengan global scope agar filter tenant tidak perlu ditulis manual di setiap query.
-* Nama tabel memakai bahasa Indonesia bentuk tunggal, jadi setiap model **wajib** menyebut `protected $table` secara eksplisit. Laravel akan menebak jamak bahasa Inggris (`Tamu` → `tamus`) kalau tidak disebutkan.
-* Penerbitan nomor surat dibungkus transaksi dengan `lockForUpdate` pada baris counter, supaya tidak ada nomor kembar.
-* Nomor surat yang dibatalkan tidak dipakai ulang. Nomornya jadi lubang, alasan pembatalan dicatat.
-* Nomor urut reset tiap 1 Januari, dihitung per OPD + jenis surat.
-* Format nomor surat disimpan sebagai template di database, bukan di kode.
-* Token perangkat display di-hash pakai **SHA-256**, bukan bcrypt. Bcrypt menghasilkan nilai berbeda tiap kali sehingga tidak bisa dicari lewat `where`, dan sengaja lambat — tidak cocok untuk token acak yang di-polling tiap 3 detik.
-* Nama aplikasi disimpan di config, bukan ditulis langsung di view.
-* Halaman konfirmasi tamu tidak menampilkan data pribadi.
-* Rate limit pada endpoint submit form tamu.
+**Tenant**
+
+* Semua tabel milik OPD punya kolom `opd_id`.
+* **`opd_id` tidak pernah diambil dari input request.** Selalu dari user yang login, atau dari baris `display_devices` berdasarkan token.
+* Satu-satunya pengecualian adalah panel super admin (membuat user, OPD, format nomor). Di sana `opd_id` diisi lewat `forceFill`.
+* Trait `BelongsToOpd` (`app/Models/Concerns`) memasang global scope bernama `'opd'` dan mengisi `opd_id` saat `creating`. Dipakai di: Bidang, Kunjungan, DisplayDevice, FormatNomorSurat, NomorSurat, NomorCounter. Tidak dipakai di Opd dan User.
+* Di tinker tidak ada user login, jadi pakai `withoutGlobalScope('opd')` atau `app()->instance('current_opd_id', ...)`.
+* Jangan pakai fitur `->tenant()` Filament.
+
+**Skema**
+
+* Semua primary key **UUID** (`HasUuids`, menghasilkan UUID v7). Semua foreign key `foreignUuid`. Termasuk `users` dan `sessions.user_id`.
+* Nama tabel bahasa Indonesia bentuk tunggal, jadi setiap model **wajib** menyebut `protected $table`.
+* Foreign key ke `opd` dan master data memakai `restrictOnDelete()`. Data dinonaktifkan lewat kolom `aktif`, bukan dihapus.
+* Pada `foreignUuid`, **`nullable()` selalu ditulis sebelum `constrained()`**. Kalau terbalik, `nullable()` diabaikan diam-diam.
+* `opd_id` selalu ditaruh pertama dalam index gabungan.
+* Kolom yang nilainya ditentukan sistem tidak masuk Fillable: `opd_id`, `role`, `aktif`, `sso_subject_id` di User; `status`, `nomor_urut`, `sub_nomor`, `tahun`, `nomor_lengkap` di NomorSurat; `nomor_kunjungan` di Kunjungan. Diisi eksplisit lewat `forceFill`.
+
+**Lain-lain**
+
+* Token perangkat display di-hash **SHA-256**, bukan bcrypt (harus bisa dicari lewat `where`, dan dipolling tiap 3 detik).
+* Tanda tangan disimpan sebagai file PNG di disk privat `local`, path `tanda-tangan/Y/m/uuid.png`. Kolom `tanda_tangan` hanya menyimpan path.
+* Nama aplikasi dari config (`APP_NAME=E-FO`), tidak ditulis langsung di view.
+* Rate limit `display-submit` 5 per menit pada submit form tamu. Ada halaman error 429.
+* Timezone `Asia/Makassar`. `SESSION_DRIVER=database`, `QUEUE_CONNECTION=sync`.
+* Realtime di panel memakai `->poll()`. Laravel Reverb ditunda.
+* Controller tipis, logika di service: `AuthService`, `KunjunganService`, `LetterNumberService`, `LetterNumberFormatter`.
 
 ---
 
-## Struktur tabel
+## Struktur tabel (sesuai migration)
 
-### Modul buku tamu (sudah bisa dibuat)
+Semua tabel punya `id` (uuid) dan `timestamps` kecuali disebut lain.
 
-**`opd`** — id, kode, nama, alamat, logo, aktif
+**`opd`** — kode_opd (20, unique), nama_opd, alamat_opd (nullable), logo (nullable), aktif (default true)
 
-**`users`** (menambah kolom ke tabel bawaan Laravel) — opd_id (nullable), nip, role, sso_subject_id (nullable, disiapkan untuk SSO nanti), aktif
+**`users`** (tabel bawaan Laravel + tambahan) — name, email (unique), password, opd_id (nullable), nip (30, nullable, unique), role (default `admin_fo`), sso_subject_id (nullable, unique, disiapkan untuk SSO), aktif (default true)
 
-**`bidang`** — id, opd_id, kode (nullable, mungkin dihapus setelah wawancara), nama, aktif. Unique pada (opd_id, nama). Unique-nya pakai nama karena kode nullable — di MySQL, banyak baris NULL tetap lolos unique constraint
+**`bidang`** — opd_id, kode_bidang (20, wajib), nama_bidang, aktif. Unique (opd_id, kode_bidang). `kode_bidang` wajib karena dipakai di nomor surat.
 
-**`pegawai`** — id, opd_id, bidang_id, nama, nip, jabatan, aktif. **Status opsional**, menunggu wawancara
+**`display_devices`** — opd_id, nama, token_hash (64, unique), tampilkan_form (default false), ditampilkan_oleh (nullable, FK users), terakhir_aktif (nullable), aktif (default false). Tidak ada kolom `ip_address`.
 
-**`display_devices`** — id, opd_id, nama, ip_address (unique), token_hash (nullable, unique, SHA-256), tampilkan_form (boolean), terakhir_aktif (timestamp), aktif
+**`kunjungan`** — opd_id, bidang_id (nullable), nomor_kunjungan (13, diisi trigger), nama_tamu, jenis_kelamin (10), instansi_asal (nullable), no_hp (nullable), alamat (nullable), keperluan, **pegawai_tujuan (nullable, teks bebas)**, tanda_tangan (nullable, path file), waktu_datang, catatan_petugas (nullable, tampil sebagai "Keterangan"), sumber_input (`display` atau `frontoffice`), dicatat_oleh (nullable, FK users). Unique (opd_id, nomor_kunjungan). Index (opd_id, waktu_datang) dan (opd_id, nama_tamu).
 
-**`tamu`** — id, opd_id, nama, no_hp, instansi_asal, alamat, pekerjaan, jenis_kelamin. Dipisah dari kunjungan agar tamu berulang tidak mengetik ulang. **Tidak menyimpan NIK**
+> **Belum diterapkan di kode per 12 Oktober:** `pegawai_tujuan`. Migration masih berisi `pegawai_id` (FK ke `pegawai`), dan tabel, model, resource, serta seeder pegawai masih ada. Lihat "Sudah diputuskan, belum dikerjakan".
 
-**`kategori_kunjungan`** — id, opd_id, nama, urutan, aktif. Isi awal lewat seeder untuk testing, diganti setelah wawancara. Kalau ternyata tidak perlu, tinggal drop
+**`format_nomor_surat`** — opd_id, susunan (json, urutan segmen), berlaku_sejak (date), dasar_perubahan (nullable), dibuat_oleh (FK users). Unique (opd_id, berlaku_sejak). Berversi: format yang berlaku adalah yang `berlaku_sejak`-nya paling baru dan tidak melewati tanggal acuan.
 
-**`kunjungan`** — id, opd_id, tamu_id, bidang_id, pegawai_id, kategori_kunjungan_id, keperluan, jumlah_orang, waktu_datang, waktu_keluar, status, sudah_dihubungkan, catatan_petugas, sumber_input (display/manual), dicatat_oleh, tanda_tangan
+**`nomor_counters`** — opd_id, jenis (`kunjungan` atau `surat`), periode (6 karakter: `202610` untuk kunjungan, `2026` untuk surat), nomor_terakhir. Unique (opd_id, jenis, periode). Hanya ditulis oleh trigger dan oleh `LetterNumberService::setLastNumber()`.
 
-### Modul penomoran surat (JANGAN dibuat dulu)
+**`nomor_surat`** — opd_id, format_nomor_surat_id, bidang_id (nullable), tahun, nomor_urut (default 0), sub_nomor (default 0), nomor_lengkap (nullable, dirakit aplikasi setelah insert), kode_klasifikasi (20), perihal, tujuan_surat (nullable), nama_peminta (nullable), tanggal_surat (date), tanggal_terbit (timestamp), status (`terbit` atau `batal`), alasan_batal (nullable), dibuat_oleh (FK users), dibatalkan_oleh (nullable, FK users), batal_pada (nullable). Unique (opd_id, tahun, nomor_urut, sub_nomor). Index (opd_id, tanggal_terbit).
 
-**`jenis_surat`** — id, opd_id, kode_klasifikasi, nama, format_template, panjang_urut, reset_tahunan, aktif
-
-**`nomor_counters`** — id, opd_id, jenis_surat_id, tahun, nomor_terakhir. Unique pada (opd_id, jenis_surat_id, tahun). Baris inilah yang dikunci saat penerbitan nomor
-
-**`nomor_surat`** — id, opd_id, jenis_surat_id, tahun, nomor_urut, nomor_lengkap, perihal, tujuan_surat, bidang_id, nama_peminta, tanggal_surat, status, alasan_batal, dibuat_oleh. Unique pada (opd_id, jenis_surat_id, tahun, nomor_urut)
-
-### Catatan format nomor surat
-
-Mentor sudah menunjukkan contoh surat: **nomor urut ada di posisi paling depan**, jadi polanya kira-kira `{urut}/{klasifikasi}/{kode_opd}/{tahun}`. Bentuk pastinya masih perlu dikonfirmasi dari contoh surat asli beberapa jenis klasifikasi.
-
-`{klasifikasi}` = kode klasifikasi arsip (000 umum, 005 undangan, 800 kepegawaian, dst), bukan nomor urut. Daftar resminya ada di Peraturan Bupati tentang Tata Naskah Dinas.
-
-`panjang_urut` untuk padding nol (4 → `0501`, 0 → `501`).
-
-Penanda yang disediakan: `{urut}`, `{klasifikasi}`, `{kode_opd}`, `{tahun}`, dan `{bulan_romawi}` bila ternyata dipakai.
+**Tabel yang sudah dibatalkan dan tidak ada:** `tamu`, `kategori_kunjungan`, `jenis_surat`. Kolom yang sudah dibuang dari `kunjungan`: `waktu_keluar`, `status`, `jumlah_orang`, `sudah_dihubungi`.
 
 ---
 
-## Catatan implementasi
+## Penomoran di sisi database
 
-### Lokasi trait
+Pembuatan nomor urut ditaruh di **trigger**, bukan di aplikasi, mengikuti arahan dosbing. Semua trigger ada di satu migration: `2026_10_06_115813_create_numbering_triggers.php`.
 
-`app/Models/Concerns/BelongsToOpd.php`, namespace `App\Models\Concerns`. Folder ini tidak ada bawaan Laravel, dibuat sendiri — PSR-4 membacanya selama namespace cocok dengan struktur folder.
+| Trigger | Fungsi |
+|---|---|
+| `kunjungan_before_insert` | Mengisi `nomor_kunjungan` dari counter bulan `waktu_datang`. Menolak kalau melewati 9999 |
+| `nomor_surat_before_insert` | `nomor_urut = 0` → ambil nomor baru dari counter. Selain itu → susulan: kunci counter, pastikan induk ada, `sub_nomor = MAX + 1` |
+| `nomor_surat_before_update` | Bagian nomor tidak bisa diubah. Status `batal` tidak bisa dipulihkan |
+| `nomor_surat_before_delete` | Nomor surat tidak bisa dihapus |
+| `nomor_counters_before_update` | `nomor_terakhir` tidak bisa diturunkan |
 
-Trait butuh docblock `@mixin \Illuminate\Database\Eloquent\Model` di atasnya agar IDE tidak menandai `addGlobalScope` dan `creating` sebagai undefined. Setelah ditambahkan, **reload window** supaya Intelephense menyegarkan indeks.
+Aturan saat menulis atau mengubah trigger:
 
-Dipakai di: Bidang, Pegawai, Tamu, Kunjungan, KategoriKunjungan, DisplayDevice, JenisSurat, NomorSurat, NomorCounter. Tidak dipakai di Opd dan User.
+* Satu `CREATE TRIGGER` per panggilan `DB::unprepared`. Setiap trigger baru harus punya `DROP TRIGGER IF EXISTS` di `down()`.
+* **Jangan `DECLARE` variabel string lalu membandingkannya dengan kolom**, dan jangan pakai `CAST(... AS CHAR)`. Keduanya mengikuti collation default database dan memicu error 1267. Tulis ekspresinya langsung (`DATE_FORMAT(...)`, `CONCAT(NEW.tahun)`, string literal). Jangan menulis `COLLATE` secara mati.
+* `LPAD` memotong diam-diam, jadi batas kapasitas harus dicek dulu.
+* Trigger ikut terhapus saat tabelnya di-drop. **Selalu `migrate:fresh --seed`**, jangan `migrate:refresh --path` pada tabel yang punya trigger.
+* Mengedit file migration tidak mengubah trigger yang sudah terpasang. Migration harus dijalankan ulang.
+* Error dari `SIGNAL` muncul sebagai `SQLSTATE[45000] <<Unknown error>>`. Pesan aslinya ada sesudahnya.
 
-### Simpan form tamu
+### Aturan nomor surat
 
-Satu form di layar, dua tabel di belakangnya. Urutannya tamu dulu baru kunjungan, dibungkus transaksi supaya tidak ada baris tamu tercipta tanpa kunjungan.
+* Format Diskominfosanti: `KLASIFIKASI/URUT/BIDANG/KODEOPD/BULAN_ROMAWI/TAHUN`, contoh `443.32/102/PKP/DISKOMINFOSANTI/X/2026`. Pemisah selalu `/`, tanpa padding nol.
+* Segmen yang tersedia: `klasifikasi`, `urut`, `bidang` (kode bidang), `kode_opd`, `bulan_romawi`, `tahun`, `teks`. Format wajib punya tepat satu `urut`.
+* Satu deret nomor per OPD per tahun, reset 1 Januari. Tidak ada master jenis surat. Kode klasifikasi diketik FO.
+* Form penerbitan menyesuaikan susunan format yang berlaku. Segmen yang ditentukan sistem tampil terkunci.
+* **Tanggal surat diisi FO: boleh mundur, tidak boleh maju.** Bulan romawi, tahun di nomor, dan tahun counter diambil dari tanggal surat, bukan tanggal terbit.
+* **Susulan otomatis.** Kalau tanggal surat mundur dan sudah ada nomor induk yang terbit sesudah tanggal itu, nomornya menjadi susulan (`102.1`, `102.2`). Induknya adalah nomor induk terakhir yang terbit pada atau sebelum tanggal itu. Nomor yang batal tetap dihitung sebagai induk.
+* **Tidak ada edit, draf, maupun hapus.** Nomor yang salah dibatalkan dengan alasan, lalu diterbitkan ulang. Nomor batal menjadi lubang dan tidak dipakai ulang.
+* **Nomor terakhir** bisa diatur FO untuk melanjutkan dari buku agenda. Hanya boleh naik.
+* Urutkan selalu lewat kolom `(tahun, nomor_urut, sub_nomor)`. **Jangan pernah `orderBy('nomor_lengkap')`.**
+* `LetterNumberFormatter` melempar exception kalau ada segmen di template yang nilainya kosong, supaya nomor cacat tidak terbit.
 
-**Belum diputuskan:** kalau nomor HP sudah terdaftar tapi nama berbeda (misal satu nomor kantor dipakai beberapa orang), `firstOrCreate` akan mempertahankan nama lama. Perlu ditanyakan saat wawancara apakah ada tamu yang berbagi nomor telepon.
+---
 
-Untuk halaman daftar tamu pakai eager loading (`with(['tamu', 'bidang'])`), jangan panggil dua model terpisah lalu digabung di Blade.
+## Arahan dosbing (6 Oktober 2026)
 
-### Index
+Pegangan rancangan, bukan aturan kantor:
 
-Dipasang pada kolom yang sering muncul di `where`, `order by`, atau `join`. Foreign key sudah otomatis di-index oleh `constrained()`.
+* Nomor di-generate sistem, tidak diketik atau dipilih staf. Format tetap fleksibel lewat template.
+* Elemen yang jarang berubah di kiri, yang sering berubah di kanan. `yyyymmdd-9999` ditafsirkan sebagai kunci urut di database, bukan format nomor surat yang tercetak.
+* Pengurutan disimulasikan (naik dan turun) sebelum format dikunci.
+* Sequence ditaruh di sisi database supaya tidak perlu ditulis ulang kalau bahasa pemrograman berganti.
+* Penerbitan nomor terpusat di petugas, bukan setiap pegawai punya akun sendiri.
+* Buku tamu punya dua antarmuka yang mirip (display dan petugas). Isian tamu tetap disupervisi petugas.
+* Kedua modul mencatat petugas yang bertugas.
+* Partitioning: **tidak diimplementasikan**. Bentrok dengan foreign key dan primary key UUID, dan volumenya kecil. Cukup disebut di dokumentasi.
 
-`opd_id` selalu ditaruh pertama dalam index gabungan, karena berkat global scope setiap query pasti menyertakannya.
+---
 
-Index tidak membantu `like '%kata%'` (wildcard di depan). Untuk skala proyek ini tidak masalah.
+## Sudah diputuskan, belum dikerjakan
+
+| Keputusan | Yang perlu dilakukan |
+|---|---|
+| **Hapus master pegawai** (12 Okt). Beban input terlalu besar bagi OPD lain, karena hanya Diskominfosanti yang punya datanya | Hapus migration, model, resource, seeder, dan CSV pegawai. Ganti `kunjungan.pegawai_id` dengan `pegawai_tujuan` (string, nullable). Sesuaikan Kunjungan, KunjunganService, StoreKunjunganRequest, DisplayController, view display, KunjunganResource, VisitHistoryResource, VisitHistoryExport, DatabaseSeeder, KunjunganSeeder |
+| Test untuk trigger | Pasang dulu pengaman di `phpunit.xml` (lihat "Lingkungan development"), baru tulis test: nomor baru, susulan, reset bulanan dan tahunan, immutability, pembatalan |
+| Rekap surat di dashboard | Dashboard yang sama dengan rekap kunjungan. Nomor batal dipisahkan dari jumlah terbit |
+
+---
+
+## Keputusan yang belum pasti
+
+Jangan diputuskan sendiri. Semuanya menunggu pihak yang disebut.
+
+| Hal | Menunggu | Keadaan sekarang di kode |
+|---|---|---|
+| **Susulan tanpa induk**: surat bertanggal sebelum sistem dipakai, atau sebelum nomor pertama tahun itu | Mentor dan FO | Ditolak lewat `LetterBaseNumberNotFoundException` dengan pesan netral. Exception ini sengaja dipertahankan sebagai penanda |
+| **Tanggal mulai pakai sistem.** Usulan: 1 Januari 2027, supaya riwayat setahun penuh ada di sistem | Mentor | Belum ditentukan |
+| **Apakah `staff` boleh menerbitkan nomor surat** | Mentor dan FO | Hanya `admin_fo`. Peran `staff` belum dibuat. Helper akses per modul sengaja **tidak** dibuat sebelum ada keputusan |
+| Integrasi SSO | Izin pengelola SSO | Login lokal dengan email. Kolom `sso_subject_id` sudah disiapkan |
+| Deploy | Akses server | Belum ada |
+| Posisi akhir modul penomoran terhadap e-Surat | Mentor | Berdiri sendiri. Kalau kelak digabung, itu pekerjaan tim e-Surat |
+
+Dua opsi yang sedang ditimbang untuk susulan tanpa induk:
+
+1. Mulai pakai 1 Januari sehingga kasusnya hampir tidak muncul, dan sisanya diberi nomor baru biasa (cukup menghapus `throw`).
+2. Tetap dilayani dengan nomor baru disertai alasan yang tercatat.
+
+Usulan "FO mengetik nomor dari buku agenda" sudah ditimbang dan tidak disarankan: masalahnya sementara, kompleksitasnya permanen, dan bergantung pada buku yang justru sering tidak tersedia.
+
+**Yang perlu ditanyakan saat dapat akses server:**
+
+1. MySQL atau MariaDB, versi berapa.
+2. Apakah user database punya privilege `TRIGGER`.
+3. Apakah binary log aktif. Kalau aktif, perlu `log_bin_trust_function_creators = 1` (kalau tidak, error 1419).
+4. Apakah boleh menjalankan `php artisan migrate` di server. Database **jangan dipindah lewat dump**, karena trigger menyimpan DEFINER `root@localhost`.
+
+Rencana cadangan kalau server menolak trigger: logika counter dipindah ke service dengan `lockForUpdate()` pada tabel `nomor_counters` yang sama. Skema tidak berubah.
+
+---
+
+## Backlog
+
+* Halaman kelola display di panel admin FO (buat ulang token, lepas pairing) beserta kolom `dipasangkan_pada`
+* Dashboard rekap lintas OPD dan log aktivitas di panel super admin. Log aktivitas sekaligus mencatat siapa yang mengubah nomor terakhir
+* Filter tabel nomor surat (tahun, bidang, status)
+* Validasi "segmen klasifikasi wajib ada" di master format. Tanpa itu, format tanpa klasifikasi selalu gagal menyimpan karena `kode_klasifikasi` wajib diisi
+* Pratinjau satu baris nomor surat di form penerbitan
+* Persiapan deploy: `optimize`, OPcache
 
 ---
 
 ## Daftar halaman
 
-### Display (tanpa login, dikunci IP)
-1. Layar idle — company profile
-2. Form tamu
-3. Halaman konfirmasi
+### Display (tanpa login, dikunci token)
 
-### Admin FO (login)
-1. Login
-2. Dashboard — jumlah tamu harian, status display (terhubung/tidak), tombol tampilkan form
-3. Daftar tamu hari ini — check-out, tandai sudah dihubungkan
-4. Detail kunjungan
-5. Riwayat kunjungan — filter, cari, export
-6. Input tamu manual
-7. Master bidang
-8. Master pegawai *(opsional)*
-9. Master jenis surat *(tunda)*
-10. Buat nomor surat *(tunda)*
-11. Daftar nomor surat *(tunda)*
-12. Detail nomor surat *(tunda)*
-13. Rekap laporan *(menyusul)*
+| Halaman | Status |
+|---|---|
+| Pairing (`/display/pair`) | Selesai |
+| Layar idle (video profil) | Selesai |
+| Form tamu dengan tanda tangan | Selesai |
+| Halaman konfirmasi | Selesai |
 
-### Super Admin (login)
-1. Kelola OPD
-2. Kelola user
-3. Dashboard rekap
-4. Log aktivitas
+### Admin FO (`/admin`)
+
+| Halaman | Status |
+|---|---|
+| Login (halaman custom, bukan login Filament) | Selesai |
+| Rekap Kunjungan (dashboard, filter tanggal, export Excel) | Selesai |
+| Tamu Hari Ini (termasuk input manual dan status display) | Selesai |
+| Riwayat Kunjungan (filter, cari, detail) | Selesai |
+| Nomor Surat (terbitkan, susulan, batalkan, atur nomor terakhir) | Selesai |
+| Kelola Bidang | Selesai |
+| Kelola Pegawai | **Akan dihapus** |
+| Rekap surat | Belum |
+
+### Super Admin (`/super-admin`)
+
+| Halaman | Status |
+|---|---|
+| Kelola OPD | Selesai |
+| Kelola Pengguna | Selesai |
+| Kelola Display | Selesai |
+| Format Nomor Surat | Selesai |
+| Dashboard rekap | Belum |
+| Log aktivitas | Belum |
 
 ---
 
-## Status pekerjaan
+## Lingkungan development
 
-### Sudah selesai
+* Diuji lewat Apache Laragon di Windows (`http://projectmagang.test`), dengan PC display kedua di jaringan yang sama.
+* **`php artisan config:cache` wajib** setiap kali `.env` atau `config/` diubah. Apache Windows multi-thread, dan pembacaan `.env` tidak aman antar-thread. Gejala kalau cache tidak ada: error acak "No application encryption key", dan **modal 404 acak** di panel (Livewire menurunkan alamat endpoint-nya dari `APP_KEY`).
+* **`npm run build` wajib** setiap kali JS atau CSS diubah. Aset dilayani dari `public/build`. `npm run dev` tidak cocok untuk PC display, karena alamatnya menunjuk ke localhost PC development.
+* Error `rename(...storage/framework/views...): Access is denied` dan Apache lambat: kecualikan `C:\laragon` dari Windows Defender, lalu `php artisan view:cache` dan `php artisan icons:cache`.
+* **Jangan jalankan `optimize` atau `filament:optimize`** saat development. Resource baru jadi tidak terdeteksi.
+* Log aplikasi: `storage/logs/laravel.log`. Log request: `C:\laragon\bin\apache\...\logs\access.log`.
+* Cookie display terikat host. Berganti cara akses berarti pairing ulang.
+* `database/data/data_pegawai.csv` dan file video tidak boleh masuk git.
 
-* Migration modul buku tamu
-* Trait `BelongsToOpd`
+**Peringatan test.** `phpunit.xml` menyetel SQLite `:memory:`, tetapi selama `bootstrap/cache/config.php` ada, setelan itu **diabaikan** dan test berjalan di database development. Test yang memakai `RefreshDatabase` akan mengosongkannya. SQLite juga tidak bisa menjalankan trigger, dan mengabaikan `lockForUpdate`. Sebelum menulis test pertama:
 
-### Sedang dikerjakan
+1. Buat database `projectmagang_test`.
+2. Di `phpunit.xml`, ubah `DB_CONNECTION` jadi `mysql` dan `DB_DATABASE` jadi `projectmagang_test`.
+3. Tambahkan `<env name="APP_CONFIG_CACHE" value="bootstrap/cache/config.testing.php"/>`.
+4. Pastikan `config('database.connections.mysql.database')` di dalam test menghasilkan `projectmagang_test`.
 
-* Model beserta `protected $table` dan pemasangan trait
-* Seeder data awal untuk testing
-
-### Berikutnya
-
-* Layout dasar, sidebar, header
-* Login lokal dengan dua peran
-* Middleware peran dan penentu tenant
-* Master bidang (CRUD pertama, jadi pola untuk CRUD lainnya)
-
-### Belum bisa dikerjakan
-
-| Hal | Menunggu |
-|---|---|
-| Field final form tamu | Wawancara FO, rencana minggu depan |
-| Perlu tidaknya master pegawai | Wawancara FO |
-| Perlu tidaknya fitur check-out | Wawancara FO |
-| Perlu tidaknya `sudah_dihubungkan` dan `catatan_petugas` | Wawancara FO — keduanya masih dugaan |
-| Perlu tidaknya kolom kode bidang | Wawancara FO |
-| Perlu tidaknya kolom `urutan` di kategori kunjungan | Wawancara FO |
-| Penanganan nomor HP sama dengan nama berbeda | Wawancara FO |
-| Format nomor surat & daftar jenis surat | Wawancara FO |
-| **Seluruh modul penomoran surat** | Konfirmasi mentor — lihat catatan e-Surat di bawah |
-| Integrasi SSO | Izin dari pengelola SSO |
-| Deploy | Akses server |
-
-### Catatan penting soal modul penomoran surat
-
-Kabupaten Buleleng sudah punya aplikasi **e-Surat** sejak Desember 2021 yang menangani surat masuk dan surat keluar, sudah dipakai seluruh OPD sampai tingkat desa, dan sudah terintegrasi tanda tangan elektronik. Yang membangunnya adalah Diskominfo sendiri.
-
-Artinya modul penomoran surat berisiko duplikat. **Perlu dikonfirmasi ke mentor** posisinya melengkapi di bagian mana sebelum dikerjakan. Struktur tabelnya sudah disiapkan, tapi migration-nya jangan dijalankan dulu.
-
-Kalau ternyata benar-benar duplikat, fokus penuh ke modul buku tamu dan perdalam bagian laporannya.
-
-### Pertanyaan yang harus dibawa ke wawancara FO
-
-1. Boleh foto buku tamu fisik yang sekarang dipakai? Kolomnya apa saja?
-2. Tamu biasanya menyebut nama orang, atau cukup nama bidang?
-3. Ada tamu rombongan? Sekarang dicatat satu orang atau semua?
-4. Setelah tamu mengisi, apa yang petugas lakukan?
-5. Apakah tamu pulang dicatat juga, atau hanya kedatangan?
-6. Laporan seperti apa yang diminta pimpinan selama ini?
-7. Apa yang paling merepotkan dari cara pencatatan yang sekarang?
-8. Layar display sekarang layar sentuh atau pakai keyboard?
-9. Bidang di sini punya kode resmi atau cukup nama?
-10. Minta contoh surat keluar dari beberapa klasifikasi berbeda untuk memastikan format nomornya.
+---
 
 ## Panduan Styling
 
@@ -251,102 +333,28 @@ Kalau ternyata benar-benar duplikat, fokus penuh ke modul buku tamu dan perdalam
 | Tertiary | `#1E3A8A` | Tautan, status aktif, elemen pendukung |
 | Neutral | `#334155` | Teks utama, border, ikon |
 
-Background halaman pakai putih atau abu sangat terang (`#F8FAFC`). Kartu dan panel putih dengan border tipis neutral, jangan pakai shadow tebal.
+Background halaman pakai putih atau abu sangat terang (`#F8FAFC`). Kartu dan panel putih dengan border tipis, jangan pakai shadow tebal.
 
-Warna status: hijau untuk terhubung dan tamu selesai, abu untuk tidak terhubung, merah untuk nomor batal dan tombol hapus, kuning untuk peringatan.
+Warna status: hijau untuk terhubung dan nomor terbit, abu untuk tidak terhubung, merah untuk nomor batal dan tombol batalkan, kuning untuk peringatan.
+
+Warna panel Filament diatur di `->colors()` PanelProvider (success `#16A34A`, warning `#F59E0B`, danger `#DC2626`, gray Slate). Token yang sama ada di `resources/css/app.css`. Keduanya harus tetap sinkron.
 
 ### Tipografi
 
-| Peran | Font | Catatan |
-|---|---|---|
-| Headline | Inter | Judul halaman, angka besar di dashboard |
-| Body | Inter | Teks isi, tabel, paragraf |
-| Label | Inter | Label form, header tabel, teks kecil |
-
-Keduanya tersedia di Google Fonts. Muat hanya bobot yang dipakai — 400, 500, 600, 700 — supaya halaman tidak berat.
+**Inter untuk semua peran** (judul, isi, label), bobot 400, 500, 600, 700. Hierarki dibedakan lewat bobot dan ukuran.
 
 ### Aturan komponen
 
-**Tombol** — empat varian: primary (isi biru tua), secondary (isi terang), inverted (biru tua di latar terang), outlined (hanya garis). Sudut membulat sedang, jangan pill. Tinggi seragam di seluruh aplikasi.
+**Tombol** — sudut membulat sedang, jangan pill. Tinggi seragam.
 
-**Tabel** — header dengan latar abu terang, baris dipisah garis tipis, tanpa garis vertikal. Baris genap boleh diberi latar sangat terang.
+**Tabel** — header dengan latar abu terang, baris dipisah garis tipis, tanpa garis vertikal. Placeholder sel kosong memakai `-`.
 
-**Form** — label di atas input, bukan di samping. Pesan error di bawah input dengan warna merah. Input wajib ditandai tanda bintang.
-
-**Kartu statistik dashboard** — angka besar pakai Plus Jakarta Sans, label kecil di bawahnya pakai Inter, ikon di pojok kanan atas dengan warna sesuai konteks.
+**Form** — label di atas input. Pesan error di bawah input dengan warna merah. Input wajib ditandai tanda bintang.
 
 ### Halaman display (berbeda aturannya)
 
 Halaman yang menghadap tamu tidak mengikuti ukuran panel admin. Tamu berdiri, jaraknya jauh dari layar, dan belum tentu terbiasa.
 
-Ukuran teks minimal dua kali lipat panel admin. Tombol minimal 56px tinggi, lebar penuh atau mendekati. Satu layar satu fokus, jangan padat. Tanpa sidebar, tanpa menu, tanpa navigasi apa pun. Kontras tinggi, jangan pakai abu tipis untuk teks.
+Ukuran teks minimal dua kali lipat panel admin. Tombol minimal 56px tinggi, lebar penuh atau mendekati. Satu layar satu fokus. Tanpa sidebar, tanpa menu, tanpa navigasi apa pun. Kontras tinggi, jangan pakai abu tipis untuk teks.
 
-Layar idle memakai warna primary sebagai latar penuh dengan logo instansi di tengah — berbeda jelas dari form supaya petugas bisa melihat statusnya dari kejauhan.
-
-Ini bagian yang tinggal kamu tempel di bagian bawah `CLAUDE.md`:
-
----
-
-## Update 1 — Hasil Wawancara FO (23 September 2026)
-
-### Konfirmasi e-Surat
-
-Kekhawatiran duplikasi **terjawab**. e-Surat hanya menangani surat masuk, disposisi pimpinan, dan surat keluar. **Penomoran surat masih manual di semua OPD**, berupa buku fisik.
-
-Kendala yang disebutkan FO: saat hari libur, nomor surat tidak bisa diterbitkan karena buku arsipnya ada di kantor. Ini alasan konkret kenapa modul penomoran dibutuhkan.
-
-Ke depan ada kemungkinan modul ini digabung ke e-Surat, tapi **e-Surat bukan tanggung jawab saya**. Kalau digabung, itu pekerjaan tim e-Surat, dan yang saya serahkan adalah rancangan beserta sistem yang sudah jalan sebagai acuan. Posisi akhirnya masih akan didiskusikan dengan mentor.
-
-### Perubahan peran — sekarang tiga role
-
-| Role | Akses |
-|---|---|
-| `admin_fo` | Buku tamu |
-| `staff` | Penomoran surat saja. Semua staff bisa akses |
-| `super_admin` | Kelola master data dan rekap |
-
-Staff tidak boleh melihat data buku tamu. Panel penomoran dipisah dari panel admin FO.
-
-**Belum diputuskan:** apakah staff punya akun masing-masing, atau satu akun bersama dengan nama diketik manual di form. Catatan wawancara menyebut "diisi namanya". Akun per staff lebih baik untuk audit, dan akan terselesaikan sendiri kalau SSO jadi dipasang.
-
-### Perubahan modul buku tamu
-
-**Field form tamu (fix):** tanggal datang, nama, keperluan, keterangan, bidang, pegawai.
-
-**Kategori keperluan dibatalkan.** Tabel `kategori_kunjungan` di-drop. Keperluan jadi teks bebas.
-
-**Perlu diperjelas:** beda kolom `keperluan` dan `keterangan`. Jangan sampai dua kolom untuk hal yang sama.
-
-**Master pegawai jadi wajib**, bukan opsional lagi.
-
-**Status kunjungan lebih dari dua.** Selain "di dalam" dan "selesai", ada kondisi seperti tamu yang mencari pegawai yang sedang tidak ada, sehingga statusnya jadi semacam "akan berkunjung lagi". Daftar lengkap statusnya **masih perlu dipastikan ke FO** — jangan dikarang sendiri.
-
-**Alur penanganan tamu:** kalau sudah ada janji, tamu langsung diantar. Kalau belum, pegawai yang dituju dihubungi dulu.
-
-### Perubahan modul penomoran surat
-
-**Format nomor Diskominfo:**
-
-```
-KODE/NO/BIDANG/KODEOPD/BULAN_ROMAWI/TAHUN
-```
-
-Kode klasifikasi ada di **posisi paling depan**, bukan nomor urut. Catatan sebelumnya keliru dan sudah dikoreksi.
-
-Format ini hanya berlaku untuk Diskominfo. OPD lain bisa berbeda, jadi tetap disimpan sebagai template per OPD di master.
-
-Penanda yang perlu ditambahkan: `{bidang}` dan `{bulan_romawi}`.
-
-**Kasus nomor susulan (penting).** Kalau ada surat mundur yang butuh nomor di posisi yang sudah terlewat, nomornya diberi akhiran titik. Contoh: surat tertanggal 8 Agustus diminta pada 19 Agustus, sedangkan posisi 8 Agustus seharusnya nomor 102 yang sudah terpakai — maka nomornya jadi `102.1`.
-
-Implikasi ke skema: tambahkan kolom `sub_nomor` (nullable integer) di tabel `nomor_surat`. Unique constraint berubah jadi gabungan OPD, jenis surat, tahun, `nomor_urut`, dan `sub_nomor`. Pilihan ini diambil supaya urutan numerik tetap terjaga untuk counter dan pengurutan.
-
-**Kode klasifikasi diinput manual**, berlaku untuk semua jenis surat. **Perlu diperjelas:** apakah master jenis surat masih dipakai, atau semua diketik manual.
-
-**Pencarian arsip surat keluar** memakai kata kunci perihal dan kode surat.
-
-### Rencana ke depan
-
-1. Selesaikan modul buku tamu terlebih dahulu — sudah fix dan tidak ada yang menghalangi.
-2. Bereskan sebelum masuk form tamu: drop tabel `kategori_kunjungan`, tambahkan `staff` ke role, pastikan daftar status kunjungan ke FO.
-3. Modul penomoran menunggu hasil diskusi dengan mentor soal posisinya terhadap e-Surat. Kalau tetap dikerjakan, jadwal minggu keenam masih berlaku.
+Layar idle berbeda jelas dari form supaya petugas bisa melihat statusnya dari kejauhan.

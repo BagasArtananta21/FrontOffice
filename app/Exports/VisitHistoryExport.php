@@ -61,7 +61,7 @@ class VisitHistoryExport
             $dateStyle = (new Style())->setFormat('dd/mm/yyyy hh:mm');
             $rowCount = 0;
 
-            $query->with(['bidang', 'pegawai', 'petugas'])
+            $query->with(['bidang', 'petugas'])
                 ->orderBy('kunjungan.id')
                 ->lazy(500)
                 ->each(function (Kunjungan $kunjungan) use ($writer, $dateStyle, &$rowCount) {
@@ -74,7 +74,7 @@ class VisitHistoryExport
                         $kunjungan->no_hp,
                         $kunjungan->alamat,
                         $kunjungan->bidang?->nama_bidang,
-                        $kunjungan->pegawai?->nama_pegawai,
+                        $kunjungan->pegawai_tujuan,
                         $kunjungan->keperluan,
                         $kunjungan->catatan_petugas,
                         $kunjungan->sumber_input === Kunjungan::SUMBER_FRONT_OFFICE ? 'Front Office' : 'Display',

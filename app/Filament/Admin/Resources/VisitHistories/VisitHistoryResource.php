@@ -5,7 +5,6 @@ namespace App\Filament\Admin\Resources\VisitHistories;
 use App\Filament\Admin\Resources\Kunjungans\KunjunganResource;
 use App\Filament\Admin\Resources\VisitHistories\Pages\ManageVisitHistories;
 use App\Models\Kunjungan;
-use App\Models\Bidang;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -19,7 +18,6 @@ use Filament\Forms\Components\DatePicker;
 use Carbon\Carbon;
 use Filament\Actions\ViewAction;
 use Filament\Support\Enums\Width;
-use Filament\Tables\Columns\IconColumn;
 
 class VisitHistoryResource extends Resource
 {
@@ -55,7 +53,7 @@ class VisitHistoryResource extends Resource
     {
         return $table
             ->defaultSort('nomor_kunjungan', 'desc')
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['bidang', 'pegawai', 'petugas']))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['bidang', 'petugas']))
             ->columns([
                 TextColumn::make('nomor_kunjungan')
                     ->label('Nomor Kunjungan')
@@ -78,7 +76,7 @@ class VisitHistoryResource extends Resource
                     ->searchable()
                     ->placeholder('—'),
 
-                TextColumn::make('pegawai.nama_pegawai')
+                TextColumn::make('pegawai_tujuan')
                     ->label('Pegawai yang dituju')
                     ->searchable()
                     ->placeholder('—'),
