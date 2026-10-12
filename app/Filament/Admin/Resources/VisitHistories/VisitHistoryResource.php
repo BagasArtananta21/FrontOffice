@@ -90,10 +90,6 @@ class VisitHistoryResource extends Resource
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                IconColumn::make('sudah_dihubungi')
-                    ->label('Dihubungi')
-                    ->boolean(),
-
                 TextColumn::make('sumber_input')
                     ->label('Sumber')
                     ->badge()
