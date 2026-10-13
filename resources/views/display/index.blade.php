@@ -39,7 +39,6 @@
             <form x-ref="guestForm" @submit="submitting = true" method="POST" action="{{ route('display.kunjungan.store') }}" class="mt-6 grid grid-cols-2 content-start gap-x-10 gap-y-6">
                 @csrf
 
-                {{-- Kolom kiri: identitas tamu --}}
                 <div class="space-y-5">
                     <x-display.field name="nama_tamu" label="Nama" required>
                         <input id="nama_tamu" name="nama_tamu" type="text" value="{{ old('nama_tamu') }}" autocomplete="off" required class="display-input">

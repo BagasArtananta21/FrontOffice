@@ -27,10 +27,11 @@ class Kunjungan extends Model
     
     public static function normalizePhone(?string $value): ?string
     {
-        $digits = preg_replace('/[^0-9+]/', '', (string) $value);
+        $cleaned = preg_replace('/[\s\-.()]/', '', (string) $value);
 
-        return $digits === '' ? null : preg_replace('/^(\+62|62)/', '0', $digits);
+        return $cleaned === '' ? null : preg_replace('/^(\+62|62)/', '0', $cleaned);
     }
+
 
     public function bidang(): BelongsTo
     {
