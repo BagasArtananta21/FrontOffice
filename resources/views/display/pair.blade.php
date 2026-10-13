@@ -9,6 +9,7 @@
 </head>
 <body class="relative flex min-h-screen flex-col">
     <div class="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(ellipse_at_top,#E0E7FF_0%,transparent_70%)]"></div>
+
     <header class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-8 py-4">
         <div class="text-primary">
             @include('filament.brand')
@@ -84,21 +85,19 @@
 
                 <ol class="mt-4 grid grid-cols-3 gap-4">
                     @foreach ([
-                        'Minta token ke pihak terkait',
+                        'Minta token ke pengelola sistem',
                         'Masukkan token di kolom di atas',
                         'Tekan Pasangkan Perangkat',
-                    ] as $title )
+                    ] as $title)
                         <li class="flex gap-3 rounded-md border border-slate-200 bg-page p-4">
                             <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">{{ $loop->iteration }}</span>
-                            <div>
-                                <p class="text-base font-semibold text-primary">{{ $title }}</p>
-                            </div>
+                            <p class="text-base font-semibold text-primary">{{ $title }}</p>
                         </li>
                     @endforeach
                 </ol>
 
                 <p class="mt-4 text-sm text-ink">
-                    Token hanya ditampilkan satu kali. Bila hilang, minta super admin membuat ulang token.
+                    Token hanya ditampilkan satu kali. Bila hilang, minta pengelola sistem membuat ulang token.
                 </p>
             </div>
         </div>
