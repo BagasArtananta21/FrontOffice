@@ -15,22 +15,8 @@
             @include('filament.brand')
         </div>
 
-        <p
-            x-data="{
-                time: '',
-                tick() {
-                    this.time = new Date().toLocaleTimeString('id-ID', { hour12: false, timeZone: @js(config('app.timezone')) });
-                },
-                init() {
-                    this.tick();
-                    setInterval(() => this.tick(), 1000);
-                },
-            }"
-            class="text-base font-medium tabular-nums text-ink"
-        >
-            <span x-text="time">{{ now()->format('H.i.s') }}</span>
-            {{ now()->format('T') }}
-        </p>
+        <x-clock class="text-base font-medium tabular-nums text-ink"/>
+
     </header>
 
     <main class="relative flex flex-1 items-center justify-center px-6 py-10">
