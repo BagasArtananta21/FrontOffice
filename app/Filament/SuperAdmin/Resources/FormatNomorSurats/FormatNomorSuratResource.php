@@ -24,7 +24,9 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Forms\Components\Repeater;
 use Filament\Infolists\Components\TextEntry;
 use App\Models\Opd;
+use Filament\Forms\Components\Toggle;
 use Filament\Support\Enums\Width;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\SelectFilter;
 
 class FormatNomorSuratResource extends Resource
@@ -75,8 +77,15 @@ class FormatNomorSuratResource extends Resource
                         ->label('Dasar Perubahan')
                         ->placeholder('Peraturan Walikota No. 1 Tahun 2024')
                         ->maxLength(255)
-                        ->maxLength(255)
                         ->columnSpanFull(),
+                    
+                    Toggle::make('izinkan_susulan')
+                        ->label('Izinkan Susulan')
+                        ->helperText('Surat bertanggal mundur mendapat sub-nomor (contoh: 102.1). Jika nonaktif, nomor surat bertanggal mundur tetap mendapat nomor urut berikutnya.')
+                        ->default(false)
+                        ->inline(false)
+                        ->columnSpanFull(),
+
                 ]),
             Section::make('Susunan Nomor')
                 ->columns(2)
@@ -161,6 +170,10 @@ class FormatNomorSuratResource extends Resource
                         $record->susunan,
                         $record->opd->kode_opd,
                     )),
+                
+                IconColumn::make('izinkan_susulan')
+                    ->label('Izinkan Susulan')
+                    ->boolean(),
                 
                 TextColumn::make('dasar_perubahan')
                     ->label('Dasar Perubahan')

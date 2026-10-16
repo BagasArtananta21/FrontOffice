@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
+use Filament\Schemas\Components\Utilities\Get;
 
 class NomorSuratResource extends Resource
 {
@@ -96,7 +97,11 @@ class NomorSuratResource extends Resource
                             $set('segmen_tahun', (string) $tanggal->year);
                         })
 
-                        ->helperText('Tanggal mundur akan mendapat nomor susulan (contoh: 103.1) bila sudah ada nomor yang terbit setelah tanggal tersebut.'),
+                        ->helperText(fn (Get $get) => match (true) {
+                            (bool) $format?->izinkan_susulan => 'Tanggal mundur akan mendapat nomor susulan (contoh: 103.1) bila sudah ada nomor yang terbit setelah tanggal tersebut.',
+                            filled($get('tanggal_surat')) && Carbon::parse($get('tanggal_surat'))->lt(today()) => 'Tanggal mundur tetap mendapat nomor urut berikutnya, bukan nomor susulan.',
+                            default => null,
+                        }),
                 ]),
         ]);
     }

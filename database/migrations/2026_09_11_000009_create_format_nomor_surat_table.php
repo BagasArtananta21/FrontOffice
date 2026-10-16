@@ -17,6 +17,7 @@ return new class extends Migration
         $table->json('susunan');
         $table->date('berlaku_sejak');
         $table->string('dasar_perubahan')->nullable();
+        $table->boolean('izinkan_susulan')->default(false);
         $table->foreignUuid('dibuat_oleh')->constrained('users')->restrictOnDelete();
         $table->timestamps();
 

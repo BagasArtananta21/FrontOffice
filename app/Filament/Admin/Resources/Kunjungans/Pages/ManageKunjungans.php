@@ -34,7 +34,7 @@ class ManageKunjungans extends ManageRecords
                         return app(KunjunganService::class)->recordByStaff(
                             $data,
                             Auth::user()
-                        );
+                        ); 
                     } catch (\Exception $e) {
                         report ($e);
                         SweetAlert::error(

@@ -27,6 +27,7 @@ class FormatNomorSuratSeeder extends Seeder
                     ['jenis' => 'tahun'],
                 ],
                 'dasar_perubahan' => 'Format awal Diskominfosanti',
+                'izinkan_susulan' => true,
                 'dibuat_oleh' => $superAdmin->id,
             ])->save();
 

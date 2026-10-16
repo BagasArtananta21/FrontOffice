@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
 
-#[Fillable(['susunan', 'berlaku_sejak', 'dasar_perubahan'])]
+#[Fillable(['susunan', 'berlaku_sejak', 'dasar_perubahan', 'izinkan_susulan'])]
 class FormatNomorSurat extends Model
 {
     use BelongsToOpd, HasUuids;
@@ -60,6 +60,7 @@ class FormatNomorSurat extends Model
         return [
             'susunan' => 'array',
             'berlaku_sejak' => 'date',
+            'izinkan_susulan' => 'boolean',
         ];
     }
 

@@ -31,7 +31,7 @@ class LetterNumberService
             $batas = $tanggalSurat->copy()->endOfDay();
             $nomorInduk = 0;
 
-            if ($tanggalSurat->lt(today())) {
+            if ($format->izinkan_susulan && $tanggalSurat->lt(today())) {
                 $induk = NomorSurat::query()
                     ->where('tahun', $tanggalSurat->year)
                     ->where('sub_nomor', 0);
