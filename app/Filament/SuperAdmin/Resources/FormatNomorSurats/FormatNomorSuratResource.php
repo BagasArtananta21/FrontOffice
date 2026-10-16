@@ -81,7 +81,7 @@ class FormatNomorSuratResource extends Resource
                     
                     Toggle::make('izinkan_susulan')
                         ->label('Izinkan Susulan')
-                        ->helperText('Surat bertanggal mundur mendapat sub-nomor (contoh: 102.1). Jika nonaktif, nomor surat bertanggal mundur tetap mendapat nomor urut berikutnya.')
+                        ->helperText('Jika aktif, nomor surat bertanggal mundur mendapat sub-nomor (contoh: 102.1). Jika nonaktif, nomor surat bertanggal mengikuti nomor urut berikutnya.')
                         ->default(false)
                         ->inline(false)
                         ->columnSpanFull(),
