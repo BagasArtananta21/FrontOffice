@@ -28,6 +28,7 @@ class ManageNomorSurats extends ManageRecords
                 ->label('Buat Nomor Surat')
                 ->modalHeading('Terbitkan Nomor Surat')
                 ->modalSubmitActionLabel('Terbitkan')
+                ->steps(NomorSuratResource::issueSteps())
                 ->modalWidth(Width::FiveExtraLarge)
                 ->successNotification(null)
                 ->using (function (array $data, $livewire, CreateAction $action){

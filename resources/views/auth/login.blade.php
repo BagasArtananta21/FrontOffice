@@ -9,7 +9,6 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="relative min-h-screen">
-    <div class="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(ellipse_at_top,#E0E7FF_0%,transparent_70%)]"></div>
 
     <main class="relative flex min-h-screen flex-col items-center justify-center px-4 py-10">
         <div class="w-full max-w-md rounded-lg bg-white p-8 shadow-[0_8px_24px_rgba(15,44,89,0.08)]">

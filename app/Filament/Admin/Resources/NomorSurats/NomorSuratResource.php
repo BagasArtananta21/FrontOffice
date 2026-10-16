@@ -31,6 +31,8 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Wizard\Step;
+use Filament\Tables\Columns\Column;
 
 class NomorSuratResource extends Resource
 {
@@ -48,10 +50,15 @@ class NomorSuratResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
+        return $schema->components(self::issuComponents());
+    }
+
+    private static function issuComponents(): array
+    {
         $format = FormatNomorSurat::query()->berlakuPada(now())->first();
         $segments = self::numberSegments($format);
 
-        return $schema->components([
+        return [
             Section::make('Nomor Surat')
                 ->description('Bagian yang terkunci diisi otomatis oleh sistem.')
                 ->columns(max(count($segments) + 1, 1))
@@ -103,7 +110,7 @@ class NomorSuratResource extends Resource
                             default => null,
                         }),
                 ]),
-        ]);
+        ];
     }
 
     private static function numberSegments(?FormatNomorSurat $format): array
@@ -159,6 +166,52 @@ class NomorSuratResource extends Resource
             ->default($value)
             ->disabled()
             ->dehydrated(false);
+    }
+
+    public static function issueSteps(): array
+    {
+        return [
+            Step::make('Isi Data')
+                ->schema(self::issuComponents()),
+            
+            Step::make('Periksa')
+                ->description('Nomor tidak bisa diubah/diperbarui setelah terbit. periksa sekali lagi sebelum menerbitkan.')
+                ->columns(2)
+                ->schema([
+                    TextEntry::make('cek_kode_klasifikasi')
+                    ->label('Kode Klasifikasi')
+                    ->state(fn (Get $get) => $get('kode_klasifikasi'))
+                    ->placeholder('-'),
+
+                TextEntry::make('cek_bidang')
+                    ->label('Bidang')
+                    ->state(fn (Get $get) => Bidang::find($get('bidang_id'))?->nama_bidang)
+                    ->placeholder('-'),
+
+                TextEntry::make('cek_tanggal_surat')
+                    ->label('Tertanggal')
+                    ->state(fn (Get $get) => filled($get('tanggal_surat'))
+                        ? Carbon::parse($get('tanggal_surat'))->translatedFormat('d F Y')
+                        : null)
+                    ->placeholder('-'),
+
+                TextEntry::make('cek_nama_peminta')
+                    ->label('Nama Peminta')
+                    ->state(fn (Get $get) => $get('nama_peminta'))
+                    ->placeholder('-'),
+
+                TextEntry::make('cek_tujuan_surat')
+                    ->label('Tujuan Surat')
+                    ->state(fn (Get $get) => $get('tujuan_surat'))
+                    ->placeholder('-'),
+
+                TextEntry::make('cek_perihal')
+                    ->label('Perihal')
+                    ->state(fn (Get $get) => $get('perihal'))
+                    ->columnSpanFull(),
+
+                ])
+        ];
     }
 
     public static function table(Table $table): Table
