@@ -33,6 +33,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Tables\Columns\Column;
+use UnitEnum;
 
 class NomorSuratResource extends Resource
 {
@@ -41,6 +42,8 @@ class NomorSuratResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::DocumentText;
 
     protected static ?string $navigationLabel = 'Nomor Surat';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Penomoran Surat';
 
     protected static ?string $modelLabel = 'Nomor Surat';
 

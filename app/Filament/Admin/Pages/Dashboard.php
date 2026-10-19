@@ -17,12 +17,15 @@ use Filament\Support\Icons\Heroicon;
 use App\Exports\VisitHistoryExport;
 use App\Filament\Support\SweetAlert;
 use App\Models\Kunjungan;
+use UnitEnum;
 
 class Dashboard extends BaseDashboard
 {
     use HasFiltersForm, ResolvesDateRange;
 
     protected static ?string $title = 'Rekap Kunjungan';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Buku Tamu';
 
     public function filtersForm(Schema $schema): Schema
     {

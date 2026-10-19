@@ -28,6 +28,7 @@ use Filament\Support\Enums\Width;
 use Illuminate\Database\QueryException;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ImageEntry;
+use UnitEnum;
 
 class KunjunganResource extends Resource
 {
@@ -38,6 +39,8 @@ class KunjunganResource extends Resource
     protected static ?string $recordTitleAttribute = 'keperluan';
 
     protected static ?string $navigationLabel = 'Tamu Hari Ini';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Buku Tamu';
 
     protected static ?string $modelLabel = 'Kunjungan';
 

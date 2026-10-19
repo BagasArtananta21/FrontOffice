@@ -18,6 +18,7 @@ use Filament\Forms\Components\DatePicker;
 use Carbon\Carbon;
 use Filament\Actions\ViewAction;
 use Filament\Support\Enums\Width;
+use UnitEnum;
 
 class VisitHistoryResource extends Resource
 {
@@ -26,6 +27,8 @@ class VisitHistoryResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClock;
 
     protected static ?string $navigationLabel = 'Riwayat Kunjungan';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Buku Tamu';
 
     protected static ?string $title = 'Riwayat Kunjungan';
 

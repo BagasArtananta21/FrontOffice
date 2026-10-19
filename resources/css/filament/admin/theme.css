@@ -65,3 +65,66 @@
 .swal2-timer-progress-bar.swal-progress {
     background-color: var(--swal-accent);
 }
+
+.fi-sidebar .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-item-icon {
+    color: rgb(255 255 255 / 0.75);
+}
+
+/* Judul grup */
+.fi-sidebar .fi-sidebar-group-label {
+    color: rgb(255 255 255 / 0.55);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.fi-sidebar .fi-sidebar-group-btn .fi-icon {
+    color: rgb(255 255 255 / 0.55);
+}
+
+/* Item biasa */
+.fi-sidebar .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-item-icon {
+    color: rgb(255 255 255 / 0.75);
+}
+
+.fi-sidebar .fi-sidebar-item-btn:hover {
+    background-color: rgb(255 255 255 / 0.08);
+}
+
+/* Item aktif */
+.fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    background-color: #1E3A8A;
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-btn::before {
+    content: '';
+    position: absolute;
+    top: 0.375rem;
+    bottom: 0.375rem;
+    left: 0;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background-color: #CA8A04;
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-btn::after {
+    content: '';
+    width: 0.375rem;
+    height: 0.375rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background-color: #CA8A04;
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-label {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
+    color: #ffffff;
+}
+

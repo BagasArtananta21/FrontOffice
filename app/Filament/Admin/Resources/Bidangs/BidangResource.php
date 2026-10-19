@@ -19,6 +19,7 @@ use Filament\Tables\Table;
 use Illuminate\Validation\Rules\Unique;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\QueryException;
+use UnitEnum;
 
 class BidangResource extends Resource
 {
@@ -29,6 +30,8 @@ class BidangResource extends Resource
     protected static ?string $recordTitleAttribute = 'nama_bidang';
 
     protected static ?string $navigationLabel = 'Kelola Bidang';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Kelola Data';
 
     protected static ?string $modelLabel = 'Bidang';
 

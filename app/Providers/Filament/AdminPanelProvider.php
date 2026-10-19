@@ -32,6 +32,11 @@ class AdminPanelProvider extends PanelProvider
             ->brandName(config('app.name'))
             ->brandLogo(fn () => view('filament.brand'))
             ->brandLogoHeight('2.25rem')
+            ->navigationGroups([
+                'Buku Tamu',
+                'Penomoran Surat',
+                'Kelola Data',
+            ])
             ->renderHook(
                 PanelsRenderHook::USER_MENU_BEFORE,
                 fn () => view('filament.topbar.user-info'),
