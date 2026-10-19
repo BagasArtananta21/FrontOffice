@@ -30,6 +30,21 @@ class Opd extends Model
         return $this->hasMany(DisplayDevice::class);
     }
 
+    public function kunjungan(): HasMany
+    {
+        return $this->hasMany(Kunjungan::class);
+    }
+
+    public function nomorSurat(): HasMany
+    {
+        return $this->hasMany(NomorSurat::class);
+    }
+
+    public function formatNomorSurat(): HasMany
+    {
+        return $this->hasMany(FormatNomorSurat::class);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('aktif', true);

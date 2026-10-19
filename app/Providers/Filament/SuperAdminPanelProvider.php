@@ -6,7 +6,6 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -29,8 +28,6 @@ class SuperAdminPanelProvider extends PanelProvider
             ->id('super-admin')
             ->path('super-admin')
             ->viteTheme('resources/css/filament/admin/theme.css')
-            ->brandName(config('app.name'))
-            ->brandLogo(asset('images/logo.jpeg'))
             ->darkMode(false)
             ->globalSearch(false)
             ->brandName(config('app.name'))
@@ -44,6 +41,10 @@ class SuperAdminPanelProvider extends PanelProvider
                 PanelsRenderHook::SCRIPTS_AFTER,
                 fn () => Blade::render("@vite('resources/js/filament.js')"),
             )
+            ->navigationGroups([
+                'Pantau Sistem',
+                'Kelola Data',
+            ])
             ->colors([
                 'primary' => '#0F2C59',
                 'secondary' => '#CA8A04',
@@ -55,14 +56,7 @@ class SuperAdminPanelProvider extends PanelProvider
             ])
             ->discoverResources(in: app_path('Filament/SuperAdmin/Resources'), for: 'App\Filament\SuperAdmin\Resources')
             ->discoverPages(in: app_path('Filament/SuperAdmin/Pages'), for: 'App\Filament\SuperAdmin\Pages')
-            ->pages([
-                Dashboard::class,
-            ])
             ->discoverWidgets(in: app_path('Filament/SuperAdmin/Widgets'), for: 'App\Filament\SuperAdmin\Widgets')
-            ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
-            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

@@ -18,7 +18,19 @@ class DisplayDevice extends Model
     use BelongsToOpd, HasUuids;
     protected $table = 'display_devices';
 
+    public const CONNECTED_WITHIN_SECONDS = 30;
+
     public const COOKIE = 'display_token';
+
+    public function scopeConnected(Builder $query): Builder {
+        return $query->where('terakhir_aktif', '>=', now()->subSeconds(self::CONNECTED_WITHIN_SECONDS));
+    }
+
+    public function isConnected(): bool
+    {
+        return $this->terakhir_aktif !== null
+            && $this->terakhir_aktif->greaterThanOrEqualTo(now()->subSeconds(self::CONNECTED_WITHIN_SECONDS));
+    }
 
     public static function findActiveByToken(?string $token): ?self {
         if (blank($token)){
@@ -35,11 +47,6 @@ class DisplayDevice extends Model
     public function opd(): BelongsTo{
         return $this->belongsTo(Opd::class);
     } 
-
-    public function isConnected(): bool {
-        return $this->terakhir_aktif !== null 
-        && $this->terakhir_aktif->greaterThanOrEqualTo(now()->subSeconds(30));
-    }
 
     protected function casts(): array {
         return [

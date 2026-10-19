@@ -2,7 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
-use App\Filament\Admin\Widgets\Concerns\ResolvesDateRange;
+use App\Filament\Concerns\ResolvesDateRange;
 use App\Models\Kunjungan;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\ChartWidget;

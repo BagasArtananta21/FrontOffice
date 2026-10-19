@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Admin\Widgets\Concerns;
+namespace App\Filament\Concerns;
 
 use Illuminate\Support\Carbon;
 use Carbon\CarbonInterface;
