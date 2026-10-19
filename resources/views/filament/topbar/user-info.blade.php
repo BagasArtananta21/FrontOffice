@@ -3,7 +3,11 @@
 @endphp
 
 <div class="hidden items-center gap-4 sm:flex">
-    <x-clock class="text-sm font-medium tabular-nums text-gray-500" />
+    <x-clock :date="true" class="text-sm font-medium text-gray-800">
+        <x-slot name="icon">
+            <x-filament::icon icon="heroicon-o-clock" class="size-5 text-gray-400" />
+        </x-slot>
+    </x-clock>
 
     <span class="h-8 w-px bg-gray-200"></span>
 

@@ -6,20 +6,19 @@ use App\Filament\Admin\Widgets\Concerns\ResolvesDateRange;
 use App\Models\Kunjungan;
 use Carbon\CarbonPeriod;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
-use Filament\Widgets\StatsOverviewWidget;
-use Filament\Widgets\StatsOverviewWidget\Stat;
+use Filament\Widgets\Widget;
 
-class GuestSummaryStats extends StatsOverviewWidget
+class GuestSummaryStats extends Widget
 {
     use InteractsWithPageFilters, ResolvesDateRange;
-    
+
     protected static ?int $sort = 1;
 
     protected int|string|array $columnSpan = 'full';
 
-    protected int|array|null $columns = 4;
+    protected string $view = 'filament.admin.widgets.guest-summary-stats';
 
-    protected function getStats(): array
+    protected function getViewData(): array
     {
         [$start, $end] = $this->dateRange();
 
@@ -32,11 +31,11 @@ class GuestSummaryStats extends StatsOverviewWidget
         $previousTotal = Kunjungan::query()
             ->whereBetween('waktu_datang', [$start->copy()->subDays($days), $start->copy()->subSecond()])
             ->count();
-        
+
         $workdays = collect(CarbonPeriod::create($start->copy()->startOfDay(), $end->copy()->startOfDay()))
             ->filter->isWeekday()
             ->count();
-        
+
         $topBidang = (clone $visits)
             ->with('bidang')
             ->whereNotNull('bidang_id')
@@ -45,30 +44,16 @@ class GuestSummaryStats extends StatsOverviewWidget
             ->groupBy('bidang_id')
             ->orderByDesc('total')
             ->first();
-        
+
         return [
-            Stat::make('Total Tamu', $total)
-                ->description($this->comparision($total, $previousTotal)),
-            
-            Stat::make('Rata-rata per hari Kerja', $total > 0 ? number_format($total / $workdays, 1, ',', '.') : '0')
-                ->description("{$workdays} hari kerja"),
-
-            Stat::make('Mengisi sendiri di Display', $total > 0 ? round($fromDisplay / $total * 100).'%' : '-') 
-                ->description("{$fromDisplay} dari {$total} tamu"),
-            
-            Stat::make('Bidang Terbanyak', $topBidang?->bidang?->shortLabel() ?? '-') 
-                ->description($topBidang ? "{$topBidang->total} kunjungan" : 'belum ada data')
+            'total' => $total,
+            'change' => $previousTotal > 0 ? (int) round(($total - $previousTotal) / $previousTotal * 100) : null,
+            'average' => $workdays > 0 ? number_format($total / $workdays, 1, ',', '.') : '0',
+            'workdays' => $workdays,
+            'fromDisplay' => $fromDisplay,
+            'displayShare' => $total > 0 ? (int) round($fromDisplay / $total * 100) : null,
+            'topBidang' => $topBidang?->bidang,
+            'topBidangTotal' => (int) $topBidang?->total,
         ];
-    }
-
-    private function comparision(int $current, int $previous): string
-    {
-        if ($previous === 0){
-            return 'Tidak ada data periode sebelumnya';
-        }
-
-        $change = (int) round(($current - $previous) / $previous * 100);
-
-        return ($change >= 0 ? '+' : '').$change.'% dari periode sebelumnya';
     }
 }

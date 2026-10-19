@@ -3,12 +3,24 @@
 namespace App\Filament\Admin\Widgets\Concerns;
 
 use Illuminate\Support\Carbon;
+use Carbon\CarbonInterface;
 
 trait ResolvesDateRange
 {
     /**
      * @return array{0: Carbon, 1: Carbon}
      */
+    public static function presetRange(string $preset): array
+    {
+        $start = match ($preset) {
+            'today' => now()->startOfDay(),
+            'this_week' => now()->startOfWeek(CarbonInterface::MONDAY),
+            'this_month' => now()->startOfMonth(),
+        };
+
+        return [$start, now()->endOfDay()];
+    }
+
     protected function dateRange(?array $filters = null): array
     {
         $filters ??= $this->pageFilters ?? [];

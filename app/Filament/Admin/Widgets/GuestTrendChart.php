@@ -13,6 +13,8 @@ class GuestTrendChart extends ChartWidget
 {
     use InteractsWithPageFilters, ResolvesDateRange;
 
+    protected ?string $description = 'Jumlah tamu per hari pada rentang tanggal terpilih';
+
     protected static ?int $sort = 2;
 
     protected int|string|array $columnSpan = 2;
@@ -52,8 +54,11 @@ class GuestTrendChart extends ChartWidget
                 'borderWidth' => 2,
                 'fill' => true,
                 'tension' => 0,
-                'pointRadius' => 0,
-                'pointHoverRadius' => 4,
+                'pointRadius' => 3,
+                'pointHoverRadius' => 5,
+                'pointBackgroundColor' => '#1E3A8A',
+                'pointBorderColor' => '#FFFFFF',
+                'pointBorderWidth' => 1.5,
             ]],
             'labels' => $labels,
         ];
@@ -62,11 +67,27 @@ class GuestTrendChart extends ChartWidget
     protected function getOptions(): array
     {
         return [
-            'plugins' => ['legend' => ['display' => false]],
+            'plugins' => [
+                'legend' => ['display' => false],
+                'tooltip' => [
+                    'backgroundColor' => '#0F172A',
+                    'displayColors' => false,
+                    'padding' => 8,
+                ],
+            ],
             'scales' => [
-                'x' => ['grid' => ['display' => false]],
-                'y' => ['beginAtZero' => true, 'ticks' => ['precision' => 0]],
+                'x' => [
+                    'grid' => ['display' => false],
+                    'ticks' => ['maxTicksLimit' => 10],
+                ],
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => ['precision' => 0],
+                    'grid' => ['color' => '#F1F5F9'],
+                    'border' => ['display' => false],
+                ],
             ],
         ];
     }
+
 }
