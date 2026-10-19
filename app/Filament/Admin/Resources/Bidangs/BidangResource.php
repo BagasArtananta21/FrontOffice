@@ -140,7 +140,10 @@ class BidangResource extends Resource
                         "Data {$record->nama_bidang} sudah diperbarui.");
                 }),
 
-            ]);
+            ])
+            ->emptyStateIcon(Heroicon::OutlinedSquares2x2)
+            ->emptyStateHeading('Belum ada Bidang')
+            ->emptyStateDescription('Bidang dipakai sebagai tujuan tamu dan sebagai kode di nomor surat');
     }
 
     public static function getPages(): array

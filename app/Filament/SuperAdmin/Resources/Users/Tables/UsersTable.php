@@ -11,6 +11,7 @@ use Filament\Tables\Table;
 use App\Models\User;
 use App\Filament\Support\SweetAlert;
 use Illuminate\Database\QueryException;
+use Filament\Support\Icons\Heroicon;
 
 
 class UsersTable
@@ -97,6 +98,9 @@ class UsersTable
                             "Data {$record->nama_opd} sudah diperbarui."
                         );
                     })
-            ]);
+            ])
+            ->emptyStateIcon(Heroicon::OutlinedUsers)
+            ->emptyStateHeading('Belum ada Pengguna')
+            ->emptyStateDescription('Setiap OPD minimal butuh minimal satu pengguna admin FO aktif.');
     }
 }

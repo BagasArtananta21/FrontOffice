@@ -5,6 +5,7 @@ namespace App\Filament\SuperAdmin\Resources\Opds\Tables;
 use App\Models\Opd;
 use App\Filament\Support\SweetAlert;
 use Filament\Actions\EditAction;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -105,6 +106,9 @@ class OpdsTable
                         );
                     })
                         
-            ]);
+            ])
+            ->emptyStateIcon(Heroicon::OutlinedBuildingOffice2)
+            ->emptyStateHeading('Belum ada OPD')
+            ->emptyStateDescription('Tambahkan OPD sebelum membuat pengguna, format nomor surat, dan mengatur display.');
     }
 }

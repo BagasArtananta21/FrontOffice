@@ -10,6 +10,7 @@ use Filament\Tables\Table;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\TableWidget;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Support\Icons\Heroicon;
 
 class OpdRecapTable extends TableWidget
 {
@@ -78,6 +79,8 @@ class OpdRecapTable extends TableWidget
                     ->color(fn (int $state) => $state === 0 ? 'danger' : null),
             ])
             ->defaultPaginationPageOption(25)
-            ->emptyStateHeading('Belum ada OPD');
+            ->emptyStateIcon(Heroicon::OutlinedBuildingOffice2)
+            ->emptyStateHeading('Belum ada OPD')
+            ->emptyStateDescription('——');
     }
 }

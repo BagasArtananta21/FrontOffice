@@ -205,7 +205,9 @@ class FormatNomorSuratResource extends Resource
                         "Format {$record->opd->nama_opd} berlaku sejak {$record->berlaku_sejak->translatedFormat('d F Y')} sudah diperbarui."
                     )),
             ])
-            ->emptyStateHeading('Belum ada format nomor surat');
+            ->emptyStateIcon(Heroicon::OutlinedHashtag)
+            ->emptyStateHeading('Belum ada format nomor surat')
+            ->emptyStateDescription('OPD tanpa format yang berlaku tidak bisa menerbitkan nomor surat.');
 
     }
 

@@ -134,7 +134,9 @@ class VisitHistoryResource extends Resource
             ])
             ->recordAction('view')
             ->defaultPaginationPageOption(25)
-            ->emptyStateHeading('Belum ada riwayat kunjungan');
+            ->emptyStateIcon(Heroicon::OutlinedClock)
+            ->emptyStateHeading('Belum ada riwayat kunjungan')
+            ->emptyStateDescription('Tidak ada riwayat kunjungan yang tercatat pada rentang waktu ini, coba ubah rentang tanggal, filter, atau kata pencarian.');
     }
 
     public static function getPages(): array

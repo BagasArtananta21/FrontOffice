@@ -165,7 +165,9 @@ class DisplayDeviceResource extends Resource
                         );
                     }),
             ])
-            ->emptyStateHeading('Belum ada perangkat display');
+            ->emptyStateIcon(Heroicon::OutlinedComputerDesktop)
+            ->emptyStateHeading('Belum ada perangkat display')
+            ->emptyStateDescription('Tambahkan perangkat, lalu pasangan PC display melalui token yang muncul');
     }
 
     public static function getPages(): array

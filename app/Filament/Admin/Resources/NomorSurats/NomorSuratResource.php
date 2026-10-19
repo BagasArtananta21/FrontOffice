@@ -300,7 +300,9 @@ class NomorSuratResource extends Resource
             ])
             ->recordAction('view')
             ->defaultPaginationPageOption(25)
-            ->emptyStateHeading('Belum ada nomor surat');
+            ->emptyStateIcon(Heroicon::OutlinedDocumentText)
+            ->emptyStateHeading('Belum ada nomor surat')
+            ->emptyStateDescription('Nomor yang diterbitkan akan tercatat di sini.');
     }
 
     public static function infolist(Schema $schema): Schema

@@ -330,7 +330,9 @@ class KunjunganResource extends Resource
             ->toolbarActions([])
             ->defaultPaginationPageOption(25)
             ->recordAction('view')
-            ->emptyState(view('filament.admin.tables.kunjungan-empty'));
+            ->emptyStateIcon(Heroicon::OutlinedUserGroup)
+            ->emptyStateHeading('Belum ada Tamu hari ini')
+            ->emptyStateDescription('Tamu yang mengisi form di display atau diinput manual akan muncul disini');
     }
 
     public static function getPages(): array
