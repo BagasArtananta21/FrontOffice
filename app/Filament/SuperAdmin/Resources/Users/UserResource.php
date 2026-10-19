@@ -11,6 +11,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use App\Models\User;
+use UnitEnum;
 
 class UserResource extends Resource
 {
@@ -21,6 +22,8 @@ class UserResource extends Resource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static ?string $navigationLabel = 'Kelola Pengguna';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Kelola Data';
 
     protected static ?string $modelLabel = 'Pengguna';
 

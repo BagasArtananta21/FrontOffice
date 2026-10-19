@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 use Filament\Actions\Action;
 use Illuminate\Support\Str;
+use UnitEnum;
 
 class DisplayDeviceResource extends Resource
 {
@@ -31,6 +32,8 @@ class DisplayDeviceResource extends Resource
     protected static ?string $recordTitleAttribute = 'nama';
 
     protected static ?string $title = 'Kelola Perangkat Display';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Kelola Data';
 
     protected static ?string $navigationLabel = 'Kelola Display';
 

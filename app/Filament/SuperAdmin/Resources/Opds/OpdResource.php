@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class OpdResource extends Resource
 {
@@ -21,6 +22,8 @@ class OpdResource extends Resource
     protected static ?string $recordTitleAttribute = 'nama_opd';
 
     protected static ?string $navigationLabel = 'Kelola OPD';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Kelola Data';
 
     protected static ?string $modelLabel = 'OPD';
 

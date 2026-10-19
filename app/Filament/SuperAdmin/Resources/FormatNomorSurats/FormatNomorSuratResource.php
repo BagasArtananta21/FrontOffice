@@ -28,6 +28,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\SelectFilter;
+use UnitEnum;
 
 class FormatNomorSuratResource extends Resource
 {
@@ -36,6 +37,8 @@ class FormatNomorSuratResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHashtag;
 
     protected static ?string $navigationLabel = 'Format Nomor Surat';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Penomoran Surat';
 
     protected static ?string $modelLabel = 'Format Nomor Surat';
 
