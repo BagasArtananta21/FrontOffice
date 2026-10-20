@@ -48,4 +48,8 @@ Route::middleware('display')
             ->name('confirmation');
     });
 
+if (app()->isLocal()) {
+    Route::get('/_error/{code}', fn (int $code) => abort($code))->whereIn('code', [403, 404, 419, 500]);
+}
+
 Route::fallback(fn () => abort(404));
