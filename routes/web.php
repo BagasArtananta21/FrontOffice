@@ -47,3 +47,5 @@ Route::middleware('display')
         Route::get('/terima-kasih', [DisplayController::class, 'confirmation'])
             ->name('confirmation');
     });
+
+Route::fallback(fn () => abort(404));
