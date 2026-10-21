@@ -61,7 +61,8 @@ class VisitHistoryResource extends Resource
                 TextColumn::make('nomor_kunjungan')
                     ->label('Nomor Kunjungan')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->visibleFrom('md'),
                     
                 TextColumn::make('waktu_datang')
                     ->label('Waktu Datang')
@@ -77,12 +78,14 @@ class VisitHistoryResource extends Resource
                     ->label('Bidang yang dituju')
                     ->wrap()
                     ->searchable()
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->visibleFrom('md'),
 
                 TextColumn::make('pegawai_tujuan')
                     ->label('Pegawai yang dituju')
                     ->searchable()
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->visibleFrom('md'),
 
                 TextColumn::make('keperluan')
                     ->label('Keperluan')
@@ -95,11 +98,13 @@ class VisitHistoryResource extends Resource
                     ->label('Sumber')
                     ->badge()
                     ->formatStateUsing(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'Front Office' : 'Display')
-                    ->color(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'gray' : 'info'),
+                    ->color(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'gray' : 'info')
+                    ->visibleFrom('md'),
                 
                 TextColumn::make('petugas.name')
                     ->label('Ditampilkan/Dicatat Oleh')
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->visibleFrom('md'),
                     
             ])
             ->filters([

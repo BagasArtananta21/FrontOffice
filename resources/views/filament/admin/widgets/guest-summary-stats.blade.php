@@ -1,6 +1,5 @@
 <x-filament-widgets::widget>
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {{-- Total tamu --}}
         <div class="rounded-xl border border-l-4 border-gray-200 border-l-[#1E3A8A] bg-white p-5">
             <div class="flex items-start justify-between gap-3">
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Total Tamu</p>
@@ -31,7 +30,6 @@
             @endif
         </div>
 
-        {{-- Rata-rata per hari kerja --}}
         <div class="rounded-xl border border-l-4 border-gray-200 border-l-secondary bg-white p-5">
             <div class="flex items-start justify-between gap-3">
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Rata-rata / Hari Kerja</p>
@@ -48,7 +46,6 @@
             <p class="mt-3 text-xs text-gray-500">Total {{ $workdays }} hari kerja</p>
         </div>
 
-        {{-- Mengisi sendiri di display --}}
         <div class="rounded-xl border border-l-4 border-gray-200 border-l-success bg-white p-5">
             <div class="flex items-start justify-between gap-3">
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Mengisi Sendiri di Display</p>
@@ -67,7 +64,6 @@
             </div>
         </div>
 
-        {{-- Bidang terbanyak --}}
         <div class="rounded-xl border border-l-4 border-gray-200 border-l-primary bg-white p-5">
             <div class="flex items-start justify-between gap-3">
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Bidang Terbanyak</p>
@@ -77,10 +73,11 @@
             </div>
 
             @if ($topBidang)
-                <p class="mt-2 flex items-baseline gap-2">
-                    <span class="text-3xl font-bold text-gray-900">{{ $topBidang->shortLabel() }}</span>
-                    <span class="text-sm font-medium text-[#1E3A8A]">{{ $topBidangTotal }} Kunjungan</span>
+                <p clas<p class="mt-2 flex flex-wrap items-baseline gap-x-2">
+                    <span class="max-w-full truncate text-3xl font-bold text-gray-900" title="{{ $topBidang->nama_bidang }}">{{ $topBidang->shortLabel() }}</span>
+                    <span class="whitespace-nowrap text-sm font-medium text-tertiary">{{ $topBidangTotal }} Kunjungan</span>
                 </p>
+
 
                 <p class="mt-3 truncate text-xs text-gray-500">{{ $topBidang->nama_bidang }}</p>
             @else

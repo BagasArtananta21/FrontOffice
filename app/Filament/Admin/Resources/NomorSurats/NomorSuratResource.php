@@ -241,11 +241,13 @@ class NomorSuratResource extends Resource
                     ->label('No')
                     ->formatStateUsing(fn (int $state, NomorSurat $record) => $record->sub_nomor > 0
                         ? "{$state}.{$record->sub_nomor}"
-                        : (string) $state),
+                        : (string) $state)
+                    ->visibleFrom('md'),
 
                 TextColumn::make('kode_klasifikasi')
                     ->label('Kode')
-                    ->searchable(),
+                    ->searchable()
+                    ->visibleFrom('md'),
 
                 TextColumn::make('perihal')
                     ->label('Perihal')
@@ -256,7 +258,8 @@ class NomorSuratResource extends Resource
                 TextColumn::make('bidang.nama_bidang')
                     ->label('Dari')
                     ->wrap()
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->visibleFrom('md'),
 
                 TextColumn::make('nomor_lengkap')
                     ->label('No Surat')
@@ -265,7 +268,8 @@ class NomorSuratResource extends Resource
 
                 TextColumn::make('tanggal_surat')
                     ->label('Tgl Surat')
-                    ->date('d/m/Y'),
+                    ->date('d/m/Y')
+                    ->visibleFrom('md'),
                 
                 TextColumn::make('status')
                     ->label('Status')

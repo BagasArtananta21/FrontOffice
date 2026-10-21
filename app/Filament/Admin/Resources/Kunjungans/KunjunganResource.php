@@ -223,7 +223,8 @@ class KunjunganResource extends Resource
                 TextColumn::make('nomor_kunjungan')
                     ->label('Nomor Kunjungan')
                     ->placeholder('—')
-                    ->sortable(),
+                    ->sortable()
+                    ->visibleFrom('md'),
 
                 TextColumn::make('waktu_datang')
                     ->label('Jam')
@@ -238,7 +239,8 @@ class KunjunganResource extends Resource
                 TextColumn::make('no_hp')
                     ->label('Nomor HP')
                     ->placeholder('—')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->visibleFrom('md'),
                 
                 TextColumn::make('alamat')
                     ->label('Alamat')
@@ -247,13 +249,16 @@ class KunjunganResource extends Resource
 
                 TextColumn::make('bidang.nama_bidang')
                     ->label('Bidang yang dituju')
+                    ->wrap()
                     ->placeholder('—')
-                    ->searchable(),
+                    ->searchable()
+                    ->visibleFrom('md'),
 
                 TextColumn::make('pegawai_tujuan')
                     ->label('Pegawai yang dituju')
                     ->placeholder('—')
-                    ->searchable(),
+                    ->searchable()
+                    ->visibleFrom('md'),
 
                 TextColumn::make('keperluan')
                     ->label('Keperluan')
@@ -265,7 +270,8 @@ class KunjunganResource extends Resource
                     ->label('Sumber')
                     ->badge()
                     ->formatStateUsing(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'FrontOffice' : 'Display')
-                    ->color(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'gray' : 'info'),
+                    ->color(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'gray' : 'info')
+                    ->visibleFrom('md'),
 
                 TextColumn::make('created_at')
                     ->label('Dibuat Pada')
