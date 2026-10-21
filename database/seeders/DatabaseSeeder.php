@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -14,8 +15,18 @@ class DatabaseSeeder extends Seeder
                 BidangSeeder::class,
                 DisplayDeviceSeeder::class,
                 FormatNomorSuratSeeder::class,
-                DinkesSeeder::class,
-                KunjunganSeeder::class,
             ]);
+
+        if(app()->isLocal()) {
+            $this->call([
+                NomorSuratSeeder::class,
+                KunjunganSeeder::class,
+                DinkesSeeder::class,
+            ]);
+        }
+
     }
+
+    
 }
+

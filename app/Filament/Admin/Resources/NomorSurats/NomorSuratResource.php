@@ -32,8 +32,9 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Wizard\Step;
-use Filament\Tables\Columns\Column;
 use UnitEnum;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 
 class NomorSuratResource extends Resource
 {
@@ -50,6 +51,16 @@ class NomorSuratResource extends Resource
     protected static ?string $pluralModelLabel = 'Nomor Surat';
 
     protected static ?string $slug = 'nomor-surat';
+
+    public const DATE_BASES = [
+        'surat' => 'Tanggal Surat',
+        'terbit' => 'Tanggal Terbit',
+    ];
+
+    public static function dateFilterColumn(?string $basis): string
+    {
+        return $basis === 'terbit' ? 'tanggal_terbit' : 'tanggal_surat';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -244,6 +255,7 @@ class NomorSuratResource extends Resource
 
                 TextColumn::make('bidang.nama_bidang')
                     ->label('Dari')
+                    ->wrap()
                     ->placeholder('—'),
 
                 TextColumn::make('nomor_lengkap')
@@ -260,6 +272,53 @@ class NomorSuratResource extends Resource
                     ->badge()
                     ->color(fn (string $state) => $state === NomorSurat::STATUS_BATAL ? 'danger' : 'success')
                     ->formatStateUsing(fn (string $state) => $state === NomorSurat::STATUS_BATAL ? 'Dibatalkan' : 'Terbit'),
+            ])
+            ->filters([
+                Filter::make('rentang_tanggal')
+                    ->schema([
+                        Select::make('basis')
+                            ->label('Berdasarkan')
+                            ->options(self::DATE_BASES)
+                            ->default('surat')
+                            ->selectablePlaceholder(false),
+
+                        DatePicker::make('from')
+                            ->label('Dari tanggal'),
+                        
+                        DatePicker::make('until')
+                            ->label('Sampai tanggal'),
+                    ])
+                    ->query(function (Builder $query, array $data){
+                        $column = self::dateFilterColumn($data['basis'] ?? null);
+
+                        return $query
+                            ->when($data['from'] ?? null, fn (Builder $q, string $date) => $q->where($column, '>=', Carbon::parse($date)->startOfDay()))
+                            ->when($data['until'] ?? null, fn (Builder $q, string $date) => $q->where($column, '<=', Carbon::parse($date)->endOfDay()));
+                    })
+                    ->indicateUsing(function (array $data): ?string {
+                        $from = $data['from'] ?? null;
+                        $until = $data['until'] ?? null;
+
+                        if (blank($from) && blank($until)) {
+                            return null;
+                        }
+
+                        $label = self::DATE_BASES[$data['basis'] ?? 'surat'] ?? self::DATE_BASES['surat'];
+                        $format = fn (string $date) => Carbon::parse($date)->format('d/m/Y');
+
+                        return match (true) {
+                            filled($from) && filled($until) => "{$label}: {$format($from)} - {$format($until)}",
+                            filled($from) => "{$label}: sejak {$format($from)}",
+                            default => "{$label}: sampai {$format($until)}",
+                        };
+                    }),
+                
+                    SelectFilter::make('status')
+                        ->label('Status')
+                        ->options([
+                            NomorSurat::STATUS_TERBIT => 'Terbit',
+                            NomorSurat::STATUS_BATAL => 'Dibatalkan',
+                        ]),
             ])
             ->recordActions([
                 ViewAction::make()
@@ -283,6 +342,7 @@ class NomorSuratResource extends Resource
                     ])
                     ->action(function (NomorSurat $record, array $data, $livewire ){
                         $berhasil = app(LetterNumberService::class)->cancel($record, $data['alasan_batal'], Auth::user());
+                        $livewire->dispatch('nomor-surat-updated');
                         
                         $berhasil 
                             ? SweetAlert::success(
