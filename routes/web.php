@@ -46,6 +46,10 @@ Route::middleware('display')
         
         Route::get('/terima-kasih', [DisplayController::class, 'confirmation'])
             ->name('confirmation');
+
+        Route::post('/tanda-tangan', [DisplayController::class, 'storeSignature'])
+            ->middleware('throttle:display-submit')
+            ->name('signature.store');
     });
 
 if (app()->isLocal()) {

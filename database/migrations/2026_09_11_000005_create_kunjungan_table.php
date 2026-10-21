@@ -25,9 +25,10 @@ return new class extends Migration
             $table->string('pegawai_tujuan')->nullable();
             $table->text('keperluan')->nullable();
             $table->string('tanda_tangan')->nullable();
+            $table->string('alasan_tanpa_ttd', 30)->nullable();
             $table->timestamp('waktu_datang');
             $table->text('catatan_petugas')->nullable();
-            $table->string('sumber_input')->default('display'); //display || manual
+            $table->string('sumber_input')->default('display'); 
             $table->foreignUuid('dicatat_oleh')->nullable()->constrained('users')->restrictOnDelete();
             $table->timestamps();
 

@@ -15,7 +15,18 @@
                     </div>
 
                     <p class="mt-1 text-sm text-gray-500">
-                        Tampilan: <span class="font-medium text-gray-950">{{ $menampilkanForm ? 'Form tamu' : 'Layar idle' }}</span>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Tampilan:
+                            <span class="font-medium text-gray-950">
+                                @if ($menungguNamaTamu)
+                                    Menunggu tanda tangan {{ $menungguNamaTamu }}
+                                @elseif ($menampilkanForm)
+                                    Form tamu
+                                @else
+                                    Layar idle
+                                @endif
+                            </span>
+                        </p>
                     </p>
                 @endif
             </div>
@@ -24,13 +35,20 @@
         </div>
 
         @if ($terdaftar)
-            <x-filament::button
-                wire:click="setDisplayForm({{ $menampilkanForm ? 'false' : 'true' }})"
-                :color="$menampilkanForm ? 'gray' : 'primary'"
-                class="mt-4 w-full"
-            >
-                {{ $menampilkanForm ? 'Kembali ke layar idle' : 'Tampilkan form tamu' }}
-            </x-filament::button>
+            @if ($menungguNamaTamu)
+                <x-filament::button wire:click="cancelSignatureRequest" color="danger" outlined class="mt-4 w-full">
+                    Batalkan permintaan tanda tangan
+                </x-filament::button>
+            @else
+                <x-filament::button
+                    wire:click="setDisplayForm({{ $menampilkanForm ? 'false' : 'true' }})"
+                    :color="$menampilkanForm ? 'gray' : 'primary'"
+                    class="mt-4 w-full"
+                >
+                    {{ $menampilkanForm ? 'Kembali ke layar idle' : 'Tampilkan form tamu' }}
+                </x-filament::button>
+            @endif
         @endif
+
     </x-filament::section>
 </x-filament-widgets::widget>

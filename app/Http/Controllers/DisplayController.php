@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DisplayDevice;
 use App\Models\Bidang;
+use App\Models\Kunjungan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Cookie;
 use Illuminate\Database\QueryException;
 use App\Http\Requests\StoreKunjunganRequest;
 use App\Services\KunjunganService;
+use App\Rules\SignatureImage;
 
 class DisplayController extends Controller
 {
@@ -24,11 +26,14 @@ class DisplayController extends Controller
     public function show(Request $request): View {
         /** @var DisplayDevice $device */
         $device = $request->attributes->get('display_device');
+        $waiting = $device->kunjunganMenunggu;
 
         return view('display.index', [
             'opd' => $device->opd,
             'bidang' => Bidang::active()->orderBy('nama_bidang')->get(['id', 'nama_bidang']),
             'initialShowForm' => $device->tampilkan_form,
+            'waitingKey' => $device->waitingKey(),
+            'summary' => $waiting ? $this->visitSummary($waiting) : null,
         ]);
     }
 
@@ -45,6 +50,7 @@ class DisplayController extends Controller
         return response()->json([
             'status' => 'ok',
             'tampilkan_form' => $device->tampilkan_form,
+            'waiting_key' => $device->waitingKey(),
         ]);
     }
 
@@ -87,6 +93,42 @@ class DisplayController extends Controller
         $device->update(['tampilkan_form' => false]);
 
         return redirect()->route('display.confirmation');
+    }
+
+    public function storeSignature(Request $request, KunjunganService $kunjunganService): RedirectResponse
+    {
+        $validated = $request->validate(
+            ['tanda_tangan' => ['required', 'string', 'max:500000', new SignatureImage()]],
+            ['tanda_tangan.required' => 'Tanda tangan wajib diisi.'],
+        );
+
+        /** @var DisplayDevice $device */
+        $device = $request->attributes->get('display_device');
+
+        try {
+            $kunjungan = $kunjunganService->recordSignature($device, $validated['tanda_tangan']);
+        } catch (QueryException $e) {
+            report($e);
+
+            return back()->withErrors(['form' => 'Terjadi kesalahan. Silakan coba lagi atau hubungi petugas.']);
+        }
+
+        if (! $kunjungan) {
+            return redirect()->route('display.show');
+        }
+
+        return redirect()->route('display.confirmation');
+    }
+
+    private function visitSummary(Kunjungan $kunjungan): array
+    {
+        return array_filter([
+            'Nama' => $kunjungan->nama_tamu,
+            'Instansi' => $kunjungan->instansi_asal,
+            'Bidang yang dituju' => $kunjungan->bidang?->nama_bidang,
+            'Pegawai yang dituju' => $kunjungan->pegawai_tujuan,
+            'Keperluan' => $kunjungan->keperluan,
+        ], fn ($value) => filled($value));
     }
 
     public function confirmation(): View {

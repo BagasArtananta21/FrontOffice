@@ -26,6 +26,15 @@ class DisplayDevice extends Model
         return $query->where('terakhir_aktif', '>=', now()->subSeconds(self::CONNECTED_WITHIN_SECONDS));
     }
 
+    public function scopeAvailableForSignature(Builder $query): Builder
+    {
+        return $query->where('aktif', true)
+            ->connected()
+            ->where('tampilkan_form', false)
+            ->whereNull('kunjungan_menunggu_id');
+    }
+
+
     public function isConnected(): bool
     {
         return $this->terakhir_aktif !== null
@@ -47,6 +56,17 @@ class DisplayDevice extends Model
     public function opd(): BelongsTo{
         return $this->belongsTo(Opd::class);
     } 
+
+    public function kunjunganMenunggu(): BelongsTo{
+        return $this->belongsTo(Kunjungan::class, 'kunjungan_menunggu_id');
+    }
+
+    public function waitingKey(): ?string
+    {
+        $kunjungan = $this->kunjunganMenunggu;
+
+        return $kunjungan ? $kunjungan->id.'@'.$kunjungan->updated_at->timestamp : null;    
+    }
 
     protected function casts(): array {
         return [

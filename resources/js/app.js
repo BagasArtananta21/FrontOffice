@@ -2,7 +2,7 @@ import Alpine from "alpinejs";
 import SignaturePad from "signature_pad";
 
 window.Alpine = Alpine;
-Alpine.data('displayScreen', (statusUrl, initialShowForm = false) => ({
+Alpine.data('displayScreen', (statusUrl, initialShowForm = false, waitingKey = null) => ({
     showForm: initialShowForm,
     offline: false,
     submitting: false,
@@ -28,8 +28,13 @@ Alpine.data('displayScreen', (statusUrl, initialShowForm = false) => ({
             if (!response.ok){
                 throw new Error(`HTTP ${response.status}`);
             }
+            
             const data = await response.json();
-
+    
+            if ((data.waiting_key ?? null) !== waitingKey){
+                window.location.reload();
+                return;
+            }
             if (this.showForm && !data.tampilkan_form){
                 this.$refs.guestForm?.reset();
             }
@@ -39,6 +44,8 @@ Alpine.data('displayScreen', (statusUrl, initialShowForm = false) => ({
         } catch {
             this.offline = true;
         }
+
+
     },
 }))
 

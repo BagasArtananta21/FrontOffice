@@ -29,6 +29,9 @@ use Illuminate\Database\QueryException;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ImageEntry;
 use UnitEnum;
+use Filament\Schemas\Components\Utilities\Get;
+use Illuminate\Support\Arr;
+use App\Models\DisplayDevice;
 
 class KunjunganResource extends Resource
 {
@@ -50,90 +53,141 @@ class KunjunganResource extends Resource
 
     protected static ?string $slug = 'kunjungan';
 
+    public const SIGNATURE_DISPLAY = 'display';
+
+    public const SIGNATURE_NONE = 'none';
+
     public static function form(Schema $schema): Schema
     {
-        return $schema->
-            components([
-                Section::make('Data Tamu')
-                    ->columns(2)
-                    ->schema([
-                        TextInput::make('nama_tamu')
-                            ->label('Nama Tamu')
-                            ->required()
-                            ->maxLength(255)
-                            ->autocomplete(false)
-                            ->columnSpanFull(),
-
-                        Radio::make('jenis_kelamin')
-                            ->label('Jenis Kelamin')
-                            ->options(Kunjungan::JENIS_KELAMIN)
-                            ->required()
-                            ->inline(),
-
-                        TextInput::make('no_hp')
-                            ->label('Nomor HP')
-                            ->tel()
-                            ->autocomplete(false)
-                            ->mutateStateForValidationUsing(fn (?string $state) => Kunjungan::normalizePhone($state))
-                            ->dehydrateStateUsing(fn (?string $state) => Kunjungan::normalizePhone($state))
-                            ->regex(Kunjungan::NO_HP_PATTERN)
-                            ->validationMessages(['regex' => 'Format Nomor HP tidak valid.'])
-                            ->helperText('Diisi bila tamu perlu dihubungi kembali'),
-
-
-                        TextInput::make('instansi_asal')
-                            ->label('Instansi Asal')
-                            ->autocomplete(false)
-                            ->maxLength(255),
-
-                        TextInput::make('alamat')
-                            ->label('Alamat')
-                            ->autocomplete(false)
-                            ->maxLength(255),
-                    ]),
-
-                Section::make('Kunjungan')
-                    ->columns(2)
-                    ->schema([
-                        DateTimePicker::make('waktu_datang')
-                            ->label('Waktu Datang')
-                            ->seconds(false)
-                            ->default(now())
-                            ->required()
-                            ->maxDate(now())
-                            ->disabledOn('edit'),
-
-                        Select::make('bidang_id')
-                            ->label('Bidang yang Dituju')
-                            ->options(fn () => Bidang::active()->orderBy('nama_bidang')->pluck('nama_bidang', 'id'))
-                            ->searchable()
-                            ->rule(fn () => Rule::exists('bidang', 'id')->where('opd_id', Auth::user()->opd_id)),
-
-                        TextInput::make('pegawai_tujuan')
-                            ->label('Pegawai yang Dituju')
-                            ->maxLength(255)
-                            ->autocomplete(false),
-
-                        Textarea::make('keperluan')
-                            ->label('Keperluan')
-                            ->required()
-                            ->maxLength(1000)
-                            ->rows(3)
-                            ->autocomplete(false)
-                            ->columnSpanFull(),
-
-                        Textarea::make('catatan_petugas')
-                            ->label('Keterangan')
-                            ->maxLength(1000)
-                            ->rows(2)
-                            ->helperText('Catatan dari petugas, tidak diisi tamu')
-                            ->autocomplete(false)
-                            ->columnSpanFull(),
-                    ]),
-            
-            ]);
-
+        return $schema->components(self::formComponents());
     }
+                
+    public static function formComponents(): array
+    {
+        return [
+            Section::make('Data Tamu')
+                ->columns(2)
+                ->schema([
+                    TextInput::make('nama_tamu')
+                        ->label('Nama Tamu')
+                        ->required()
+                        ->maxLength(255)
+                        ->autocomplete(false)
+                        ->columnSpanFull(),
+    
+                    Radio::make('jenis_kelamin')
+                        ->label('Jenis Kelamin')
+                        ->options(Kunjungan::JENIS_KELAMIN)
+                        ->required()
+                        ->inline(),
+    
+                    TextInput::make('no_hp')
+                        ->label('Nomor HP')
+                        ->tel()
+                        ->autocomplete(false)
+                        ->mutateStateForValidationUsing(fn (?string $state) => Kunjungan::normalizePhone($state))
+                        ->dehydrateStateUsing(fn (?string $state) => Kunjungan::normalizePhone($state))
+                        ->regex(Kunjungan::NO_HP_PATTERN)
+                        ->validationMessages(['regex' => 'Format Nomor HP tidak valid.'])
+                        ->helperText('Diisi bila tamu perlu dihubungi kembali'),
+    
+    
+                    TextInput::make('instansi_asal')
+                        ->label('Instansi Asal')
+                        ->autocomplete(false)
+                        ->maxLength(255),
+    
+                    TextInput::make('alamat')
+                        ->label('Alamat')
+                        ->autocomplete(false)
+                        ->maxLength(255),
+                ]),
+    
+            Section::make('Kunjungan')
+                ->columns(2)
+                ->schema([
+                    DateTimePicker::make('waktu_datang')
+                        ->label('Waktu Datang')
+                        ->seconds(false)
+                        ->default(now())
+                        ->required()
+                        ->maxDate(now())
+                        ->disabledOn('edit'),
+    
+                    Select::make('bidang_id')
+                        ->label('Bidang yang Dituju')
+                        ->options(fn () => Bidang::active()->orderBy('nama_bidang')->pluck('nama_bidang', 'id'))
+                        ->searchable()
+                        ->rule(fn () => Rule::exists('bidang', 'id')->where('opd_id', Auth::user()->opd_id)),
+    
+                    TextInput::make('pegawai_tujuan')
+                        ->label('Pegawai yang Dituju')
+                        ->maxLength(255)
+                        ->autocomplete(false),
+    
+                    Textarea::make('keperluan')
+                        ->label('Keperluan')
+                        ->required()
+                        ->maxLength(1000)
+                        ->rows(3)
+                        ->autocomplete(false)
+                        ->columnSpanFull(),
+    
+                    Textarea::make('catatan_petugas')
+                        ->label('Keterangan')
+                        ->maxLength(1000)
+                        ->rows(2)
+                        ->helperText('Catatan dari petugas, tidak diisi tamu')
+                        ->autocomplete(false)
+                        ->columnSpanFull(),
+                ]),
+        ];
+    }
+
+    public static function signatureSection(): Section
+    {
+        return Section::make('Tanda Tangan')
+            ->columnSpanFull()
+            ->schema([
+                Radio::make('signature_method')
+                    ->label('Cara tanda tangan')
+                    ->options([
+                        self::SIGNATURE_DISPLAY => 'Minta tanda tangan di display',
+                        self::SIGNATURE_NONE => 'Tanpa tanda tangan',
+                    ])
+                    ->default(fn () => self::signatureDisplayState() === 'available' ? self::SIGNATURE_DISPLAY : self::SIGNATURE_NONE)
+                    ->disableOptionWhen(fn (string $value) => $value === self::SIGNATURE_DISPLAY && self::signatureDisplayState() !== 'available')
+                    ->helperText(fn () => match (self::signatureDisplayState()) {
+                        'available' => 'Tamu memeriksa data lalu tanda tangan di display.',
+                        'busy' => 'Display sedang dipakai. Tunggu sampai kembali ke layar idle.',
+                        default => 'Display tidak terhubung.',
+                    })
+                    ->required()
+                    ->live(),
+
+                Select::make('alasan_tanpa_tanda_tangan')
+                    ->label('Alasan tanpa tanda tangan')
+                    ->options(fn () => self::signatureDisplayState() === 'offline'
+                        ? Kunjungan::NO_SIGNATURE_REASONS
+                        : Arr::only(Kunjungan::NO_SIGNATURE_REASONS, [Kunjungan::REASON_GUEST_LEFT]))
+                    ->visible(fn (Get $get) => $get('signature_method') === self::SIGNATURE_NONE)
+                    ->required(fn (Get $get) => $get('signature_method') === self::SIGNATURE_NONE),
+            ]);
+    }
+
+    private static function signatureDisplayState(): string
+    {
+        return once(function () {
+            $displays = DisplayDevice::query()->where('aktif', true);
+
+            if (! (clone $displays)->connected()->exists()) {
+                return 'offline';
+            }
+
+            return (clone $displays)->availableForSignature()->exists() ? 'available' : 'busy';
+        });
+    }
+
 
     public static function infolist(Schema $schema): Schema
     {
@@ -169,8 +223,10 @@ class KunjunganResource extends Resource
                         ->label('Tanda Tangan')
                         ->disk('local')
                         ->visibility('private')
+                        ->placeholder(fn (Kunjungan $record) => $record->isWaitingForSignature()
+                            ? 'Menunggu tanda tangan dari tamu.'
+                            : 'Tanpa tanda tangan · '.(Kunjungan::NO_SIGNATURE_REASONS[$record->alasan_tanpa_ttd] ?? 'Tidak Ada Alasan Tercatat'))
                         ->imageHeight(120)
-                        ->placeholder('input manual')
                         ->columnSpanFull(),
                 ]),
                 

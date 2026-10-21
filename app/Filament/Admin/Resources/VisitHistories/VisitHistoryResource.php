@@ -105,6 +105,17 @@ class VisitHistoryResource extends Resource
                     ->label('Ditampilkan/Dicatat Oleh')
                     ->placeholder('—')
                     ->visibleFrom('md'),
+                
+                TextColumn::make('status_tanda_tangan')
+                    ->label('Tanda Tangan')
+                    ->badge()
+                    ->state(fn (Kunjungan $record) => $record->signatureStatusLabel())
+                    ->color(fn (Kunjungan $record) => match (true) {
+                        filled($record->tanda_tangan) => 'success',
+                        $record->isWaitingForSignature() => 'info',
+                        default => 'warning',
+                    })
+                    ->visibleFrom('md'),
                     
             ])
             ->filters([

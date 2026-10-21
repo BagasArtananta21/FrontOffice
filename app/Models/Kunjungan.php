@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['nama_tamu', 'jenis_kelamin', 'instansi_asal', 'no_hp', 'alamat', 'bidang_id', 'pegawai_tujuan', 'keperluan', 'tanda_tangan', 'catatan_petugas', 'waktu_datang'])]
 class Kunjungan extends Model
@@ -24,6 +25,14 @@ class Kunjungan extends Model
     ];
 
     public const NO_HP_PATTERN = '/^0[0-9]{8,13}$/';
+
+    public const REASON_DISPLAY_UNAVAILABLE = 'display_tidak_tersedia';
+    public const REASON_GUEST_LEFT = 'tamu_sudah_pergi';
+
+    public const NO_SIGNATURE_REASONS = [
+        self::REASON_DISPLAY_UNAVAILABLE => 'Display tidak tersedia',
+        self::REASON_GUEST_LEFT => 'Tamu sudah pergi',
+    ];
     
     public static function normalizePhone(?string $value): ?string
     {
@@ -31,7 +40,6 @@ class Kunjungan extends Model
 
         return $cleaned === '' ? null : preg_replace('/^(\+62|62)/', '0', $cleaned);
     }
-
 
     public function bidang(): BelongsTo
     {
@@ -41,6 +49,29 @@ class Kunjungan extends Model
     public function petugas(): BelongsTo
     {
         return $this->belongsTo(User::class, 'dicatat_oleh');
+    }
+
+    public function displayMenunggu(): HasOne
+    {
+        return $this->hasOne(DisplayDevice::class, 'kunjungan_menunggu_id');
+    }
+
+    public function isWaitingForSignature(): bool
+    {
+        if (filled($this->tanda_tangan)) {
+            return false;
+        }
+
+        return $this->display_menunggu_exists ?? $this->displayMenunggu()->exists();
+    }
+
+    public function signatureStatusLabel(): string
+    {
+        return match (true) {
+            filled($this->tanda_tangan) => 'Sudah',
+            $this->isWaitingForSignature() => 'Menunggu',
+            default => self::NO_SIGNATURE_REASONS[$this->alasan_tanpa_ttd] ?? 'Tidak Ada',
+        };
     }
 
     protected function casts(): array
