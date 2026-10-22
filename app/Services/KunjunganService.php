@@ -109,9 +109,13 @@ class KunjunganService
       });
    }
 
-   public function cancelSignatureRequest(): void
+   public function cancelSignatureRequest(?string $reason = null): void
    {
-      DB::transaction(function () {
+      if ($reason !== null && ! in_array($reason, [Kunjungan::REASON_GUEST_LEFT, Kunjungan::REASON_GUEST_REFUSED], true)) {
+         throw new InvalidArgumentException("Alasan pembatalan [{$reason}] tidak dikenal.");
+      }
+
+      DB::transaction(function () use ($reason) {
          $device = DisplayDevice::query()
                ->whereNotNull('kunjungan_menunggu_id')
                ->lockForUpdate()
@@ -121,14 +125,31 @@ class KunjunganService
                return;
          }
 
-         $device->kunjunganMenunggu?->forceFill([
-               'alasan_tanpa_ttd' => $device->isConnected()
-                  ? Kunjungan::REASON_GUEST_LEFT
+         $this->releaseSignatureRequest(
+               $device,
+               $device->isConnected()
+                  ? ($reason ?? Kunjungan::REASON_GUEST_LEFT)
                   : Kunjungan::REASON_DISPLAY_UNAVAILABLE,
-         ])->save();
-
-         $device->forceFill(['kunjungan_menunggu_id' => null])->save();
+         );
       });
+   }
+
+
+   public function expireSignatureRequest(DisplayDevice $device): void
+   {
+      DB::transaction(function () use ($device) {
+         $device = DisplayDevice::query()->whereKey($device->getKey())->lockForUpdate()->firstOrFail();
+
+         if ($device->signatureRequestExpired()) {
+               $this->releaseSignatureRequest($device, Kunjungan::REASON_TIMEOUT);
+         }
+      });
+   }
+
+   private function releaseSignatureRequest(DisplayDevice $device, string $reason): void
+   {
+      $device->kunjunganMenunggu?->forceFill(['alasan_tanpa_ttd' => $reason])->save();
+      $device->forceFill(['kunjungan_menunggu_id' => null])->save();
    }
 
 }

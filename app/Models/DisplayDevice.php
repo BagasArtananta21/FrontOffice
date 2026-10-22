@@ -20,6 +20,8 @@ class DisplayDevice extends Model
 
     public const CONNECTED_WITHIN_SECONDS = 30;
 
+    public const SIGNATURE_TIMEOUT_MINUTES = 5;
+
     public const COOKIE = 'display_token';
 
     public function scopeConnected(Builder $query): Builder {
@@ -33,7 +35,6 @@ class DisplayDevice extends Model
             ->where('tampilkan_form', false)
             ->whereNull('kunjungan_menunggu_id');
     }
-
 
     public function isConnected(): bool
     {
@@ -66,6 +67,14 @@ class DisplayDevice extends Model
         $kunjungan = $this->kunjunganMenunggu;
 
         return $kunjungan ? $kunjungan->id.'@'.$kunjungan->updated_at->timestamp : null;    
+    }
+
+    public function signatureRequestExpired(): bool
+    {
+        $kunjungan = $this->kunjunganMenunggu;
+
+        return $kunjungan !== null
+            && $kunjungan->updated_at->lt(now()->subMinutes(self::SIGNATURE_TIMEOUT_MINUTES));
     }
 
     protected function casts(): array {

@@ -29,11 +29,13 @@ class Kunjungan extends Model
     public const REASON_DISPLAY_UNAVAILABLE = 'display_tidak_tersedia';
     public const REASON_GUEST_LEFT = 'tamu_sudah_pergi';
     public const REASON_GUEST_REFUSED = 'tamu_menolak';
+    public const REASON_TIMEOUT = 'waktu_habis';
 
     public const NO_SIGNATURE_REASONS = [
         self::REASON_DISPLAY_UNAVAILABLE => 'Display tidak tersedia',
         self::REASON_GUEST_LEFT => 'Tamu sudah pergi',
         self::REASON_GUEST_REFUSED => 'Tamu menolak',
+        self::REASON_TIMEOUT => 'Tidak ditandatangani dalam batas waktu',
     ];
     
     public static function normalizePhone(?string $value): ?string

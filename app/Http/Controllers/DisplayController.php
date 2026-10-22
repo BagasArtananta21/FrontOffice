@@ -26,6 +26,7 @@ class DisplayController extends Controller
     public function show(Request $request): View {
         /** @var DisplayDevice $device */
         $device = $request->attributes->get('display_device');
+        $this->releaseExpiredSignatureRequest($device);
         $waiting = $device->kunjunganMenunggu;
 
         return view('display.index', [
@@ -40,6 +41,7 @@ class DisplayController extends Controller
     public function status(Request $request): JsonResponse {
         /** @var DisplayDevice $device */
         $device = $request->attributes->get('display_device');
+        $this->releaseExpiredSignatureRequest($device);
 
         if ($device->terakhir_aktif === null || $device->terakhir_aktif->lessThan(now()->subSeconds(10))){
             $device->timestamps = false;
@@ -129,6 +131,14 @@ class DisplayController extends Controller
             'Pegawai yang dituju' => $kunjungan->pegawai_tujuan,
             'Keperluan' => $kunjungan->keperluan,
         ], fn ($value) => filled($value));
+    }
+
+    public function releaseExpiredSignatureRequest(DisplayDevice $device): void
+    {
+        if ($device->signatureRequestExpired()) {
+            app(KunjunganService::class)->expireSignatureRequest($device);
+            $device->refresh();
+        }
     }
 
     public function confirmation(): View {

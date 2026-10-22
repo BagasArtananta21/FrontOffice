@@ -6,12 +6,22 @@ use App\Filament\Support\SweetAlert;
 use App\Models\DisplayDevice;
 use App\Models\Kunjungan;
 use App\Services\KunjunganService;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Illuminate\Support\Arr;
 
-class DisplayStatus extends Widget
+
+class DisplayStatus extends Widget implements HasActions, HasSchemas
 {
+    use InteractsWithActions, InteractsWithSchemas;
+    
     protected string $view = 'filament.admin.widgets.display-status';
 
     protected int|string|array $columnSpan = 1;
@@ -67,15 +77,33 @@ class DisplayStatus extends Widget
         );
     }
 
-    public function cancelSignatureRequest(): void
+    public function cancelSignatureAction(): Action
     {
-        app(KunjunganService::class)->cancelSignatureRequest();
+        $displayConnected = fn () => $this->devices()->contains(fn (DisplayDevice $device) => $device->isConnected());
 
-        SweetAlert::info(
-            $this,
-            'Permintaan Tanda Tangan Dibatalkan',
-            'Kunjungan tetap tercatat tanpa tanda tangan. Display kembali ke layar idle.'
-        );
+        return Action::make('cancelSignature')
+            ->label('Batalkan permintaan tanda tangan')
+            ->color('danger')
+            ->outlined()
+            ->extraAttributes(['class' => 'mt-4 w-full'])
+            ->modalHeading('Batalkan Permintaan Tanda Tangan')
+            ->modalDescription(fn () => $displayConnected()
+                ? 'Kunjungan tetap tercatat tanpa tanda tangan. Pilih alasannya.'
+                : 'Display terputus. Kunjungan tetap tercatat dengan alasan "Display tidak tersedia".')
+            ->modalSubmitActionLabel('Batalkan Permintaan')
+            ->schema([
+                Select::make('reason')
+                    ->label('Alasan')
+                    ->options(Arr::only(Kunjungan::NO_SIGNATURE_REASONS, [Kunjungan::REASON_GUEST_LEFT, Kunjungan::REASON_GUEST_REFUSED]))
+                    ->default(Kunjungan::REASON_GUEST_LEFT)
+                    ->visible($displayConnected)
+                    ->required($displayConnected),
+            ])
+            ->action(function (array $data) {
+                app(KunjunganService::class)->cancelSignatureRequest($data['reason'] ?? null);
+
+                SweetAlert::info($this, 'Permintaan Tanda Tangan Dibatalkan', 'Kunjungan tetap tercatat tanpa tanda tangan. Display kembali ke layar idle.');
+            });
     }
 
     protected function devices(): Collection

@@ -13,20 +13,17 @@
                         ])></span>
                         <span class="text-sm font-medium">{{ $terhubung ? 'Terhubung' : 'Tidak terhubung' }}</span>
                     </div>
-
                     <p class="mt-1 text-sm text-gray-500">
-                        <p class="mt-1 text-sm text-gray-500">
-                            Tampilan:
-                            <span class="font-medium text-gray-950">
-                                @if ($menungguNamaTamu)
-                                    Menunggu tanda tangan {{ $menungguNamaTamu }}
-                                @elseif ($menampilkanForm)
-                                    Form tamu
-                                @else
-                                    Layar idle
-                                @endif
-                            </span>
-                        </p>
+                        Tampilan:
+                        <span class="font-medium text-gray-950">
+                            @if ($menungguNamaTamu)
+                                Menunggu tanda tangan {{ $menungguNamaTamu }}
+                            @elseif ($menampilkanForm)
+                                Form tamu
+                            @else
+                                Layar idle
+                            @endif
+                        </span>
                     </p>
                 @endif
             </div>
@@ -36,9 +33,7 @@
 
         @if ($terdaftar)
             @if ($menungguNamaTamu)
-                <x-filament::button wire:click="cancelSignatureRequest" color="danger" outlined class="mt-4 w-full">
-                    Batalkan permintaan tanda tangan
-                </x-filament::button>
+                {{ $this->cancelSignatureAction }}
             @else
                 <x-filament::button
                     wire:click="setDisplayForm({{ $menampilkanForm ? 'false' : 'true' }})"
@@ -51,4 +46,7 @@
         @endif
 
     </x-filament::section>
+
+    <x-filament-actions::modals />
+
 </x-filament-widgets::widget>

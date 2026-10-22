@@ -167,9 +167,12 @@ class KunjunganResource extends Resource
 
                 Select::make('alasan_tanpa_ttd')
                     ->label('Alasan tanpa tanda tangan')
-                    ->options(fn () => self::signatureDisplayState() === 'offline'
-                        ? Kunjungan::NO_SIGNATURE_REASONS
-                        : Arr::only(Kunjungan::NO_SIGNATURE_REASONS, [Kunjungan::REASON_GUEST_LEFT, Kunjungan::REASON_GUEST_REFUSED]))
+                    ->options(fn () => Arr::only(
+                        Kunjungan::NO_SIGNATURE_REASONS,
+                        self::signatureDisplayState() === 'offline'
+                            ? [Kunjungan::REASON_DISPLAY_UNAVAILABLE, Kunjungan::REASON_GUEST_LEFT, Kunjungan::REASON_GUEST_REFUSED]
+                            : [Kunjungan::REASON_GUEST_LEFT, Kunjungan::REASON_GUEST_REFUSED],
+                    ))
                     ->visible(fn (Get $get) => $get('signature_method') === self::SIGNATURE_NONE)
                     ->required(fn (Get $get) => $get('signature_method') === self::SIGNATURE_NONE),
             ]);
