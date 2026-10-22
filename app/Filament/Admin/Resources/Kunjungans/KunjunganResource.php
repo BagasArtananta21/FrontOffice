@@ -165,11 +165,11 @@ class KunjunganResource extends Resource
                     ->required()
                     ->live(),
 
-                Select::make('alasan_tanpa_tanda_tangan')
+                Select::make('alasan_tanpa_ttd')
                     ->label('Alasan tanpa tanda tangan')
                     ->options(fn () => self::signatureDisplayState() === 'offline'
                         ? Kunjungan::NO_SIGNATURE_REASONS
-                        : Arr::only(Kunjungan::NO_SIGNATURE_REASONS, [Kunjungan::REASON_GUEST_LEFT]))
+                        : Arr::only(Kunjungan::NO_SIGNATURE_REASONS, [Kunjungan::REASON_GUEST_LEFT, Kunjungan::REASON_GUEST_REFUSED]))
                     ->visible(fn (Get $get) => $get('signature_method') === self::SIGNATURE_NONE)
                     ->required(fn (Get $get) => $get('signature_method') === self::SIGNATURE_NONE),
             ]);
@@ -274,6 +274,7 @@ class KunjunganResource extends Resource
             ->defaultSort('waktu_datang', 'desc')
             ->modifyQueryUsing(fn (Builder $query) => $query
                 ->with(['bidang'])
+                ->withExists('displayMenunggu')
                 ->whereBetween('waktu_datang', [now()->startOfDay(), now()->endOfDay()]))
             ->columns([
                 TextColumn::make('nomor_kunjungan')

@@ -17,7 +17,7 @@
     @else
         <section x-show="! showForm" x-cloak class="fixed inset-0 bg-black">
             <video
-                src="{{ asset('videos/profil.mp4') }}"
+                src="{{ asset('videos/osu.mp4') }}"
                 x-effect="showForm ? $el.pause() : $el.play().catch(() => {})"
                 autoplay
                 muted

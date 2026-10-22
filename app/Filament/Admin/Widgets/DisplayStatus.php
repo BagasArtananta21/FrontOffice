@@ -22,7 +22,11 @@ class DisplayStatus extends Widget
         $devices = $this->devices();
 
         if ($devices->isEmpty()) {
-            SweetAlert::warning($this, 'Display Belum Terdaftar', 'Belum ada perangkat display aktif untuk OPD ini');
+            SweetAlert::warning(
+                $this, 
+                'Display Belum Terdaftar', 
+                'Belum ada perangkat display aktif untuk OPD ini'
+            );
             return;
         }
 
@@ -32,6 +36,7 @@ class DisplayStatus extends Widget
                 'Menunggu Tanda Tangan',
                 'Batalkan permintaan tanda tangan dulu sebelum mengubah tampilan display.'
             );
+            return;
         }
 
         DisplayDevice::query()->where('aktif', true)->update(
@@ -47,11 +52,19 @@ class DisplayStatus extends Widget
         }
 
         if (! $devices->contains(fn (DisplayDevice $device) => $device->isConnected())) {
-            SweetAlert::warning($this, 'Display Tidak Terhubung', 'Form akan tampil begitu display terhubung kembali');
+            SweetAlert::warning(
+                $this, 
+                'Display Tidak Terhubung', 
+                'Form akan tampil begitu display terhubung kembali'
+            );
             return;
         }
 
-        SweetAlert::success($this, 'Form Tamu Ditampilkan', 'Form tamu akan tampil di layar display dalam beberapa detik');
+        SweetAlert::success(
+            $this, 
+            'Form Tamu Ditampilkan', 
+            'Form tamu akan tampil di layar display dalam beberapa detik'
+        );
     }
 
     public function cancelSignatureRequest(): void

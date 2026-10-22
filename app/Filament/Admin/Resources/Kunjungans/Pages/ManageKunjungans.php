@@ -12,6 +12,7 @@ use App\Filament\Admin\Widgets\GuestStats;
 use App\Filament\Admin\Widgets\DisplayStatus;
 use Filament\Actions\Action;
 use App\Exceptions\DisplayUnavailableException;
+use App\Models\Kunjungan;
 use Illuminate\Database\QueryException;
 
 class ManageKunjungans extends ManageRecords
@@ -68,10 +69,10 @@ class ManageKunjungans extends ManageRecords
                         $action->halt();
                     }
 
-                    SweetAlert::success(
+                    SweetAlert::info(
                         $livewire,
                         'Kunjungan Tercatat',
-                        "Minta {$kunjungan->nama_tamu} memeriksa data dan tanda tangan di display."
+                        "Data {$kunjungan->nama_tamu} tercatat tanpa tanda tangan · ".(Kunjungan::NO_SIGNATURE_REASONS[$kunjungan->alasan_tanpa_ttd])
                     );
                 }),
 

@@ -56,7 +56,9 @@ class VisitHistoryResource extends Resource
     {
         return $table
             ->defaultSort('nomor_kunjungan', 'desc')
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['bidang', 'petugas']))
+            ->modifyQueryUsing(fn (Builder $query) => $query
+                ->with(['bidang', 'petugas'])
+                ->withExists('displayMenunggu'))
             ->columns([
                 TextColumn::make('nomor_kunjungan')
                     ->label('Nomor Kunjungan')
