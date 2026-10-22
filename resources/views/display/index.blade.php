@@ -9,7 +9,7 @@
 </head>
 <body
     class="min-h-screen"
-    x-data="displayScreen('{{ route('display.status') }}', @js(! $summary && ($initialShowForm || $errors->any())), @js($waitingKey))"
+    x-data="displayScreen('{{ route('display.status') }}', @js(! $summary && ($initialShowForm || $errors->any())), @js($waitingKey), @js($notice))"
     x-init="start()"
 >
     @if ($summary)
@@ -17,7 +17,7 @@
     @else
         <section x-show="! showForm" x-cloak class="fixed inset-0 bg-black">
             <video
-                src="{{ asset('videos/xqc.mp4') }}"
+                src="{{ asset('videos/profil.mp4') }}"
                 x-effect="showForm ? $el.pause() : $el.play().catch(() => {})"
                 autoplay
                 muted

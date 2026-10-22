@@ -28,6 +28,13 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
 
     protected static ?int $sort = 1;
 
+    public ?string $watchedKunjunganId = null;
+
+    public function mount(): void
+    {
+        $this->watchedKunjunganId = $this->waitingKunjunganId();
+    }
+
     public function setDisplayForm(bool $tampilkan): void{
         $devices = $this->devices();
 
@@ -104,6 +111,33 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
 
                 SweetAlert::info($this, 'Permintaan Tanda Tangan Dibatalkan', 'Kunjungan tetap tercatat tanpa tanda tangan. Display kembali ke layar idle.');
             });
+    }
+
+    public function checkSignatureRequest(): void
+    {
+        $current = $this->waitingKunjunganId();
+
+        if ($this->watchedKunjunganId !== null && $this->watchedKunjunganId !== $current) {
+            $kunjungan = Kunjungan::find($this->watchedKunjunganId);
+
+            if ($kunjungan?->alasan_tanpa_ttd === Kunjungan::REASON_TIMEOUT) {
+                SweetAlert::warning(
+                    $this,
+                    'Waktu Tanda Tangan Habis',
+                    "{$kunjungan->nama_tamu} tidak menandatangani dalam ".DisplayDevice::SIGNATURE_TIMEOUT_MINUTES.' menit. Kunjungan tetap tercatat tanpa tanda tangan.'
+                );
+            }
+        }
+
+        $this->watchedKunjunganId = $current;
+    }
+
+    private function waitingKunjunganId(): ?string
+    {
+        return DisplayDevice::query()
+            ->where('aktif', true)
+            ->whereNotNull('kunjungan_menunggu_id')
+            ->value('kunjungan_menunggu_id');
     }
 
     protected function devices(): Collection

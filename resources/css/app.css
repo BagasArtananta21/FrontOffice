@@ -76,3 +76,25 @@
         @apply h-14 py-0;
     }
 }
+
+.swal2-popup.swal-display {
+    width: 40rem;
+    padding: 2.5rem 2rem;
+    border-radius: 0.75rem;
+    border-top: 6px solid #1E3A8A;
+}
+
+.swal2-title.swal-display-title {
+    font-size: 2.25rem;
+    font-weight: 600;
+    color: #0F2C59;
+}
+
+.swal2-html-container.swal-display-text {
+    font-size: 1.5rem;
+    color: #334155;
+}
+
+.swal2-timer-progress-bar.swal-display-progress {
+    background: #1E3A8A;
+}

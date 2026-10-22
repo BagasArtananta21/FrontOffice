@@ -1,4 +1,4 @@
-<x-filament-widgets::widget wire:poll.5s>
+<x-filament-widgets::widget wire:poll.5s="checkSignatureRequest">
     <x-filament::section>
         <div class="flex w-full items-start justify-between gap-4">
             <div>

@@ -1,13 +1,32 @@
 import Alpine from "alpinejs";
 import SignaturePad from "signature_pad";
+import Swal from "sweetalert2";
 
 window.Alpine = Alpine;
-Alpine.data('displayScreen', (statusUrl, initialShowForm = false, waitingKey = null) => ({
+Alpine.data('displayScreen', (statusUrl, initialShowForm = false, waitingKey = null, notice = null) => ({
     showForm: initialShowForm,
     offline: false,
     submitting: false,
 
     start(){
+        if (notice) {
+            Swal.fire({
+                icon: 'info',
+                iconColor: '#1E3A8A',
+                title: notice.title,
+                text: notice.text,
+                timer: 6000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                customClass: {
+                    popup: 'swal-display',
+                    title: 'swal-display-title',
+                    htmlContainer: 'swal-display-text',
+                    timerProgressBar: 'swal-display-progress',
+                },
+            });
+        }
+
         this.poll();
         setInterval(() => this.poll(), 3000);
     },

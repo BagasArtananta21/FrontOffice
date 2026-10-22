@@ -134,15 +134,19 @@ class KunjunganService
       });
    }
 
-
-   public function expireSignatureRequest(DisplayDevice $device): void
+   public function expireSignatureRequest(DisplayDevice $device): bool
    {
-      DB::transaction(function () use ($device) {
+      return DB::transaction(function () use ($device) {
          $device = DisplayDevice::query()->whereKey($device->getKey())->lockForUpdate()->firstOrFail();
 
-         if ($device->signatureRequestExpired()) {
-               $this->releaseSignatureRequest($device, Kunjungan::REASON_TIMEOUT);
+         if (! $device->signatureRequestExpired()) {
+            return false;
          }
+
+         $this->releaseSignatureRequest($device, Kunjungan::REASON_TIMEOUT);
+
+         return true;
+         
       });
    }
 

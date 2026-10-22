@@ -19,6 +19,11 @@ use App\Rules\SignatureImage;
 
 class DisplayController extends Controller
 {
+    private const TIMEOUT_NOTICE = [
+        'title' => 'Waktu tanda tangan habis',
+        'text' => 'Kunjungan Anda tetap tercatat tanpa tanda tangan.',
+    ];
+
     public function pairForm(): View {
         return view('display.pair');
     }
@@ -26,7 +31,7 @@ class DisplayController extends Controller
     public function show(Request $request): View {
         /** @var DisplayDevice $device */
         $device = $request->attributes->get('display_device');
-        $this->releaseExpiredSignatureRequest($device);
+        $expiredNow = $this->releaseExpiredSignatureRequest($device);
         $waiting = $device->kunjunganMenunggu;
 
         return view('display.index', [
@@ -35,13 +40,17 @@ class DisplayController extends Controller
             'initialShowForm' => $device->tampilkan_form,
             'waitingKey' => $device->waitingKey(),
             'summary' => $waiting ? $this->visitSummary($waiting) : null,
+            'notice' => ($expiredNow || session('display_notice') === 'timeout') ? self::TIMEOUT_NOTICE : null,
         ]);
     }
 
     public function status(Request $request): JsonResponse {
         /** @var DisplayDevice $device */
         $device = $request->attributes->get('display_device');
-        $this->releaseExpiredSignatureRequest($device);
+
+        if ($this->releaseExpiredSignatureRequest($device)) {
+            session()->flash('display_notice', 'timeout');
+        }
 
         if ($device->terakhir_aktif === null || $device->terakhir_aktif->lessThan(now()->subSeconds(10))){
             $device->timestamps = false;
@@ -133,12 +142,16 @@ class DisplayController extends Controller
         ], fn ($value) => filled($value));
     }
 
-    public function releaseExpiredSignatureRequest(DisplayDevice $device): void
+    private function releaseExpiredSignatureRequest(DisplayDevice $device): bool
     {
-        if ($device->signatureRequestExpired()) {
-            app(KunjunganService::class)->expireSignatureRequest($device);
-            $device->refresh();
+        if (! $device->signatureRequestExpired()) {
+            return false;
         }
+
+        $released = app(KunjunganService::class)->expireSignatureRequest($device);
+        $device->refresh();
+
+        return $released;
     }
 
     public function confirmation(): View {
