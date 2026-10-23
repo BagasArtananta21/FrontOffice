@@ -19,14 +19,16 @@ Route::get('/', function (Request $request) {
 
 Route::middleware(['not_display', 'guest'])->group(function (){
     Route::get('/login', [LoginController::class, 'create']) -> name('login');
-    Route::post('/login', [LoginController::class, 'store']) -> name('login.store');
+    Route::post('/login', [LoginController::class, 'store']) 
+        ->middleware('throttle:5,1')     
+        ->name('login.store');
 });
 
 Route::get('/display/pair', [DisplayController::class, 'pairForm'])
     ->name('display.pair');
 
 Route::post('/display/pair', [DisplayController::class, 'pair'])
-    ->middleware('throttle:10,1')
+    ->middleware('throttle:5,1')
     ->name('display.pair.store');
 
 Route::middleware('display')
