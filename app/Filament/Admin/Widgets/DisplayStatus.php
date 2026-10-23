@@ -107,25 +107,48 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
                     ->required($displayConnected),
             ])
             ->action(function (array $data) {
-                app(KunjunganService::class)->cancelSignatureRequest($data['reason'] ?? null);
+                $cancelled = app(KunjunganService::class)->cancelSignatureRequest($data['reason'] ?? null);
+                $this->watchedKunjunganId = null;
 
-                SweetAlert::info($this, 'Permintaan Tanda Tangan Dibatalkan', 'Kunjungan tetap tercatat tanpa tanda tangan. Display kembali ke layar idle.');
+                if (! $cancelled) {
+                    SweetAlert::info(
+                        $this,
+                        'Tidak ada yang Dibatalkan',
+                        'Permintaan tanda tangan sudah selesai atau sudah melewati batas waktu.'
+                    );
+                    return;
+                }
+
+                SweetAlert::info(
+                    $this, 
+                    'Permintaan Tanda Tangan Dibatalkan', 
+                    'Kunjungan tetap tercatat tanpa tanda tangan. Display kembali ke layar idle.'
+                );
             });
     }
 
     public function checkSignatureRequest(): void
     {
+        foreach ($this->devices() as $device) {
+            if ($device->signatureRequestExpired()) {
+                app(KunjunganService::class)->expireSignatureRequest($device);
+            }
+        }
+
         $current = $this->waitingKunjunganId();
 
         if ($this->watchedKunjunganId !== null && $this->watchedKunjunganId !== $current) {
             $kunjungan = Kunjungan::find($this->watchedKunjunganId);
+            $minutes = DisplayDevice::SIGNATURE_TIMEOUT_MINUTES;
 
-            if ($kunjungan?->alasan_tanpa_ttd === Kunjungan::REASON_TIMEOUT) {
-                SweetAlert::warning(
-                    $this,
-                    'Waktu Tanda Tangan Habis',
-                    "{$kunjungan->nama_tamu} tidak menandatangani dalam ".DisplayDevice::SIGNATURE_TIMEOUT_MINUTES.' menit. Kunjungan tetap tercatat tanpa tanda tangan.'
-                );
+            $message = match ($kunjungan?->alasan_tanpa_ttd) {
+                Kunjungan::REASON_TIMEOUT => "{$kunjungan->nama_tamu} tidak menandatangani dalam {$minutes} menit.",
+                Kunjungan::REASON_DISPLAY_UNAVAILABLE => "Display terputus lebih dari {$minutes} menit saat menunggu tanda tangan {$kunjungan->nama_tamu}.",
+                default => null,
+            };
+
+            if ($message) {
+                SweetAlert::warning($this, 'Waktu Tanda Tangan Habis', $message.' Kunjungan tetap tercatat tanpa tanda tangan.');
             }
         }
 

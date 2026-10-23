@@ -109,7 +109,7 @@ class KunjunganService
       });
    }
 
-   public function cancelSignatureRequest(?string $reason = null): void
+   public function cancelSignatureRequest(?string $reason = null): bool
    {
       if ($reason !== null && ! in_array($reason, [Kunjungan::REASON_GUEST_LEFT, Kunjungan::REASON_GUEST_REFUSED], true)) {
          throw new InvalidArgumentException("Alasan pembatalan [{$reason}] tidak dikenal.");
@@ -122,7 +122,7 @@ class KunjunganService
                ->first();
 
          if (! $device) {
-               return;
+               return false;
          }
 
          $this->releaseSignatureRequest(
@@ -132,6 +132,8 @@ class KunjunganService
                   : Kunjungan::REASON_DISPLAY_UNAVAILABLE,
          );
       });
+
+      return true;
    }
 
    public function expireSignatureRequest(DisplayDevice $device): bool
@@ -143,7 +145,10 @@ class KunjunganService
             return false;
          }
 
-         $this->releaseSignatureRequest($device, Kunjungan::REASON_TIMEOUT);
+         $this->releaseSignatureRequest(
+            $device,
+            $device->isConnected() ? Kunjungan::REASON_TIMEOUT : Kunjungan::REASON_DISPLAY_UNAVAILABLE,
+         );
 
          return true;
          
