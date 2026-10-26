@@ -165,7 +165,10 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
 
     protected function devices(): Collection
     {
-        return DisplayDevice::query()->where('aktif', true)->get();
+        return DisplayDevice::query()
+            ->with('kunjunganMenunggu')
+            ->where('aktif', true)
+            ->get();
     }
 
     protected function getViewData(): array
