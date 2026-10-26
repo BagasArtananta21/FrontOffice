@@ -132,7 +132,7 @@ class FormatNomorSuratResource extends Resource
                 
                 TextEntry::make('contoh')
                     ->label('Contoh hasil')
-                    ->state(fn (Get $get) => app(LetterNumberFormatter::class) -> preview(
+                    ->state(fn (Get $get) => app(LetterNumberFormatter::class)->preview(
                         $get('susunan') ?? [],
                         Opd::find($get('opd_id'))?->kode_opd,
                     ))
@@ -143,7 +143,9 @@ class FormatNomorSuratResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['opd', 'pembuat']))
+            ->modifyQueryUsing(fn (Builder $query) => $query
+                    ->with(['opd', 'pembuat'])
+                    ->withExists('nomorSurat'))
             ->defaultSort('berlaku_sejak', 'desc')
             ->columns([
                 TextColumn::make('opd.nama_opd')
@@ -159,7 +161,13 @@ class FormatNomorSuratResource extends Resource
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->state(fn (FormatNomorSurat $record) => $record->statusLabel())
+                    ->state(function (FormatNomorSurat $record) {
+                        if ($record->berlaku_sejak->isFuture()) {
+                            return 'Terjadwal';
+                        }
+
+                        return in_array($record->id, self::activeFormatIds(), true) ? 'Berlaku' : 'Riwayat';
+                    })
                     ->color(fn (string $state) => match ($state) {
                         'Berlaku' => 'success',
                         'Terjadwal' => 'info',
@@ -198,7 +206,7 @@ class FormatNomorSuratResource extends Resource
                 EditAction::make()
                     ->modalWidth(Width::FourExtraLarge)
                     ->successNotification(null)
-                    ->visible(fn (FormatNomorSurat $record) => ! $record->nomorSurat()->exists())
+                    ->visible(fn (FormatNomorSurat $record) => ! $record->nomor_surat_exists)
                     ->after(fn ($livewire, FormatNomorSurat $record) => SweetAlert::success(
                         $livewire,
                         'Format berhasil diperbarui',
@@ -209,6 +217,18 @@ class FormatNomorSuratResource extends Resource
             ->emptyStateHeading('Belum ada format nomor surat')
             ->emptyStateDescription('OPD tanpa format yang berlaku tidak bisa menerbitkan nomor surat.');
 
+    }
+
+    private static function activeFormatIds(): array
+    {
+        return once(fn () => FormatNomorSurat::query()
+            ->where('berlaku_sejak', '<=', today()->toDateString())
+            ->orderByDesc('berlaku_sejak')
+            ->get((['id', 'opd_id']))
+            ->unique('opd_id')
+            ->pluck('id')
+            ->all()
+        );
     }
 
     public static function getPages(): array

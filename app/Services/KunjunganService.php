@@ -115,11 +115,11 @@ class KunjunganService
          throw new InvalidArgumentException("Alasan pembatalan [{$reason}] tidak dikenal.");
       }
 
-      DB::transaction(function () use ($reason) {
+      return DB::transaction(function () use ($reason) {
          $device = DisplayDevice::query()
-               ->whereNotNull('kunjungan_menunggu_id')
-               ->lockForUpdate()
-               ->first();
+            ->whereNotNull('kunjungan_menunggu_id')
+            ->lockForUpdate()
+            ->first();
 
          if (! $device) {
                return false;
@@ -131,9 +131,10 @@ class KunjunganService
                   ? ($reason ?? Kunjungan::REASON_GUEST_LEFT)
                   : Kunjungan::REASON_DISPLAY_UNAVAILABLE,
          );
+
+         return true;
       });
 
-      return true;
    }
 
    public function expireSignatureRequest(DisplayDevice $device): bool

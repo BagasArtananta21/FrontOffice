@@ -28,8 +28,10 @@
 
         $previous = url()->previous();
 
-        if (! $isDisplay && ! in_array($previous, [url()->current(), url('/')], true)) {
-            $backUrl = $previous;
+        if (! $isDisplay 
+            && ! in_array($previous, [url()->current(), url('/')], true)
+            && str_starts_with($previous, url('/').'/')) {
+                $backUrl = $previous;
         }
     } catch (\Throwable) {
         //
@@ -39,6 +41,7 @@
     $requestedUri = request()->getRequestUri();
     $now = now();
 @endphp
+
 <!DOCTYPE html>
 <html lang="id">
 <head>

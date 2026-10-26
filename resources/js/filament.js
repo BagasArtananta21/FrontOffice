@@ -16,7 +16,7 @@ document.addEventListener('livewire:init', () => {
         Swal.fire({
             icon,
             iconColor: ICON_COLORS[icon],
-            title: payload.title,
+            titleText: payload.title,
             text: payload.text ?? '',
             timer,
             timerProgressBar: timer !== undefined,

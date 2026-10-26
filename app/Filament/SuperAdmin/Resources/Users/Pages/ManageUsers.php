@@ -39,8 +39,9 @@ class ManageUsers extends ManageRecords
                 ->after(fn ($livewire, User $record) => SweetAlert::success(
                     $livewire,
                     'Pengguna berhasil ditambahkan',
-                    "Data Pengguna {$record->nama_opd} sudah masuk ke daftar Pengguna"
-                )),
+                    "Data Pengguna {$record->name} sudah masuk ke daftar Pengguna"
+                ))
+                ->createAnother(false),
         ];
     }
 }

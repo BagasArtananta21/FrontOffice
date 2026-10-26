@@ -40,7 +40,8 @@ class ManageOpds extends ManageRecords
                     $livewire,
                     'OPD berhasil ditambahkan',
                     "{$record->nama_opd} sudah masuk ke daftar OPD"
-                )),
+                ))
+                ->createAnother(false),
         ];
     }
 }

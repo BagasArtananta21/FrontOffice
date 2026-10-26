@@ -45,7 +45,6 @@ class FormatNomorSurat extends Model
             return 'Terjadwal';
         }
 
-
         $berlaku = static::query()
             ->withoutGlobalScope('opd')
             ->where('opd_id', $this->opd_id)

@@ -87,7 +87,7 @@ class UsersTable
                             SweetAlert::warning(
                                 $livewire,
                                 'Pengguna dinonaktifkan',
-                                "Data Pengguna {$record->nama_opd} telah dinonaktifkan, Pengguna tidak bisa login sampai data diaktifkan kembali."
+                                "Data Pengguna {$record->name} telah dinonaktifkan, Pengguna tidak bisa login sampai data diaktifkan kembali."
                             );
                             return;
                         }
@@ -95,7 +95,7 @@ class UsersTable
                         SweetAlert::success(
                             $livewire,
                             'Perubahan tersimpan',
-                            "Data {$record->nama_opd} sudah diperbarui."
+                            "Data {$record->name} sudah diperbarui."
                         );
                     })
             ])

@@ -13,7 +13,7 @@ Alpine.data('displayScreen', (statusUrl, initialShowForm = false, waitingKey = n
             Swal.fire({
                 icon: 'info',
                 iconColor: '#1E3A8A',
-                title: notice.title,
+                titleText: notice.title,
                 text: notice.text,
                 timer: 6000,
                 timerProgressBar: true,
