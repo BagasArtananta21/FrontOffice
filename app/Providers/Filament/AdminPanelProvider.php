@@ -17,6 +17,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Support\Facades\Blade;
+use App\Filament\Support\BrandColors;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -47,7 +48,7 @@ class AdminPanelProvider extends PanelProvider
             )
 
             ->colors([
-                'primary' => '#0F2C59',
+                'primary' => BrandColors::PRIMARY,
                 'secondary' => '#CA8A04',
                 'info' => '#1E3A8A',
                 'success' => '#16A34A',

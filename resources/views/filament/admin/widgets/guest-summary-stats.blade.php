@@ -1,9 +1,9 @@
 <x-filament-widgets::widget>
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div class="rounded-xl border border-l-4 border-gray-200 border-l-[#1E3A8A] bg-white p-5">
+        <div class="rounded-xl border border-l-4 border-gray-200 border-l-tertiary bg-white p-5">
             <div class="flex items-start justify-between gap-3">
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Total Tamu</p>
-                <span class="flex size-9 items-center justify-center rounded-lg bg-[#1E3A8A]/10 text-[#1E3A8A]">
+                <span class="flex size-9 items-center justify-center rounded-lg bg-tertiary/10 text-tertiary">
                     <x-filament::icon icon="heroicon-o-user-group" class="size-5" />
                 </span>
             </div>
@@ -18,8 +18,8 @@
             @else
                 <span @class([
                     'mt-3 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium',
-                    'bg-[#16A34A]/10 text-[#16A34A]' => $change >= 0,
-                    'bg-[#DC2626]/10 text-[#DC2626]' => $change < 0,
+                    'bg-success/10 text-success' => $change >= 0,
+                    'bg-danger/10 text-danger' => $change < 0,
                 ])>
                     <x-filament::icon
                         :icon="$change >= 0 ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down'"
@@ -73,7 +73,7 @@
             </div>
 
             @if ($topBidang)
-                <p clas<p class="mt-2 flex flex-wrap items-baseline gap-x-2">
+                <p class="mt-2 flex flex-wrap items-baseline gap-x-2">
                     <span class="max-w-full truncate text-3xl font-bold text-gray-900" title="{{ $topBidang->nama_bidang }}">{{ $topBidang->shortLabel() }}</span>
                     <span class="whitespace-nowrap text-sm font-medium text-tertiary">{{ $topBidangTotal }} Kunjungan</span>
                 </p>
@@ -81,7 +81,7 @@
 
                 <p class="mt-3 truncate text-xs text-gray-500">{{ $topBidang->nama_bidang }}</p>
             @else
-                <p class="mt-2 text-3xl font-bold text-gray-900">-</p>
+                <p class="mt-2 text-3xl font-bold text-gray-900">—</p>
                 <p class="mt-3 text-xs text-gray-500">Belum ada data</p>
             @endif
         </div>

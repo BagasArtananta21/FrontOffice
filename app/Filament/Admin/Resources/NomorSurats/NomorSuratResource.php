@@ -195,29 +195,29 @@ class NomorSuratResource extends Resource
                     TextEntry::make('cek_kode_klasifikasi')
                     ->label('Kode Klasifikasi')
                     ->state(fn (Get $get) => $get('kode_klasifikasi'))
-                    ->placeholder('-'),
+                    ->placeholder('—'),
 
                 TextEntry::make('cek_bidang')
                     ->label('Bidang')
                     ->state(fn (Get $get) => Bidang::find($get('bidang_id'))?->nama_bidang)
-                    ->placeholder('-'),
+                    ->placeholder('—'),
 
                 TextEntry::make('cek_tanggal_surat')
                     ->label('Tertanggal')
                     ->state(fn (Get $get) => filled($get('tanggal_surat'))
                         ? Carbon::parse($get('tanggal_surat'))->translatedFormat('d F Y')
                         : null)
-                    ->placeholder('-'),
+                    ->placeholder('—'),
 
                 TextEntry::make('cek_nama_peminta')
                     ->label('Nama Peminta')
                     ->state(fn (Get $get) => $get('nama_peminta'))
-                    ->placeholder('-'),
+                    ->placeholder('—'),
 
                 TextEntry::make('cek_tujuan_surat')
                     ->label('Tujuan Surat')
                     ->state(fn (Get $get) => $get('tujuan_surat'))
-                    ->placeholder('-'),
+                    ->placeholder('—'),
 
                 TextEntry::make('cek_perihal')
                     ->label('Perihal')

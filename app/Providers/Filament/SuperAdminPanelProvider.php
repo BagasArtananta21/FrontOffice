@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Support\BrandColors;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -46,7 +47,7 @@ class SuperAdminPanelProvider extends PanelProvider
                 'Kelola Data',
             ])
             ->colors([
-                'primary' => '#0F2C59',
+                'primary' => BrandColors::PRIMARY,
                 'secondary' => '#CA8A04',
                 'info' => '#1E3A8A',
                 'success' => '#16A34A',

@@ -92,7 +92,7 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
             ->label('Batalkan permintaan tanda tangan')
             ->color('danger')
             ->outlined()
-            ->extraAttributes(['class' => 'mt-4 w-full'])
+            ->extraAttributes(['class' => 'w-full'])
             ->modalHeading('Batalkan Permintaan Tanda Tangan')
             ->modalDescription(fn () => $displayConnected()
                 ? 'Kunjungan tetap tercatat tanpa tanda tangan. Pilih alasannya.'
