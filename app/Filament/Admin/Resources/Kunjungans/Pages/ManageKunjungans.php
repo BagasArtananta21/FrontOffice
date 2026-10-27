@@ -46,6 +46,14 @@ class ManageKunjungans extends ManageRecords
                                 'Display sedang dipakai atau tidak terhubung. Coba lagi sebentar, atau simpan tanpa tanda tangan.'
                             );
                             $action->halt();
+                        } catch (QueryException $e) {
+                            report($e);
+                            SweetAlert::error(
+                                $livewire,
+                                'Gagal menambahkan Tamu',
+                                'Terjadi kesalahan saat menambahkan tamu. Silahkan coba lagi.'
+                            );
+                            $action->halt();
                         }
 
                         SweetAlert::success(

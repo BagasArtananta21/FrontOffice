@@ -61,7 +61,8 @@ class DisplayDeviceResource extends Resource
                     ->required()
                     ->searchable()
                     ->preload()
-                    ->helperText('Semua data tamu dari perangkat ini akan masuk ke OPD yang dipilih'),
+                    ->helperText('Semua data tamu dari perangkat ini akan masuk ke OPD yang dipilih')
+                    ->disabledOn('edit'),
 
                 Toggle::make('aktif')
                     ->label('Aktif')
@@ -73,7 +74,6 @@ class DisplayDeviceResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('ManageDevice')
             ->columns([
                 TextColumn::make('nama')
                     ->label('Perangkat')
@@ -83,10 +83,10 @@ class DisplayDeviceResource extends Resource
                     ->label('OPD')
                     ->searchable(),
 
-                TextColumn::make('terakhir_aktif')
+                TextColumn::make('status_koneksi')
                     ->label('Koneksi')
                     ->badge()
-                    ->formatStateUsing(fn (DisplayDevice $record) => $record->isConnected() ? 'Terhubung' : 'Tidak terhubung')
+                    ->state(fn (DisplayDevice $record) => $record->isConnected() ? 'Terhubung' : 'Tidak terhubung')
                     ->color(fn (DisplayDevice $record) => $record->isConnected() ? 'success' : 'gray'),
                     
                 TextColumn::make('tampilkan_form')

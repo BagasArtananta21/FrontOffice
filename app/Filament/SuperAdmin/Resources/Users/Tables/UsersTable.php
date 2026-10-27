@@ -59,7 +59,7 @@ class UsersTable
             ->recordActions([
                 EditAction::make()
                     ->successNotification(null)
-                    ->using(function (User $record, Array $data, $livewire, EditAction $action){
+                    ->using(function (User $record, array $data, $livewire, EditAction $action){
                         try {
                             $record->forceFill($data)->save();
                             return $record;
@@ -101,6 +101,6 @@ class UsersTable
             ])
             ->emptyStateIcon(Heroicon::OutlinedUsers)
             ->emptyStateHeading('Belum ada Pengguna')
-            ->emptyStateDescription('Setiap OPD minimal butuh minimal satu pengguna admin FO aktif.');
+            ->emptyStateDescription('Setiap OPD butuh minimal satu pengguna admin FO aktif.');
     }
 }

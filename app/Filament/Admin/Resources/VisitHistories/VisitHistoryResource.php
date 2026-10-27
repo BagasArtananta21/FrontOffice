@@ -111,6 +111,7 @@ class VisitHistoryResource extends Resource
                 TextColumn::make('status_tanda_tangan')
                     ->label('Tanda Tangan')
                     ->badge()
+                    ->wrap()
                     ->state(fn (Kunjungan $record) => $record->signatureStatusLabel())
                     ->color(fn (Kunjungan $record) => match (true) {
                         filled($record->tanda_tangan) => 'success',

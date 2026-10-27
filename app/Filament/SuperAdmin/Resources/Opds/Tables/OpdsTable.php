@@ -25,7 +25,7 @@ class OpdsTable
                     ->disk('public')
                     ->circular()
                     ->imageHeight(32)
-                    ->defaultImageUrl(asset('images/logo-placeholder.png')),
+                    ->defaultImageUrl(asset('images/logo-placeholder.jpg')),
 
                 TextColumn::make('kode_opd')
                     ->label('Kode')
@@ -66,7 +66,7 @@ class OpdsTable
             ->recordActions([
                 EditAction::make()
                     ->successNotification(null)
-                    ->using(function (Opd $record, Array $data, $livewire, EditAction $action){
+                    ->using(function (Opd $record, array $data, $livewire, EditAction $action){
                         try {
                             $record->forceFill($data)->save();
                             return $record;

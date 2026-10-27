@@ -357,12 +357,14 @@ class KunjunganResource extends Resource
                 ViewAction::make()
                     ->label('Detail')
                     ->modalHeading(fn (Kunjungan $record) => "Detail Kunjungan - {$record->nama_tamu}")
-                    ->modalWidth(Width::FourExtraLarge),
+                    ->modalWidth(Width::FourExtraLarge)
+                    ->iconButton(),
                 EditAction::make()
                     ->modalHeading('Ubah Data Kunjungan')
                     ->modalSubmitActionLabel('Simpan')
                     ->modalWidth(Width::SixExtraLarge)
                     ->successNotification(null)
+                    ->iconButton()
                     ->using(function (Kunjungan $record, array $data, $livewire, EditAction $action){
                         try {
                             $record->update($data);

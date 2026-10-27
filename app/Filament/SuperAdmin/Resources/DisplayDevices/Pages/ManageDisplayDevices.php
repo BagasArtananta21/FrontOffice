@@ -21,7 +21,7 @@ class ManageDisplayDevices extends ManageRecords
         return [
             CreateAction::make()
                 ->label('Tambah Perangkat')
-                ->modalheading('Tambah Perangkat Display')
+                ->modalHeading('Tambah Perangkat Display')
                 ->modalSubmitActionLabel('Simpan')
                 ->createAnother(false)
                 ->successNotification(null)

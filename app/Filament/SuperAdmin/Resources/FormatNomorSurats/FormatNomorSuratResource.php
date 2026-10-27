@@ -224,7 +224,7 @@ class FormatNomorSuratResource extends Resource
         return once(fn () => FormatNomorSurat::query()
             ->where('berlaku_sejak', '<=', today()->toDateString())
             ->orderByDesc('berlaku_sejak')
-            ->get((['id', 'opd_id']))
+            ->get(['id', 'opd_id'])
             ->unique('opd_id')
             ->pluck('id')
             ->all()

@@ -59,7 +59,9 @@ class UserForm
                     ->searchable()
                     ->preload()
                     ->visible(fn (Get $get) => $get('role') === 'admin_fo')
-                    ->required(fn (Get $get) => $get('role') === 'admin_fo'),
+                    ->required(fn (Get $get) => $get('role') === 'admin_fo')
+                    ->dehydratedWhenHidden()
+                    ->dehydrateStateUsing(fn (Get $get, ?string $state) => $get('role') === 'admin_fo' ? $state : null),
 
                 Toggle::make('aktif')
                     ->label('Aktif')

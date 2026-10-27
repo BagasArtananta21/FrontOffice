@@ -57,7 +57,11 @@ class BidangResource extends Resource
                 TextInput::make('kode_bidang')
                     ->label('Kode Bidang')
                     ->required()
-                    ->maxLength(20),
+                    ->maxLength(20)
+                    ->unique(
+                        ignoreRecord: true, 
+                        modifyRuleUsing: fn (Unique $rule) => $rule->where('opd_id', Auth::user()->opd_id),
+                    ),
                     
                 Toggle::make('aktif')
                     ->label('Aktif')
@@ -75,12 +79,14 @@ class BidangResource extends Resource
                 TextColumn::make('kode_bidang')
                     ->label('Kode Bidang')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->wrap(),
 
                 TextColumn::make('nama_bidang')
                     ->label('Nama Bidang')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->wrap(),
 
                 IconColumn::make('aktif')
                     ->label('Aktif'),
@@ -104,6 +110,8 @@ class BidangResource extends Resource
             ->recordActions([
                 EditAction::make()
                 ->successNotification(null)
+                ->iconButton()
+                ->tooltip('Ubah Bidang')
                 ->using(function (Bidang $record, array $data, $livewire, EditAction $action) {
                     try {
                         $record->update($data);

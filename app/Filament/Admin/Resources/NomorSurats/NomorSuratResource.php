@@ -64,10 +64,10 @@ class NomorSuratResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema->components(self::issuComponents());
+        return $schema->components(self::issueComponents());
     }
 
-    private static function issuComponents(): array
+    private static function issueComponents(): array
     {
         $format = FormatNomorSurat::query()->berlakuPada(now())->first();
         $segments = self::numberSegments($format);
@@ -186,10 +186,10 @@ class NomorSuratResource extends Resource
     {
         return [
             Step::make('Isi Data')
-                ->schema(self::issuComponents()),
+                ->schema(self::issueComponents()),
             
             Step::make('Periksa')
-                ->description('Nomor tidak bisa diubah/diperbarui setelah terbit. periksa sekali lagi sebelum menerbitkan.')
+                ->description('Nomor tidak bisa diubah/diperbarui setelah terbit. Periksa sekali lagi sebelum menerbitkan.')
                 ->columns(2)
                 ->schema([
                     TextEntry::make('cek_kode_klasifikasi')
@@ -328,11 +328,15 @@ class NomorSuratResource extends Resource
                 ViewAction::make()
                     ->label('Detail')
                     ->modalHeading(fn (NomorSurat $record) => "Detail Nomor Surat - {$record->nomor_lengkap}")
-                    ->modalWidth(Width::TwoExtraLarge),
+                    ->modalWidth(Width::TwoExtraLarge)
+                    ->iconButton(),
                 
                 Action::make('cancel')
                     ->label('Batalkan')
                     ->color('danger')
+                    ->icon(Heroicon::OutlinedXCircle)
+                    ->iconButton()
+                    ->tooltip('Batalkan Nomor')
                     ->visible( fn (NomorSurat $record) => $record->status === NomorSurat::STATUS_TERBIT)
                     ->modalHeading( fn (NomorSurat $record) => "Batalkan Nomor {$record->nomor_lengkap}?")
                     ->modalDescription('Nomor yang dibatalkan tidak dipakai ulang dan tidak bisa dipulihkan.')
