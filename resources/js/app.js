@@ -114,6 +114,24 @@ Alpine.data('signaturePad', (initial = null) => ({
 
 }))
 
+Alpine.data('signatureCountdown', (seconds) => ({
+    endAt: Date.now() + seconds * 1000,
+    left: seconds,
+
+    init() {
+        setInterval(() => {
+            this.left = Math.max(0, Math.ceil((this.endAt - Date.now()) / 1000));
+        }, 500);
+    },
+
+    get label() {
+        const minutes = String(Math.floor(this.left / 60)).padStart(2, '0');
+        const secs = String(this.left % 60).padStart(2, '0');
+
+        return `${minutes}:${secs}`;
+    },
+}))
+
 Alpine.start();
 
 

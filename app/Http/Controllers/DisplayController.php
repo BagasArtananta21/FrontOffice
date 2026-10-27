@@ -41,6 +41,7 @@ class DisplayController extends Controller
             'waitingKey' => $device->waitingKey(),
             'summary' => $waiting ? $this->visitSummary($waiting) : null,
             'notice' => ($expiredNow || session('display_notice') === 'timeout') ? self::TIMEOUT_NOTICE : null,
+            'signatureSecondsLeft' => $device->signatureSecondsLeft(),
         ]);
     }
 

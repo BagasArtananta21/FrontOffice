@@ -28,7 +28,7 @@
             </video>
         </section>
 
-        <section x-show="showForm" x-cloak class="flex h-screen flex-col overflow-hidden bg-page px-10 py-8">
+        <section x-show="showForm" x-cloak class="flex h-screen flex-col overflow-hidden bg-page px-10 py-18">
             <div class="mx-auto w-full max-w-7xl">
                 <h1 class="text-3xl font-semibold text-primary">Formulir Buku Tamu - {{ $opd->kode_opd }}</h1>
                 <p class="mt-2 text-xl text-ink">Kolom bertanda <span class="text-danger">*</span> wajib diisi.</p>
@@ -37,10 +37,9 @@
                     <div role="alert" class="mt-4 rounded-md bg-danger/10 px-5 py-4 text-xl font-medium text-danger">{{ $message }}</div>
                 @enderror
 
-                <form x-ref="guestForm" @submit="submitting = true" method="POST" action="{{ route('display.kunjungan.store') }}" class="mt-6 grid grid-cols-2 content-start gap-x-10 gap-y-6">
+                <form x-ref="guestForm" @submit="submitting = true" method="POST" action="{{ route('display.kunjungan.store') }}" class="mt-6 grid grid-cols-2 content-start gap-x-10 gap-y-8">
                     @csrf
-
-                    <div class="space-y-5">
+                    <div class="space-y-6">
                         <x-display.field name="nama_tamu" label="Nama" required>
                             <input id="nama_tamu" name="nama_tamu" type="text" value="{{ old('nama_tamu') }}" autocomplete="off" required class="display-input">
                         </x-display.field>

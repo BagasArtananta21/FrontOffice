@@ -77,6 +77,19 @@ class DisplayDevice extends Model
             && $kunjungan->updated_at->lt(now()->subMinutes(self::SIGNATURE_TIMEOUT_MINUTES));
     }
 
+    public function signatureSecondsLeft(): ?int
+    {
+        $kunjungan = $this->kunjunganMenunggu;
+
+        if ($kunjungan === null) {
+            return null;
+        }
+
+        $elapsed = (int) $kunjungan->updated_at->diffInSeconds(now());
+
+        return max(0, self::SIGNATURE_TIMEOUT_MINUTES * 60 - $elapsed);
+    }
+
     protected function casts(): array {
         return [
             'tampilkan_form' => 'boolean',
