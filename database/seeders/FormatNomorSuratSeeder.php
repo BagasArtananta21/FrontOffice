@@ -6,13 +6,16 @@ use App\Models\FormatNomorSurat;
 use App\Models\Opd;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use RuntimeException;
 
 class FormatNomorSuratSeeder extends Seeder
 {
     public function run(): void
     {
         $opd = Opd::where('kode_opd', 'DISKOMINFOSANTI')->firstOrFail();
-        $superAdmin = User::where('email', 'superadmin@example.com')->firstOrFail();
+        $superAdmin = User::where('role', 'super_admin')
+            ->orderBy('created_at')
+            ->firstOr(fn () => throw new RuntimeException('Belum ada super admin untuk mengisi dibuat_oleh. Jalankan UserSeeder lebih dulu.'));
 
         app()->instance('current_opd_id', $opd->id);
 
