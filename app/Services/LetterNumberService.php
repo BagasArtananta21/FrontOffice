@@ -10,13 +10,16 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
+use InvalidArgumentException;
 
 class LetterNumberService
 {
+    public const MAX_LAST_NUMBER = 99999;
+
     public function __construct(private LetterNumberFormatter $formatter)
     {
     }
-
+    
     public function issue (array $data, User $petugas): NomorSurat
     {
         return DB::transaction(function () use ($data, $petugas) {
@@ -76,6 +79,10 @@ class LetterNumberService
 
     public function setLastNumber(string $opdId, int $nomorTerakhir): void
     {
+        if ($nomorTerakhir < 0 || $nomorTerakhir > self::MAX_LAST_NUMBER) {
+            throw new InvalidArgumentException("Nomor terakhir harus antara 0 dan " . self::MAX_LAST_NUMBER);
+        }
+
         DB::table('nomor_counters')->upsert(
             [[
                 'id' => (string) Str::uuid7(),

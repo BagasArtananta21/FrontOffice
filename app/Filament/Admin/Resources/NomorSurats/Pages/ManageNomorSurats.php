@@ -121,6 +121,7 @@ class ManageNomorSurats extends ManageRecords
                             ->integer()
                             ->required()
                             ->minValue(fn () => self::currentLastNumber())
+                            ->maxValue(LetterNumberService::MAX_LAST_NUMBER)
                             ->helperText(fn () => 'Saat ini: '.self::currentLastNumber()),
                     ])
                     ->action(function (array $data, $livewire, Action $action) {
