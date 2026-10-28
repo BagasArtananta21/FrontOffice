@@ -12,9 +12,13 @@ use OpenSpout\Writer\XLSX\Entity\SheetView;
 use OpenSpout\Writer\XLSX\Options;
 use OpenSpout\Writer\XLSX\Writer;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Exports\Concerns\WritesTextCells;
+use OpenSpout\Common\Entity\Cell;
 
 class LetterNumberExport
 {
+    use WritesTextCells;
+
     private const COLUMNS = [
         'Nomor Surat' => 40,
         'Tanggal Surat' => 14,
@@ -63,21 +67,22 @@ class LetterNumberExport
                 ->orderBy('sub_nomor')
                 ->lazy(500)
                 ->each(function (NomorSurat $nomorSurat) use ($writer, $dateStyle, $dateTimeStyle, &$rowCount) {
-                    $writer->addRow(Row::fromValuesWithStyles([
-                        $nomorSurat->nomor_lengkap,
-                        $nomorSurat->tanggal_surat,
-                        $nomorSurat->tanggal_terbit,
-                        $nomorSurat->perihal,
-                        $nomorSurat->tujuan_surat,
-                        $nomorSurat->bidang?->nama_bidang,
-                        $nomorSurat->nama_peminta,
-                        $nomorSurat->status === NomorSurat::STATUS_BATAL ? 'Dibatalkan' : 'Terbit',
-                        $nomorSurat->alasan_batal,
-                        $nomorSurat->pembuat?->name,
-                    ], null, [1 => $dateStyle, 2 => $dateTimeStyle]));
+                    $writer->addRow(new Row([
+                        $this->textCell($nomorSurat->nomor_lengkap),
+                        Cell::fromValue($nomorSurat->tanggal_surat, $dateStyle),
+                        Cell::fromValue($nomorSurat->tanggal_terbit, $dateTimeStyle),
+                        $this->textCell($nomorSurat->perihal),
+                        $this->textCell($nomorSurat->tujuan_surat),
+                        $this->textCell($nomorSurat->bidang?->nama_bidang),
+                        $this->textCell($nomorSurat->nama_peminta),
+                        $this->textCell($nomorSurat->status === NomorSurat::STATUS_BATAL ? 'Dibatalkan' : 'Terbit'),
+                        $this->textCell($nomorSurat->alasan_batal),
+                        $this->textCell($nomorSurat->pembuat?->name),
+                    ]));
 
                     $rowCount++;
                 });
+
 
             $sheet->setAutoFilter(new AutoFilter(0, 1, count(self::COLUMNS) - 1, $rowCount + 1));
 
