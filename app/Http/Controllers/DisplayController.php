@@ -93,7 +93,7 @@ class DisplayController extends Controller
         $device = $request->attributes->get('display_device');
 
         try {
-            $kunjunganService->recordFromDisplay($request->validated(), $device->ditampilkan_oleh);
+            $kunjungan = $kunjunganService->submitFromDisplay($device, $request->validated());
         } catch (QueryException $e) {
             report($e);
 
@@ -102,10 +102,13 @@ class DisplayController extends Controller
                 ->withErrors(['form' => 'Terjadi kesalahan. Silakan coba lagi atau hubungi petugas.']);
         }
 
-        $device->update(['tampilkan_form' => false]);
+        if (! $kunjungan) {
+            return redirect()->route('display.show');
+        }
 
         return redirect()->route('display.confirmation');
     }
+
 
     public function storeSignature(Request $request, KunjunganService $kunjunganService): RedirectResponse
     {

@@ -28,6 +28,22 @@ class KunjunganService
         return $this->store($attributes, Kunjungan::SUMBER_DISPLAY, now(), $petugasId);
      }
 
+     public function submitFromDisplay(DisplayDevice $device, array $data): ?Kunjungan
+     {
+         return DB::transaction(function () use ($device, $data) {
+            $device = DisplayDevice::query()->whereKey($device->getKey())->lockForUpdate()->firstOrFail();
+            
+            if (! $device->tampilkan_form || $device->kunjungan_menunggu_id !== null) {
+               return null;
+            }
+
+            $kunjungan = $this->recordFromDisplay($data, $device->ditampilkan_oleh);
+            $device->forceFill(['tampilkan_form' => false])->save();
+
+            return $kunjungan;
+         });
+     }
+
      public function recordWithoutSignature(array $data, User $petugas, string $reason): Kunjungan
      {
          if (! array_key_exists($reason, Kunjungan::NO_SIGNATURE_REASONS)) {
