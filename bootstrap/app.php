@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'display' => \App\Http\Middleware\EnsureDisplayDevice::class,
             'not_display' => \App\Http\Middleware\RedirectIfDisplayDevice::class,
         ]);
+        $middleware->append(\App\Http\Middleware\AddSecurityHeader::class);
     })
 
     ->withExceptions(function (Exceptions $exceptions): void {
