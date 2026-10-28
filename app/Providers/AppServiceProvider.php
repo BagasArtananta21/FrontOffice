@@ -7,6 +7,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,6 +31,17 @@ class AppServiceProvider extends ServiceProvider
                 $request->attributes->get('display_device')?->id ?? $request->ip()
             );
         });
+
+        RateLimiter::for('login', function (Request $request) {
+        $email = $request->input('email');
+        $email = is_string($email) ? Str::lower(trim($email)) : '';
+
+        return [
+            Limit::perMinute(5)->by('ip:'.$request->ip()),
+            Limit::perHour(20)->by('email:'.$email),
+        ];
+    });
+
     }
 
 

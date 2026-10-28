@@ -34,14 +34,14 @@ class UserForm
                     ->label('Kata Sandi')
                     ->password()
                     ->revealable()
-                    ->minLength(8)
+                    ->minLength(12)
                     ->validationMessages([
-                        'min' => 'Kata sandi minimal 8 karakter.'])
+                        'min' => 'Kata sandi minimal 12 karakter.'])
                     ->required(fn (string $operation) => $operation === 'create')
                     ->dehydrated(fn (?string $state) => filled($state))
                     ->helperText(fn (string $operation) => $operation === 'create'
-                        ? 'Minimal 8 karakter.'
-                        : 'Minimal 8 karakter. Kosongkan bila tidak ingin mengubah kata sandi.'),
+                        ? 'Minimal 12 karakter.'
+                        : 'Minimal 12 karakter. Kosongkan bila tidak ingin mengubah kata sandi.'),
 
                 Select::make('role')
                     ->label('Peran')

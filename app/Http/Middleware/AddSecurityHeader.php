@@ -15,6 +15,7 @@ class AddSecurityHeader
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('Content-Security-Policy', "frame-ancestors 'self'");
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
 
         return $response;
     }

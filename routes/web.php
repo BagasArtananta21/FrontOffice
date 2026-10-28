@@ -20,7 +20,7 @@ Route::get('/', function (Request $request) {
 Route::middleware(['not_display', 'guest'])->group(function (){
     Route::get('/login', [LoginController::class, 'create']) -> name('login');
     Route::post('/login', [LoginController::class, 'store']) 
-        ->middleware('throttle:5,1')     
+        ->middleware('throttle:login')     
         ->name('login.store');
 });
 

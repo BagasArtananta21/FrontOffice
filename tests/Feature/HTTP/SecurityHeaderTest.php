@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Http;
+namespace Tests\Feature\HTTP;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
@@ -15,6 +15,7 @@ class SecurityHeaderTest extends TestCase
         $response->assertHeader('X-Frame-Options', 'SAMEORIGIN');
         $response->assertHeader('Content-Security-Policy', "frame-ancestors 'self'");
         $response->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        $response->assertHeader('X-Content-Type-Options', 'nosniff');
     }
 
     public function test_web_responses_carry_the_headers(): void
