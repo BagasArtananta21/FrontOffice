@@ -183,14 +183,15 @@ class StoreVisitSuccessTest extends TestCase
         $this->submitVisit(token: 'token-perangkat-kedua')->assertStatus(302);
     }
 
-    public function test_the_throttle_leaves_the_same_device_free_from_another_address(): void
+    public function test_the_throttle_follows_the_device_across_addresses(): void
     {
         for ($attempt = 1; $attempt <= 6; $attempt++) {
             $this->submitVisit();
         }
 
-        $this->withServerVariables(['REMOTE_ADDR' => '10.20.30.40'])->submitVisit()->assertStatus(302);
+        $this->withServerVariables(['REMOTE_ADDR' => '10.20.30.40'])->submitVisit()->assertStatus(429);
     }
+
 
     public function test_the_throttle_does_not_block_the_status_polling(): void
     {

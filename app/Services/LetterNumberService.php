@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\LetterFormatNotFoundException;
 use App\Exceptions\LetterBaseNumberNotFoundException;
+use App\Models\Bidang;
 use App\Models\FormatNomorSurat;
 use App\Models\NomorSurat;
 use App\Models\User;
@@ -28,6 +29,12 @@ class LetterNumberService
             
             if ( ! $format) {
                 throw new LetterFormatNotFoundException();
+            }
+
+            $bidangId = $data['bidang_id'] ?? null;
+
+            if ($bidangId !== null && ! Bidang::query()->whereKey($bidangId)->exists()){
+                throw new InvalidArgumentException('Bidang tidak ditemukan pada OPD ini.');
             }
 
             $tanggalSurat = Carbon::parse($data['tanggal_surat']);

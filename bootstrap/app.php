@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'not_display' => \App\Http\Middleware\RedirectIfDisplayDevice::class,
         ]);
         $middleware->append(\App\Http\Middleware\AddSecurityHeader::class);
+        $middleware->prependToPriorityList(
+            \Illuminate\Routing\Middleware\ThrottleRequests::class,
+            \App\Http\Middleware\EnsureDisplayDevice::class,
+        );
     })
 
     ->withExceptions(function (Exceptions $exceptions): void {
