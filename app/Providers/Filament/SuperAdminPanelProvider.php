@@ -10,8 +10,6 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -43,8 +41,8 @@ class SuperAdminPanelProvider extends PanelProvider
                 fn () => Blade::render("@vite('resources/js/filament.js')"),
             )
             ->navigationGroups([
-                'Pantau Sistem',
-                'Kelola Data',
+                'Data Master',
+                'Pengaturan',
             ])
             ->colors([
                 'primary' => BrandColors::PRIMARY,

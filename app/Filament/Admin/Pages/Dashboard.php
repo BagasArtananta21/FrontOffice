@@ -14,7 +14,7 @@ use App\Exports\VisitHistoryExport;
 use App\Filament\Concerns\HasDateRangeFilters;
 use App\Filament\Support\SweetAlert;
 use App\Models\Kunjungan;
-use UnitEnum;
+use BackedEnum;
 
 class Dashboard extends BaseDashboard
 {
@@ -22,7 +22,7 @@ class Dashboard extends BaseDashboard
 
     protected static ?string $title = 'Rekap Kunjungan';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Buku Tamu';
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
     public function getSubheading(): ?string
     {

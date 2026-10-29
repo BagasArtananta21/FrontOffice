@@ -24,7 +24,7 @@ class VisitHistoryResource extends Resource
 {
     protected static ?string $model = Kunjungan::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClock;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArchiveBox;
 
     protected static ?string $navigationLabel = 'Riwayat Kunjungan';
 

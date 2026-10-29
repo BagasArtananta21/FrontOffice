@@ -21,9 +21,9 @@ class OpdResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'nama_opd';
 
-    protected static ?string $navigationLabel = 'Kelola OPD';
+    protected static ?string $navigationLabel = 'OPD';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Kelola Data';
+    protected static string|UnitEnum|null $navigationGroup = 'Data Master';
 
     protected static ?string $modelLabel = 'OPD';
 

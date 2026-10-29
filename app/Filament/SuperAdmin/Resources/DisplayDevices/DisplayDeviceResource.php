@@ -33,9 +33,9 @@ class DisplayDeviceResource extends Resource
 
     protected static ?string $title = 'Kelola Perangkat Display';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Kelola Data';
+    protected static string|UnitEnum|null $navigationGroup = 'Pengaturan';
 
-    protected static ?string $navigationLabel = 'Kelola Display';
+    protected static ?string $navigationLabel = 'Perangkat Display';
 
     protected static ?string $modelLabel = 'Display';
 

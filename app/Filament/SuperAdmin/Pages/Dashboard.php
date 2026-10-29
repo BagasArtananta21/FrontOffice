@@ -9,7 +9,8 @@ use App\Filament\SuperAdmin\Widgets\SystemSummary;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
 use Filament\Schemas\Schema;
-use UnitEnum;
+use BackedEnum;
+use Filament\Support\Icons\Heroicon;
 
 class Dashboard extends BaseDashboard
 {
@@ -17,7 +18,7 @@ class Dashboard extends BaseDashboard
 
     protected static ?string $title = 'Rekap Sistem';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Pantau Sistem';
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
     public function getSubheading(): ?string
     {

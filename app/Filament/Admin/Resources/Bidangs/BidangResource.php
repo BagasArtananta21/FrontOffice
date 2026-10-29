@@ -29,9 +29,9 @@ class BidangResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'nama_bidang';
 
-    protected static ?string $navigationLabel = 'Kelola Bidang';
+    protected static ?string $navigationLabel = 'Bidang';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Kelola Data';
+    protected static string|UnitEnum|null $navigationGroup = 'Data Master';
 
     protected static ?string $modelLabel = 'Bidang';
 

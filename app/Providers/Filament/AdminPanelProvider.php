@@ -36,7 +36,7 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 'Buku Tamu',
                 'Penomoran Surat',
-                'Kelola Data',
+                'Data Master',
             ])
             ->renderHook(
                 PanelsRenderHook::USER_MENU_BEFORE,

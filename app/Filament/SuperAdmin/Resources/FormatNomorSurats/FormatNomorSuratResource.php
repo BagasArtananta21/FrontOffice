@@ -38,7 +38,7 @@ class FormatNomorSuratResource extends Resource
 
     protected static ?string $navigationLabel = 'Format Nomor Surat';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Kelola Data';
+    protected static string|UnitEnum|null $navigationGroup = 'Pengaturan';
 
     protected static ?string $modelLabel = 'Format Nomor Surat';
 

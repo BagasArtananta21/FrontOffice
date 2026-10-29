@@ -40,7 +40,7 @@ class NomorSuratResource extends Resource
 {
     protected static ?string $model = NomorSurat::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::DocumentText;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
     protected static ?string $navigationLabel = 'Nomor Surat';
 
