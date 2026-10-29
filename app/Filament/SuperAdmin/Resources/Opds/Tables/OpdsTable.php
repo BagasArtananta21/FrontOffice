@@ -24,8 +24,11 @@ class OpdsTable
                     ->label('')
                     ->disk('public')
                     ->circular()
-                    ->imageHeight(32)
-                    ->defaultImageUrl(asset('images/logo-placeholder.jpg')),
+                    ->imageSize(40)
+                    ->extraImgAttributes(fn (Opd $record) => [
+                        'class' => $record->logo ? '' : 'bg-gray-100 p-1.5 object-contain',
+                    ])
+                    ->defaultImageUrl(asset('images/icons/logo-placeholder.svg')),
 
                 TextColumn::make('kode_opd')
                     ->label('Kode')
