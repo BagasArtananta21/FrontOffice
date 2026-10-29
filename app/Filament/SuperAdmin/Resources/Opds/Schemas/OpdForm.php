@@ -45,6 +45,7 @@ class OpdForm
                             ->label('Logo')
                             ->image()
                             ->disk('public')
+                            ->acceptedFileTypes(['image/png', 'image/jpeg'])
                             ->directory('logo-opd')
                             ->maxSize(1024)
                             ->helperText('PNG atau JPG, maksimal 1 MB.'),

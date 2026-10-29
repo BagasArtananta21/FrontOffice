@@ -16,7 +16,7 @@ use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Illuminate\Support\Arr;
-
+use Livewire\Attributes\Locked;
 
 class DisplayStatus extends Widget implements HasActions, HasSchemas
 {
@@ -28,6 +28,7 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
 
     protected static ?int $sort = 1;
 
+    #[Locked]
     public ?string $watchedKunjunganId = null;
 
     public function mount(): void
