@@ -170,8 +170,6 @@ class StoreVisitSuccessTest extends TestCase
         $this->submitVisit()->assertStatus(429);
     }
 
-    // BUG: the `display-submit` limiter keys on request->attributes display_device, but the throttle middleware runs before EnsureDisplayDevice sets it, so the key is always the IP; displays behind one address share a single bucket.
-    #[Group('known-bug')]
     public function test_the_throttle_counts_per_device_and_not_per_address(): void
     {
         $this->insertDisplay($this->opd->id, 'token-perangkat-kedua');

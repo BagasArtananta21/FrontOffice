@@ -242,8 +242,6 @@ class LetterIssueTest extends TestCase
         $this->assertSame('443.32/1/UJI/2026', $letter->nomor_lengkap);
     }
 
-    // BUG (defence in depth): issue() never checks bidang_id against the OPD; with a format that has no `bidang` segment a bidang of another OPD is stored silently. The panel form limits the options, so only reachable outside the form.
-    #[Group('known-bug')]
     public function test_it_does_not_store_a_bidang_of_another_opd(): void
     {
         DB::table('format_nomor_surat')->delete();

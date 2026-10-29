@@ -261,8 +261,6 @@ class LetterUpdateTriggerTest extends TestCase
         ];
     }
 
-    // BUG: the trigger accepts terbit -> batal without alasan_batal, dibatalkan_oleh and batal_pada (nomor_surat_before_update has no check that they come with the transition).
-    #[Group('known-bug')]
     #[DataProvider('incompleteCancellations')]
     public function test_it_rejects_cancelling_without_the_full_cancellation_data(array $fields): void
     {
@@ -276,8 +274,6 @@ class LetterUpdateTriggerTest extends TestCase
         $this->assertSame('terbit', $this->rawRow('nomor_surat', $id)['status']);
     }
 
-    // BUG: status is a free string; the trigger lets terbit change to any value, not only batal.
-    #[Group('known-bug')]
     public function test_it_rejects_an_unknown_status_value(): void
     {
         $id = $this->fullLetter();
