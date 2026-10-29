@@ -1,58 +1,94 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# E-FO — Sistem Buku Tamu & Penomoran Surat
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Prototipe proyek magang di Diskominfo (Diskominfosanti) Kabupaten Buleleng, Bali.
 
-## About Laravel
+Sistem ini punya dua modul:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Buku Tamu** — tamu mengisi form dan tanda tangan di PC display lobi; petugas Front Office (FO) memantau dan menginput lewat panel admin.
+- **Penomoran Surat** — menerbitkan nomor surat (seperti buku agenda digital). Sistem hanya menerbitkan nomor, tidak membuat atau menyimpan dokumen surat.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Dirancang multi-tenant (data dipisah per OPD); data awal hanya untuk Diskominfosanti.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Stack dan kebutuhan
 
-## Learning Laravel
+- PHP 8.3 dengan ekstensi `zip` (untuk ekspor Excel)
+- Composer dan Node.js + npm
+- MySQL 8 atau MariaDB, dengan privilege `TRIGGER` (penomoran memakai trigger database)
+- Laravel 13, Filament v5 (Livewire 4), Blade + Alpine.js, Tailwind v4, Vite
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Instalasi
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Buat database kosong:
 
-## Contributing
+```sql
+CREATE DATABASE projectmagang CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Ubah `.env`, karena bawaan `.env.example` memakai SQLite:
 
-## Code of Conduct
+```env
+APP_NAME=E-FO
+APP_URL=http://projectmagang.test
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=projectmagang
+DB_USERNAME=root
+DB_PASSWORD=
 
-## Security Vulnerabilities
+QUEUE_CONNECTION=sync
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Migrasi, seeding, dan build aset:
 
-## License
+```bash
+php artisan migrate --seed
+npm run build
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Jalankan lewat web server lokal (misalnya Laragon, `http://projectmagang.test`) atau `php artisan serve`, lalu buka `/login`.
+
+Catatan:
+
+- Jangan pakai `composer setup`: skrip itu memigrasi ke SQLite, bukan MySQL.
+- Mengulang dari awal pakai `php artisan migrate:fresh --seed`. Jangan `migrate:refresh`, karena trigger ikut terhapus bersama tabelnya.
+- Seeder `DisplayDeviceSeeder` mencetak **token display** satu kali di terminal. Catat token itu, lalu pakai di `/display/pair` pada PC display.
+- Setelah mengubah `.env`, jalankan `php artisan config:cache` kalau memakai Apache di Windows.
+
+## Seeding dan akun demo
+
+Isi seeding bergantung pada `APP_ENV`:
+
+| `APP_ENV` | Hasil |
+|---|---|
+| `local` | Data dasar (OPD, bidang, format nomor, display) + data uji (100 nomor surat, kunjungan, OPD Dinkes) + akun demo di bawah |
+| selain `local` | Data dasar saja. Kata sandi super admin **ditanyakan lewat prompt** (minimal 12 karakter), akun `adminfo` tidak dibuat |
+
+Data uji tidak idempoten: menjalankan seeder lagi menambah data uji lagi.
+
+Akun demo (hanya di `APP_ENV=local`):
+
+| Email | Peran | Panel |
+|---|---|---|
+| `superadmin@example.com` | `super_admin` | `/super-admin` |
+| `adminfo@example.com` | `admin_fo` (Diskominfosanti) | `/admin` |
+| `dinkes@example.com` | `admin_fo` (Dinkes) | `/admin` |
+
+Kata sandi ketiganya `password`.
+
+### Keamanan kata sandi
+
+`password` hanya kata sandi **awal** dari seeder, bukan untuk dipakai terus. Ganti dengan **minimal 12 karakter** sebelum sistem dipakai selain di mesin development:
+
+1. Login sebagai super admin, buka **Kelola Pengguna**.
+2. Ubah pengguna yang dituju (termasuk akun super admin sendiri), isi kolom kata sandi dengan minimal 12 karakter, lalu simpan. Kolom dikosongkan berarti kata sandi tidak berubah.
+
+`.env` produksi yang disalin dari `.env.example` masih berisi `APP_ENV=local`, sehingga seeding memakai `password` dan menanam data uji. Pastikan `APP_ENV=production` dan `APP_DEBUG=false` sebelum menjalankan seeder di server.
