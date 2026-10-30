@@ -32,6 +32,7 @@ class SuperAdminPanelProvider extends PanelProvider
             ->brandName(config('app.name'))
             ->brandLogo(fn () => view('filament.brand'))
             ->brandLogoHeight('2.25rem')
+            ->favicon(asset('images/logo.jpeg'))
             ->renderHook(
                 PanelsRenderHook::USER_MENU_BEFORE,
                 fn () => view('filament.topbar.user-info'),

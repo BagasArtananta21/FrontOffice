@@ -33,6 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandName(config('app.name'))
             ->brandLogo(fn () => view('filament.brand'))
             ->brandLogoHeight('2.25rem')
+            ->favicon(asset('images/logo.jpeg'))
             ->navigationGroups([
                 'Buku Tamu',
                 'Penomoran Surat',
