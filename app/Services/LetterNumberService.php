@@ -38,6 +38,11 @@ class LetterNumberService
             }
 
             $tanggalSurat = Carbon::parse($data['tanggal_surat']);
+
+            if ($tanggalSurat->copy()->startOfDay()->gt(today())){
+                throw new InvalidArgumentException('Tanggal surat tidak boleh melewati hari ini.');
+            }
+
             $batas = $tanggalSurat->copy()->endOfDay();
             $nomorInduk = 0;
 

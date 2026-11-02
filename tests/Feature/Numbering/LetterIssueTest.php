@@ -289,4 +289,18 @@ class LetterIssueTest extends TestCase
         $this->assertSame($other->id, $letterOfOther->opd_id);
         $this->assertSame(2, $this->counterValue($this->opd->id, 'surat', '2026'));
     }
+
+    public function test_it_rejects_a_letter_date_after_today_and_writes_nothing(): void
+    {
+        foreach (['2026-10-16', '2027-01-05'] as $date) {
+            try {
+                $this->issueLetter(['tanggal_surat' => $date]);
+                $this->fail("Tanggal {$date} seharusnya ditolak.");
+            } catch (InvalidArgumentException) {
+                $this->assertSame(0, DB::table('nomor_surat')->count());
+                $this->assertNull($this->counterValue($this->opd->id, 'surat', '2026'));
+                $this->assertNull($this->counterValue($this->opd->id, 'surat', '2027'));
+            }
+        }
+    }
 }
