@@ -49,6 +49,12 @@ Alpine.data('displayScreen', (statusUrl, initialShowForm = false, waitingKey = n
             }
             
             const data = await response.json();
+
+            if (data.csrf_token){
+                this.$root.querySelectorAll('input[name="_token"]').forEach((input) => {
+                    input.value = data.csrf_token;
+                });
+            }
     
             if ((data.waiting_key ?? null) !== waitingKey){
                 window.location.reload();

@@ -43,15 +43,24 @@ class DisplayStateTest extends TestCase
 
     public function test_status_reports_idle_when_the_form_is_not_requested(): void
     {
-        $this->assertSame(['status' => 'ok', 'tampilkan_form' => false, 'waiting_key' => null], $this->pollStatus());
+        $status = $this->pollStatus();
+
+        $this->assertSame('ok', $status['status']);
+        $this->assertFalse($status['tampilkan_form']);
+        $this->assertNull($status['waiting_key']);
     }
 
     public function test_status_reports_the_form_when_the_officer_asked_for_it(): void
     {
         $this->showForm();
 
-        $this->assertSame(['status' => 'ok', 'tampilkan_form' => true, 'waiting_key' => null], $this->pollStatus());
+        $status = $this->pollStatus();
+
+        $this->assertSame('ok', $status['status']);
+        $this->assertTrue($status['tampilkan_form']);
+        $this->assertNull($status['waiting_key']);
     }
+
 
     public function test_status_reports_a_waiting_key_while_a_signature_is_awaited(): void
     {
@@ -275,5 +284,13 @@ class DisplayStateTest extends TestCase
 
         DB::table('kunjungan')->update(['updated_at' => $this->secondsAgo(900)]);
         $this->assertSame(0, $this->device()->signatureSecondsLeft());
+    }
+
+    public function test_the_status_response_carries_the_csrf_token_of_the_current_session(): void
+    {
+        $response = $this->asDisplay()->get(route('display.status'))->assertOk();
+
+        $this->assertNotEmpty($response->json('csrf_token'));
+        $response->assertSessionHas('_token', $response->json('csrf_token'));
     }
 }

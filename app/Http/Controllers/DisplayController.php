@@ -63,6 +63,7 @@ class DisplayController extends Controller
             'status' => 'ok',
             'tampilkan_form' => $device->tampilkan_form,
             'waiting_key' => $device->waitingKey(),
+            'csrf_token' => csrf_token(),
         ]);
     }
 
