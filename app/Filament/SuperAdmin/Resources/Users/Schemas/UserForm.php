@@ -2,15 +2,22 @@
 
 namespace App\Filament\SuperAdmin\Resources\Users\Schemas;
 
+use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class UserForm
 {
+    public static function isOwnAccount(?User $record): bool
+    {
+        return $record !== null && $record->getKey() === Auth::id();
+    }
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -49,9 +56,14 @@ class UserForm
                         'admin_fo' => 'Admin FO',
                         'super_admin' => 'Super Admin',
                     ])
+                    
                     ->default('admin_fo')
                     ->required()
-                    ->live(),
+                    ->live()
+                    ->disabled(fn (?User $record) => self::isOwnAccount($record))
+                    ->helperText(fn (?User $record) => self::isOwnAccount($record)
+                        ? 'Peran tidak dapat diubah pada akun sendiri.'
+                        : null),
 
                 Select::make('opd_id')
                     ->label('OPD')
@@ -65,7 +77,11 @@ class UserForm
 
                 Toggle::make('aktif')
                     ->label('Aktif')
-                    ->default(true),
+                    ->default(true)
+                    ->disabled(fn (?User $record) => self::isOwnAccount($record))
+                    ->helperText(fn (?User $record) => self::isOwnAccount($record)
+                        ? 'Peran tidak dapat dinonaktifkan pada akun sendiri.'
+                        : null),
             ]);
     }
 }
