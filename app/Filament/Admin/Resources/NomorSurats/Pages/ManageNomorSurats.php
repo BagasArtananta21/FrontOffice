@@ -22,6 +22,7 @@ use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Carbon;
 use Filament\Actions\ActionGroup;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
+use InvalidArgumentException;
 
 class ManageNomorSurats extends ManageRecords
 {
@@ -72,6 +73,14 @@ class ManageNomorSurats extends ManageRecords
                             $livewire,
                             'Gagal Menerbitkan Nomor Surat',
                             'Terjadi Kesalahan, Silahkan Coba Lagi.'
+                        );
+                        $action->halt();
+                    } catch (InvalidArgumentException $e){
+                        report($e);
+                        SweetAlert::warning(
+                            $livewire,
+                            'Nomor Surat Tidak Bisa Diterbitkan',
+                            'Data yang dikirim tidak valid. Periksa kembali isian, lalu coba lagi.'
                         );
                         $action->halt();
                     }
