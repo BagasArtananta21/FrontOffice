@@ -31,6 +31,7 @@ class DisplayController extends Controller
     public function show(Request $request): View {
         /** @var DisplayDevice $device */
         $device = $request->attributes->get('display_device');
+        $this->closeStaleForm($device);
         $expiredNow = $this->releaseExpiredSignatureRequest($device);
         $waiting = $device->kunjunganMenunggu;
 
@@ -48,6 +49,7 @@ class DisplayController extends Controller
     public function status(Request $request): JsonResponse {
         /** @var DisplayDevice $device */
         $device = $request->attributes->get('display_device');
+        $this->closeStaleForm($device);
 
         if ($this->releaseExpiredSignatureRequest($device)) {
             session()->flash('display_notice', 'timeout');
@@ -145,6 +147,13 @@ class DisplayController extends Controller
             'Pegawai yang dituju' => $kunjungan->pegawai_tujuan,
             'Keperluan' => $kunjungan->keperluan,
         ], fn ($value) => filled($value));
+    }
+
+    private function closeStaleForm(DisplayDevice $device): void
+    {
+        if ($device->formWindowStale() && app(KunjunganService::class)->closeStaleForm($device)) {
+            $device->refresh();
+        }
     }
 
     private function releaseExpiredSignatureRequest(DisplayDevice $device): bool

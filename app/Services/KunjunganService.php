@@ -23,9 +23,12 @@ class KunjunganService
      public function recordFromDisplay(array $data, ?string $petugasId): Kunjungan
      {
         $attributes = Arr::only($data, self::GUEST_FIELDS);
-        $attributes['tanda_tangan'] = $this->storeSignature($data['tanda_tangan']);
+        $attributes['tanda_tangan'] = $this->newSignaturePath();
 
-        return $this->store($attributes, Kunjungan::SUMBER_DISPLAY, now(), $petugasId);
+        $kunjungan = $this->store($attributes, Kunjungan::SUMBER_DISPLAY, now(), $petugasId);
+        $this->writeSignature($attributes['tanda_tangan'], $data['tanda_tangan']);
+
+        return $kunjungan;
      }
 
      public function submitFromDisplay(DisplayDevice $device, array $data): ?Kunjungan
@@ -33,7 +36,7 @@ class KunjunganService
          return DB::transaction(function () use ($device, $data) {
             $device = DisplayDevice::query()->whereKey($device->getKey())->lockForUpdate()->firstOrFail();
             
-            if (! $device->tampilkan_form || $device->kunjungan_menunggu_id !== null) {
+            if (! $device->tampilkan_form || $device->formWindowStale() || $device->kunjungan_menunggu_id !== null) {
                return null;
             }
 
@@ -59,14 +62,24 @@ class KunjunganService
          );
      }
 
-     private function storeSignature(string $dataUrl): string
+     private function newSignaturePath(): string
      {
-          $binary = base64_decode(Str::after($dataUrl, 'base64,'), true);
-          $path = 'tanda-tangan/'.now()->format('Y/m').'/'.Str::uuid().'.png';
+          return 'tanda-tangan/'.now()->format('Y/m').'/'.Str::uuid().'.png';
+     }
 
-          Storage::disk('local')->put($path, $binary);
+     // Called as the last step inside the transaction, so a database failure leaves no orphan file.
+     private function writeSignature(string $path, string $dataUrl): void
+     {
+          Storage::disk('local')->put($path, base64_decode(Str::after($dataUrl, 'base64,'), true));
+     }
 
-          return $path;
+     public function closeStaleForm(DisplayDevice $device): bool
+     {
+         return DisplayDevice::query()
+            ->whereKey($device->getKey())
+            ->where('tampilkan_form', true)
+            ->where('updated_at', '<', today())
+            ->update(['tampilkan_form' => false]) === 1;
      }
 
      private function store(array $attributes, string $sumberInput, CarbonInterface $waktuDatang, ?string $dicatatOleh = null, array $sistemAttributes = []): Kunjungan
@@ -118,8 +131,11 @@ class KunjunganService
                return null;
          }
 
-         $kunjungan->forceFill(['tanda_tangan' => $this->storeSignature($signatureDataUrl)])->save();
+         $path = $this->newSignaturePath();
+
+         $kunjungan->forceFill(['tanda_tangan' => $path])->save();
          $device->forceFill(['kunjungan_menunggu_id' => null])->save();
+         $this->writeSignature($path, $signatureDataUrl);
 
          return $kunjungan;
       });

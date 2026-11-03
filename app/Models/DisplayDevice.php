@@ -69,6 +69,11 @@ class DisplayDevice extends Model
         return $kunjungan ? $kunjungan->id.'@'.$kunjungan->updated_at->timestamp : null;    
     }
 
+    public function formWindowStale(): bool
+    {
+        return $this->tampilkan_form && $this->updated_at->lt(today());
+    }
+
     public function signatureRequestExpired(): bool
     {
         $kunjungan = $this->kunjunganMenunggu;
