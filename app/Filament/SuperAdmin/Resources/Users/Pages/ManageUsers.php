@@ -31,7 +31,7 @@ class ManageUsers extends ManageRecords
                         SweetAlert::error(
                             $livewire,
                             'Gagal Menambahkan Pengguna',
-                            'Terjadi kesalahan saat menambahkan Pengguna. silahkan coba lagi'
+                            'Terjadi kesalahan saat menambahkan pengguna. Silakan coba lagi.'
                         );
                         $action->halt();
                     }

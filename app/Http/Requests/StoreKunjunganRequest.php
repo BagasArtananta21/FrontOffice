@@ -51,6 +51,7 @@ class StoreKunjunganRequest extends FormRequest
             'bidang_id' => 'Bidang yang Dituju',
             'pegawai_tujuan' => 'Pegawai yang Dituju',
             'keperluan' => 'Keperluan Kunjungan',
+            'tanda_tangan' => 'Tanda tangan',
         ];
     }
 

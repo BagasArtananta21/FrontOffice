@@ -188,7 +188,7 @@ class FormatNomorSuratResource extends Resource
                 
                 TextColumn::make('dasar_perubahan')
                     ->label('Dasar Perubahan')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->wrap(),
                 
                 TextColumn::make('pembuat.name')

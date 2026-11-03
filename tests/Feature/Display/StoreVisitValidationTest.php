@@ -65,6 +65,23 @@ class StoreVisitValidationTest extends TestCase
         $this->assertRejected();
     }
 
+    public function test_a_missing_signature_is_reported_with_a_capitalised_label(): void
+    {
+        $payload = $this->visitPayload();
+        unset($payload['tanda_tangan']);
+
+        $this->asDisplay()->post(route('display.kunjungan.store'), $payload)
+            ->assertSessionHasErrors(['tanda_tangan' => 'Tanda tangan wajib diisi.']);
+    }
+
+    public function test_an_invalid_signature_asks_the_guest_to_try_again(): void
+    {
+        $this->submitVisit(['tanda_tangan' => 'data:image/png;base64,bukan-png'])
+            ->assertSessionHasErrors(['tanda_tangan' => 'Tanda tangan tidak valid. Silakan ulangi.']);
+
+        $this->assertRejected();
+    }
+
     public function test_optional_fields_may_all_be_left_out(): void
     {
         $this->submitVisit()->assertRedirect(route('display.confirmation'))->assertSessionHasNoErrors();

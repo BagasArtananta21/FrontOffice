@@ -112,6 +112,7 @@ class KunjunganResource extends Resource
                         ->default(now())
                         ->required()
                         ->maxDate(now())
+                        ->helperText('Waktu sebelum hari ini hanya tampil di Riwayat Kunjungan, tidak di Tamu Hari Ini.')
                         ->disabledOn('edit'),
     
                     Select::make('bidang_id')
@@ -210,16 +211,16 @@ class KunjunganResource extends Resource
 
                     TextEntry::make('no_hp')
                         ->label('Nomor HP')
-                        ->placeholder('—')
+                        ->placeholder('-')
                         ->copyable(),
 
                     TextEntry::make('instansi_asal')
                         ->label('Instansi Asal')
-                        ->placeholder('—'),
+                        ->placeholder('-'),
 
                     TextEntry::make('alamat')
                         ->label('Alamat')
-                        ->placeholder('—')
+                        ->placeholder('-')
                         ->columnSpanFull(),
                     
                     ImageEntry::make('tanda_tangan')
@@ -248,11 +249,11 @@ class KunjunganResource extends Resource
 
                         TextEntry::make('bidang.nama_bidang')
                             ->label('Bidang yang Dituju')
-                            ->placeholder('—'),
+                            ->placeholder('-'),
 
                         TextEntry::make('pegawai_tujuan')
                             ->label('Pegawai yang Dituju')
-                            ->placeholder('—'),
+                            ->placeholder('-'),
 
                         TextEntry::make('keperluan')
                             ->label('Keperluan')
@@ -260,12 +261,12 @@ class KunjunganResource extends Resource
 
                         TextEntry::make('catatan_petugas')
                             ->label('Keterangan')
-                            ->placeholder('—')
+                            ->placeholder('-')
                             ->columnSpanFull(),
 
                         TextEntry::make('petugas.name')
                             ->label('Ditampilkan/Dicatat Oleh')
-                            ->placeholder('—'),
+                            ->placeholder('-'),
                     ]),
         ]);
     }
@@ -282,7 +283,7 @@ class KunjunganResource extends Resource
             ->columns([
                 TextColumn::make('nomor_kunjungan')
                     ->label('Nomor Kunjungan')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->sortable()
                     ->visibleFrom('md'),
 
@@ -298,25 +299,25 @@ class KunjunganResource extends Resource
                 
                 TextColumn::make('no_hp')
                     ->label('Nomor HP')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->visibleFrom('md'),
                 
                 TextColumn::make('alamat')
                     ->label('Alamat')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('bidang.nama_bidang')
                     ->label('Bidang yang dituju')
                     ->wrap()
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->searchable()
                     ->visibleFrom('md'),
 
                 TextColumn::make('pegawai_tujuan')
                     ->label('Pegawai yang dituju')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->searchable()
                     ->visibleFrom('md'),
 
@@ -329,7 +330,7 @@ class KunjunganResource extends Resource
                 TextColumn::make('sumber_input')
                     ->label('Sumber')
                     ->badge()
-                    ->formatStateUsing(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'FrontOffice' : 'Display')
+                    ->formatStateUsing(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'Front Office' : 'Display')
                     ->color(fn (string $state) => $state === Kunjungan::SUMBER_FRONT_OFFICE ? 'gray' : 'info')
                     ->visibleFrom('md'),
 
@@ -349,7 +350,7 @@ class KunjunganResource extends Resource
                 SelectFilter::make('sumber_input')
                     ->label('Sumber')
                     ->options([
-                        Kunjungan::SUMBER_FRONT_OFFICE => 'FrontOffice',
+                        Kunjungan::SUMBER_FRONT_OFFICE => 'Front Office',
                         Kunjungan::SUMBER_DISPLAY => 'Display',
                     ]),
             ])
@@ -374,7 +375,7 @@ class KunjunganResource extends Resource
                             SweetAlert::error(
                                 $livewire,
                                 'Gagal memperbarui data Kunjungan',
-                                'Terjadi Kesalahan saat memperbarui Data. Silahkan coba lagi.'
+                                'Terjadi kesalahan saat memperbarui data. Silakan coba lagi.'
                             );
                             $action->halt();
                         }

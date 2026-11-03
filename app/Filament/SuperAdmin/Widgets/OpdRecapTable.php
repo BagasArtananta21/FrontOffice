@@ -81,6 +81,6 @@ class OpdRecapTable extends TableWidget
             ->defaultPaginationPageOption(25)
             ->emptyStateIcon(Heroicon::OutlinedBuildingOffice2)
             ->emptyStateHeading('Belum ada OPD')
-            ->emptyStateDescription('——');
+            ->emptyStateDescription('Ringkasan akan tampil setelah ada OPD yang terdaftar.');
     }
 }

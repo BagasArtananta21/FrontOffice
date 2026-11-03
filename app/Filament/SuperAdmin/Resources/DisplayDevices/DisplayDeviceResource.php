@@ -120,7 +120,7 @@ class DisplayDeviceResource extends Resource
                             SweetAlert::error(
                                 $livewire,
                                 'Gagal Menyimpan Perubahan', 
-                                'Silahkan coba lagi'
+                                'Silakan coba lagi.'
                             );
                             $action->halt();
                         }

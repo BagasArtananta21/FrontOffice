@@ -63,7 +63,7 @@ class ManageNomorSurats extends ManageRecords
                         SweetAlert::warning(
                             $livewire,
                             'Format Nomor Surat Tidak Ditemukan',
-                            'Belum ada format nomor surat yang berlaku untuk OPD ini. Silahkan menghubungi super admin.'
+                            'Belum ada format nomor surat yang berlaku untuk OPD ini. Silakan hubungi super admin.'
                         );
                         $action->halt();    
 
@@ -72,7 +72,7 @@ class ManageNomorSurats extends ManageRecords
                         SweetAlert::error(
                             $livewire,
                             'Gagal Menerbitkan Nomor Surat',
-                            'Terjadi Kesalahan, Silahkan Coba Lagi.'
+                            'Terjadi kesalahan. Silakan coba lagi.'
                         );
                         $action->halt();
                     } catch (InvalidArgumentException $e){
@@ -96,7 +96,7 @@ class ManageNomorSurats extends ManageRecords
                 ->createAnother(false),
 
             Action::make('export')
-                ->label('Export Excel')
+                ->label('Ekspor Excel')
                 ->icon(Heroicon::OutlinedArrowDownTray)
                 ->color('success')
                 ->outlined()

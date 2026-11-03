@@ -80,13 +80,13 @@ class VisitHistoryResource extends Resource
                     ->label('Bidang yang dituju')
                     ->wrap()
                     ->searchable()
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->visibleFrom('md'),
 
                 TextColumn::make('pegawai_tujuan')
                     ->label('Pegawai yang dituju')
                     ->searchable()
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->visibleFrom('md'),
 
                 TextColumn::make('keperluan')
@@ -105,7 +105,7 @@ class VisitHistoryResource extends Resource
                 
                 TextColumn::make('petugas.name')
                     ->label('Ditampilkan/Dicatat Oleh')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->visibleFrom('md'),
                 
                 TextColumn::make('status_tanda_tangan')

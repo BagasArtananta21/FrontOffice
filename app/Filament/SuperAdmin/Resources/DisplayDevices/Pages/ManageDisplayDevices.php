@@ -40,7 +40,7 @@ class ManageDisplayDevices extends ManageRecords
                         SweetAlert::error(
                             $livewire,
                             'Gagal Menambah Perangkat', 
-                            'Silahkan coba lagi'
+                            'Silakan coba lagi.'
                         );
                         $action->halt();
                     }

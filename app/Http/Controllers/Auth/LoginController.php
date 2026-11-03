@@ -26,7 +26,7 @@ class LoginController extends Controller{
 
         if (! $this->authService->attempt($credentials['email'], $credentials['password'], $request->boolean('remember'))) {
             throw ValidationException::withMessages([
-                'email' => 'Email atau Password Salah.',
+                'email' => 'Email atau kata sandi salah.',
             ]);
         }
 

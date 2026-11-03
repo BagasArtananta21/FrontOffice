@@ -30,7 +30,7 @@ class UsersTable
 
                 TextColumn::make('nip')
                     ->label('NIP')
-                    ->placeholder('—'),
+                    ->placeholder('-'),
 
                 TextColumn::make('role')
                     ->label('Peran')
@@ -40,7 +40,7 @@ class UsersTable
 
                 TextColumn::make('opd.nama_opd')
                     ->label('OPD')
-                    ->placeholder('—'),
+                    ->placeholder('-'),
 
                 IconColumn::make('aktif')
                     ->label('Aktif'),

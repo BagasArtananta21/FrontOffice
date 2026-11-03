@@ -52,7 +52,7 @@ class Dashboard extends BaseDashboard
     {
         return [
             Action::make('export')
-                ->label('Export Excel')
+                ->label('Ekspor Excel')
                 ->icon(Heroicon::OutlinedArrowDownTray)
                 ->color('success')
                 ->outlined()

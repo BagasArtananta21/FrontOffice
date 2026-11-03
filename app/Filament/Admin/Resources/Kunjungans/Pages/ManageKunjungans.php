@@ -27,7 +27,7 @@ class ManageKunjungans extends ManageRecords
             Action::make('manualInput')
                 ->label('Input Tamu Manual')
                 ->modalHeading('Input Tamu Manual')
-                ->modalSubmitActionLabel('Lanjutkan')
+                ->modalSubmitActionLabel('Simpan')
                 ->modalWidth(Width::SixExtraLarge)
                 ->schema([
                     ...KunjunganResource::formComponents(),
@@ -51,7 +51,7 @@ class ManageKunjungans extends ManageRecords
                             SweetAlert::error(
                                 $livewire,
                                 'Gagal menambahkan Tamu',
-                                'Terjadi kesalahan saat menambahkan tamu. Silahkan coba lagi.'
+                                'Terjadi kesalahan saat menambahkan tamu. Silakan coba lagi.'
                             );
                             $action->halt();
                         }
@@ -72,7 +72,7 @@ class ManageKunjungans extends ManageRecords
                         SweetAlert::error(
                             $livewire,
                             'Gagal menambahkan Tamu',
-                            'Terjadi kesalahan saat menambahkan tamu. Silahkan coba lagi.'
+                            'Terjadi kesalahan saat menambahkan tamu. Silakan coba lagi.'
                         );
                         $action->halt();
                     }

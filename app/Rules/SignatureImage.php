@@ -16,7 +16,7 @@ class SignatureImage implements ValidationRule
             : false;
 
         if ($binary === false || ! str_starts_with($binary, "\x89PNG")) {
-            $fail('Tanda tangan tidak valid. Silahkan ulangi.');
+            $fail('Tanda tangan tidak valid. Silakan ulangi.');
         }
     }
 }

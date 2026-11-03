@@ -31,7 +31,7 @@ class ManageOpds extends ManageRecords
                         SweetAlert::error(
                             $livewire,
                             'Gagal Menambahkan OPD',
-                            'Terjadi kesalahan saat menambahkan OPD. silahkan coba lagi'
+                            'Terjadi kesalahan saat menambahkan OPD. Silakan coba lagi.'
                         );
                         $action->halt();
                     }
