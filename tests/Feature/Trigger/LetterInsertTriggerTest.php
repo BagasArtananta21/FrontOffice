@@ -6,6 +6,7 @@ use App\Models\Opd;
 use App\Services\LetterNumberService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\AssertsTriggerErrors;
 use Tests\Support\BuildsFixtures;
 use Tests\TestCase;
@@ -234,5 +235,73 @@ class LetterInsertTriggerTest extends TestCase
 
         $this->assertSame([151, 0], $this->numberOf($id));
         $this->assertSame(151, $this->counterValue($this->opd->id, 'surat', '2026'));
+    }
+
+    public static function statusesOtherThanIssued(): array
+    {
+        return [
+            'cancelled' => ['batal'],
+            'unknown' => ['dihapus'],
+            'empty' => [''],
+        ];
+    }
+
+    #[DataProvider('statusesOtherThanIssued')]
+    public function test_it_rejects_a_new_letter_that_is_not_issued_and_moves_no_counter(string $status): void
+    {
+        $this->assertTriggerRejects(
+            fn () => $this->newLetter(['status' => $status]),
+            'harus berstatus terbit',
+        );
+
+        $this->assertSame(0, $this->letterCount());
+        $this->assertNull($this->counterValue($this->opd->id, 'surat', '2026'));
+    }
+
+    public function test_it_rejects_a_new_letter_that_is_cancelled_even_with_complete_cancellation_data(): void
+    {
+        $this->assertTriggerRejects(
+            fn () => $this->newLetter([
+                'status' => 'batal',
+                'alasan_batal' => 'Salah ketik',
+                'dibatalkan_oleh' => $this->userId,
+                'batal_pada' => '2026-10-16 10:00:00',
+            ]),
+            'harus berstatus terbit',
+        );
+
+        $this->assertSame(0, $this->letterCount());
+    }
+
+    public static function cancellationDataOnAnIssuedLetter(): array
+    {
+        return [
+            'reason' => [['alasan_batal' => 'Iseng']],
+            'cancelled by' => [['dibatalkan_oleh' => 'USER']],
+            'cancelled at' => [['batal_pada' => '2026-10-16 10:00:00']],
+        ];
+    }
+
+    #[DataProvider('cancellationDataOnAnIssuedLetter')]
+    public function test_it_rejects_a_new_letter_that_already_carries_cancellation_data(array $fields): void
+    {
+        $fields = array_map(fn (string $value) => $value === 'USER' ? $this->userId : $value, $fields);
+
+        $this->assertTriggerRejects(fn () => $this->newLetter($fields), 'harus berstatus terbit');
+
+        $this->assertSame(0, $this->letterCount());
+        $this->assertNull($this->counterValue($this->opd->id, 'surat', '2026'));
+    }
+
+    public function test_it_checks_the_status_of_a_supplementary_letter_too(): void
+    {
+        $this->newLetter();
+
+        $this->assertTriggerRejects(
+            fn () => $this->newLetter(['nomor_urut' => 1, 'status' => 'batal']),
+            'harus berstatus terbit',
+        );
+
+        $this->assertSame(1, $this->letterCount());
     }
 }

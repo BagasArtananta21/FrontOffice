@@ -274,6 +274,39 @@ class LetterUpdateTriggerTest extends TestCase
         $this->assertSame('terbit', $this->rawRow('nomor_surat', $id)['status']);
     }
 
+    public static function blankReasons(): array
+    {
+        return [
+            'empty string' => [''],
+            'one space' => [' '],
+            'only spaces' => ['     '],
+        ];
+    }
+
+    #[DataProvider('blankReasons')]
+    public function test_it_rejects_cancelling_with_a_blank_reason(string $reason): void
+    {
+        $id = $this->fullLetter();
+
+        $this->assertTriggerRejects(
+            fn () => $this->updateLetter($id, [...$this->cancelFields(), 'alasan_batal' => $reason]),
+            'Data pembatalan harus lengkap',
+        );
+
+        $row = $this->rawRow('nomor_surat', $id);
+        $this->assertSame('terbit', $row['status']);
+        $this->assertNull($row['alasan_batal']);
+    }
+
+    public function test_it_accepts_a_reason_that_has_spaces_around_real_text(): void
+    {
+        $id = $this->fullLetter();
+
+        $this->updateLetter($id, [...$this->cancelFields(), 'alasan_batal' => '  Salah ketik  ']);
+
+        $this->assertSame('batal', $this->rawRow('nomor_surat', $id)['status']);
+    }
+
     public function test_it_rejects_an_unknown_status_value(): void
     {
         $id = $this->fullLetter();

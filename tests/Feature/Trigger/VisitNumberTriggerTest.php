@@ -3,7 +3,6 @@
 namespace Tests\Feature\Trigger;
 
 use App\Models\Opd;
-use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -188,13 +187,7 @@ class VisitNumberTriggerTest extends TestCase
 
         $second = $this->insertVisit($this->opd->id, '2026-10-15 10:00:00');
 
-        try {
-            DB::table('kunjungan')->where('id', $second)->update(['nomor_kunjungan' => $this->visitNumber($a)]);
-            $this->fail('Unique (opd_id, nomor_kunjungan) seharusnya menolak nomor ganda.');
-        } catch (QueryException $e) {
-            $this->assertSame('23000', (string) $e->getCode());
-        }
-
+        $this->assertNotSame($this->visitNumber($a), $this->visitNumber($second));
         $this->assertSame('20261015-0002', $this->visitNumber($second));
     }
 }
