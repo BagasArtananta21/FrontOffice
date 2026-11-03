@@ -305,7 +305,13 @@ class StoreVisitValidationTest extends TestCase
 
     public function test_it_rejects_an_oversized_signature_and_accepts_a_large_one_under_the_limit(): void
     {
-        $large = fn (int $base64Length) => 'data:image/png;base64,'.base64_encode("\x89PNG\r\n\x1a\n".str_repeat('x', intdiv($base64Length * 3, 4) - 8));
+        $large = function (int $base64Length) {
+            $png = base64_decode(substr(self::PNG, strlen('data:image/png;base64,')), true);
+            $data = "Comment\0".str_repeat('x', intdiv($base64Length * 3, 4) - strlen($png) - 20);
+            $chunk = pack('N', strlen($data)).'tEXt'.$data.pack('N', crc32('tEXt'.$data));
+
+            return 'data:image/png;base64,'.base64_encode(substr($png, 0, -12).$chunk.substr($png, -12));
+        };
 
         $this->submitVisit(['tanda_tangan' => $large(500_020)])->assertSessionHasErrors('tanda_tangan');
         $this->assertRejected();

@@ -1,6 +1,9 @@
 @php
     $seconds = (int) ($exception->getHeaders()['Retry-After'] ?? 60);
-    $backUrl = url()->previous() !== url()->current() ? url()->previous() : url('/');
+    $previous = url()->previous();
+    $backUrl = $previous !== url()->current() && str_starts_with($previous, rtrim(url('/'), '/').'/')
+        ? $previous
+        : url('/');
 @endphp
 <!DOCTYPE html>
 <html lang="id">
