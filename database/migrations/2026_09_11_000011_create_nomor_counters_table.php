@@ -12,7 +12,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
 
-            $table->string('jenis', 20); // 'kunjungan' || 'surat'
+            $table->string('jenis', 20); 
             $table->string('periode', 6);
             $table->unsignedInteger('nomor_terakhir')->default(0);
             $table->timestamps();

@@ -16,8 +16,9 @@ return new class extends Migration
                     OR NOT (NEW.opd_id <=> OLD.opd_id)
                     OR NOT (NEW.dicatat_oleh <=> OLD.dicatat_oleh)
                     OR NOT (NEW.sumber_input <=> OLD.sumber_input)
+                    OR NOT (NEW.waktu_datang <=> OLD.waktu_datang)
                     OR (OLD.tanda_tangan IS NOT NULL AND NOT (NEW.tanda_tangan <=> OLD.tanda_tangan)) THEN
-                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Nomor kunjungan, OPD, petugas, sumber input, dan tanda tangan tidak boleh diubah';
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Nomor kunjungan, OPD, petugas, sumber input, waktu datang, dan tanda tangan tidak boleh diubah';
                 END IF;
             END
         SQL);

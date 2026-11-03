@@ -9,12 +9,15 @@ use Illuminate\Support\Facades\DB;
 use Tests\Support\AssertsTriggerErrors;
 use Tests\Support\BuildsFixtures;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class CounterUpdateTriggerTest extends TestCase
 {
     use AssertsTriggerErrors, BuildsFixtures, RefreshDatabase;
 
     private const MESSAGE = 'Nomor terakhir tidak boleh diturunkan';
+
+    private const KEY_MESSAGE = 'Kunci counter';
 
     private Opd $opd;
 
@@ -89,6 +92,61 @@ class CounterUpdateTriggerTest extends TestCase
         $this->assertSame(10, $this->counterValue($this->opd->id, 'surat', '2026'));
         $this->assertSame(25, $this->counterValue($this->opd->id, 'kunjungan', '202610'));
     }
+
+        public static function keyColumns(): array
+    {
+        return [['opd_id'], ['jenis'], ['periode']];
+    }
+
+    #[DataProvider('keyColumns')]
+    public function test_it_rejects_changing_a_key_column(string $column): void
+    {
+        $other = $this->makeOpd('LAIN');
+        $this->setCounter($this->opd->id, 'surat', '2026', 10);
+
+        $value = match ($column) {
+            'opd_id' => $other->id,
+            'jenis' => 'kunjungan',
+            'periode' => '2027',
+        };
+
+        $this->assertTriggerRejects(
+            fn () => DB::table('nomor_counters')
+                ->where(['opd_id' => $this->opd->id, 'jenis' => 'surat', 'periode' => '2026'])
+                ->update([$column => $value]),
+            self::KEY_MESSAGE,
+        );
+
+        $this->assertSame(10, $this->counterValue($this->opd->id, 'surat', '2026'));
+        $this->assertSame(1, DB::table('nomor_counters')->count());
+    }
+
+    public function test_it_rejects_moving_a_counter_while_raising_it(): void
+    {
+        $this->setCounter($this->opd->id, 'surat', '2026', 10);
+
+        $this->assertTriggerRejects(
+            fn () => DB::table('nomor_counters')
+                ->where(['opd_id' => $this->opd->id, 'jenis' => 'surat', 'periode' => '2026'])
+                ->update(['periode' => '2027', 'nomor_terakhir' => 50]),
+            self::KEY_MESSAGE,
+        );
+
+        $this->assertSame(10, $this->counterValue($this->opd->id, 'surat', '2026'));
+        $this->assertNull($this->counterValue($this->opd->id, 'surat', '2027'));
+    }
+
+    public function test_it_still_allows_raising_when_the_key_columns_are_written_again(): void
+    {
+        $this->setCounter($this->opd->id, 'surat', '2026', 10);
+
+        DB::table('nomor_counters')
+            ->where(['opd_id' => $this->opd->id, 'jenis' => 'surat', 'periode' => '2026'])
+            ->update(['opd_id' => $this->opd->id, 'jenis' => 'surat', 'periode' => '2026', 'nomor_terakhir' => 11]);
+
+        $this->assertSame(11, $this->counterValue($this->opd->id, 'surat', '2026'));
+    }
+
 
     public function test_numbering_continues_after_a_manual_raise_and_never_goes_back(): void
     {

@@ -77,6 +77,7 @@ class VisitUpdateTriggerTest extends TestCase
             'opd_id' => $this->otherOpd->id,
             'dicatat_oleh' => $this->otherUserId,
             'sumber_input' => 'display',
+            'waktu_datang' => '2026-10-14 08:30:00',
             'tanda_tangan' => 'tanda-tangan/2026/10/b.png',
         };
     }
@@ -88,6 +89,7 @@ class VisitUpdateTriggerTest extends TestCase
             'opd_id',
             'dicatat_oleh',
             'sumber_input',
+            'waktu_datang',
             'tanda_tangan',
         ]);
     }
@@ -105,6 +107,13 @@ class VisitUpdateTriggerTest extends TestCase
         $id = $this->signedVisit();
 
         $this->assertRejectedAndUnchanged($id, ['dicatat_oleh' => null]);
+    }
+
+    public function test_it_rejects_moving_the_arrival_time_within_the_same_day(): void
+    {
+        $id = $this->signedVisit();
+
+        $this->assertRejectedAndUnchanged($id, ['waktu_datang' => '2026-10-15 10:00:00']);
     }
 
     public function test_it_rejects_assigning_an_officer_to_a_visit_that_had_none(): void
@@ -162,7 +171,6 @@ class VisitUpdateTriggerTest extends TestCase
             'pegawai_tujuan' => 'Pegawai yang lain',
             'keperluan' => 'Keperluan yang lain',
             'alasan_tanpa_ttd' => 'waktu_habis',
-            'waktu_datang' => '2026-10-14 08:30:00',
             'catatan_petugas' => 'Catatan yang lain',
             'updated_at' => '2026-10-20 12:00:00',
         ];
@@ -199,6 +207,7 @@ class VisitUpdateTriggerTest extends TestCase
             'opd_id' => $before['opd_id'],
             'dicatat_oleh' => $before['dicatat_oleh'],
             'sumber_input' => $before['sumber_input'],
+            'waktu_datang' => $before['waktu_datang'],
             'tanda_tangan' => $before['tanda_tangan'],
         ]);
 
