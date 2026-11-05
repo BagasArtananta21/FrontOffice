@@ -4,14 +4,16 @@ namespace Tests\Feature\Numbering;
 
 use App\Models\Opd;
 use App\Services\LetterNumberService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
+use Tests\Support\BuildsFixtures;
 use Tests\TestCase;
 
 class SetLastNumberTest extends TestCase
 {
-    use RefreshDatabase;
+    use BuildsFixtures, RefreshDatabase;
 
     private const LIMIT = 99999;
 
@@ -85,5 +87,40 @@ class SetLastNumberTest extends TestCase
         }
 
         $this->assertCounterIs(200);
+    }
+
+    public function test_it_refuses_another_opd_when_a_tenant_context_is_bound(): void
+    {
+        $other = Opd::create(['kode_opd' => 'LAIN', 'nama_opd' => 'OPD Lain']);
+        app()->instance('current_opd_id', $this->opd->id);
+
+        try {
+            $this->service()->setLastNumber($other->id, 150);
+            $this->fail('Service seharusnya menolak OPD di luar konteks aktif.');
+        } catch (AuthorizationException) {
+            $this->assertDatabaseCount('nomor_counters', 0);
+        }
+    }
+
+    public function test_it_refuses_another_opd_for_a_logged_in_officer(): void
+    {
+        $other = Opd::create(['kode_opd' => 'LAIN', 'nama_opd' => 'OPD Lain']);
+        $this->actingAs($this->makeUser($this->opd));
+
+        try {
+            $this->service()->setLastNumber($other->id, 150);
+            $this->fail('Service seharusnya menolak OPD milik petugas lain.');
+        } catch (AuthorizationException) {
+            $this->assertDatabaseCount('nomor_counters', 0);
+        }
+    }
+
+    public function test_it_accepts_the_own_opd_for_a_logged_in_officer(): void
+    {
+        $this->actingAs($this->makeUser($this->opd));
+
+        $this->service()->setLastNumber($this->opd->id, 150);
+
+        $this->assertCounterIs(150);
     }
 }

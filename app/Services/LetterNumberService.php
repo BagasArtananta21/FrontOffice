@@ -6,8 +6,10 @@ use App\Exceptions\LetterFormatNotFoundException;
 use App\Exceptions\LetterBaseNumberNotFoundException;
 use App\Models\Bidang;
 use App\Models\FormatNomorSurat;
+use App\Models\NomorCounter;
 use App\Models\NomorSurat;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
@@ -91,6 +93,12 @@ class LetterNumberService
 
     public function setLastNumber(string $opdId, int $nomorTerakhir): void
     {
+        $context = NomorCounter::currentOpdId();
+
+        if ($context !== null && $context !== $opdId) {
+            throw new AuthorizationException('OPD pada data tidak sesuai dengan konteks aktif.');
+        }
+
         if ($nomorTerakhir < 0 || $nomorTerakhir > self::MAX_LAST_NUMBER) {
             throw new InvalidArgumentException("Nomor terakhir harus antara 0 dan " . self::MAX_LAST_NUMBER);
         }

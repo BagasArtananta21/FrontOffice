@@ -117,9 +117,14 @@ class KunjunganResource extends Resource
     
                     Select::make('bidang_id')
                         ->label('Bidang yang Dituju')
-                        ->options(fn () => Bidang::active()->orderBy('nama_bidang')->pluck('nama_bidang', 'id'))
+                        ->options(fn (?Kunjungan $record) => Bidang::query()
+                            ->where(fn (Builder $query) => $query->where('aktif', true)->orWhere('id', $record?->bidang_id))
+                            ->orderBy('nama_bidang')
+                            ->pluck('nama_bidang', 'id'))
                         ->searchable()
-                        ->rule(fn () => Rule::exists('bidang', 'id')->where('opd_id', Auth::user()->opd_id)),
+                        ->rule(fn (?Kunjungan $record) => Rule::exists('bidang', 'id')
+                            ->where('opd_id', Auth::user()->opd_id)
+                            ->where(fn ($query) => $query->where('aktif', true)->orWhere('id', $record?->bidang_id))),
     
                     TextInput::make('pegawai_tujuan')
                         ->label('Pegawai yang Dituju')

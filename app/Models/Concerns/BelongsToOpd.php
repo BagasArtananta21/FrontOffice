@@ -42,7 +42,7 @@ trait BelongsToOpd
         });
     }
 
-    protected static function currentOpdId(): ?string
+    public static function currentOpdId(): ?string
     {
         if (app()->bound('current_opd_id')) {
             $opdId = app('current_opd_id');

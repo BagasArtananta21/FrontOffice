@@ -199,6 +199,15 @@ class ManualInputActionTest extends TestCase
         $this->assertSame(0, $this->visitCount());
     }
 
+    public function test_it_refuses_an_inactive_bidang_of_its_own_opd(): void
+    {
+        $inactive = $this->insertBidang($this->opd->id, 'OFF', false);
+
+        $this->submit(['bidang_id' => $inactive])->assertHasActionErrors(['bidang_id']);
+
+        $this->assertSame(0, $this->visitCount());
+    }
+
     public function test_it_accepts_a_bidang_of_its_own_opd(): void
     {
         $own = $this->insertBidang($this->opd->id, 'PKP');
