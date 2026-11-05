@@ -6,6 +6,9 @@ use App\Filament\Admin\Resources\Kunjungans\Pages\ManageKunjungans;
 use App\Filament\Support\SweetAlert;
 use App\Models\Kunjungan;
 use App\Models\Bidang;
+use App\Services\KunjunganService;
+use App\Exceptions\DisplayUnavailableException;
+use InvalidArgumentException;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -32,6 +35,7 @@ use UnitEnum;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Support\Arr;
 use App\Models\DisplayDevice;
+use Filament\Actions\Action;
 
 class KunjunganResource extends Resource
 {
@@ -400,6 +404,36 @@ class KunjunganResource extends Resource
                             "Data kunjungan {$record->nama_tamu} sudah diperbarui."
                         );
                     }), 
+                Action::make('requestSignature')
+                    ->label('Minta Tanda Tangan')
+                    ->visible(fn (Kunjungan $record) => $record->canRequestSignature())
+                    ->action(function (Kunjungan $record, $livewire) {
+                        try {
+                            app(KunjunganService::class)->requestSignatureFor($record);
+                        } catch (DisplayUnavailableException) {
+                            SweetAlert::warning(
+                                $livewire, 
+                                'Display Tidak Tersedia', 
+                                'Display sedang dipakai atau tidak terhubung. Coba lagi sebentar.'
+                            );
+
+                            return;
+                        } catch (InvalidArgumentException) {
+                            SweetAlert::warning(
+                                $livewire, 
+                                'Tidak Dapat Diminta', 
+                                'Kunjungan ini sudah ditandatangani, sedang menunggu, atau bukan kunjungan hari ini.'
+                            );
+
+                            return;
+                        }
+
+                        SweetAlert::success(
+                            $livewire, 
+                            'Dikirim ke Display', 
+                            "Minta {$record->nama_tamu} memeriksa data dan tanda tangan di display."
+                        );
+                    })
             ])
             ->toolbarActions([])
             ->defaultPaginationPageOption(25)

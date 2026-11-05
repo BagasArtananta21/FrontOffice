@@ -149,7 +149,9 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
             };
 
             if ($message) {
-                SweetAlert::warning($this, 'Waktu Tanda Tangan Habis', $message.' Kunjungan tetap tercatat tanpa tanda tangan.');
+                SweetAlert::info($this, 
+                'Waktu Tanda Tangan Habis', 
+                $message.' Kunjungan tetap tercatat tanpa tanda tangan.');
             }
         }
 

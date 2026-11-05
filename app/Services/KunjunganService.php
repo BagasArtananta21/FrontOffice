@@ -16,12 +16,12 @@ use InvalidArgumentException;
 
 class KunjunganService
 {
-     private const GUEST_FIELDS = [
+    private const GUEST_FIELDS = [
         'nama_tamu', 'jenis_kelamin', 'no_hp', 'instansi_asal', 'alamat', 'bidang_id', 'pegawai_tujuan', 'keperluan',
-     ];
+    ];
 
-     public function recordFromDisplay(array $data, ?string $petugasId): Kunjungan
-     {
+    public function recordFromDisplay(array $data, ?string $petugasId): Kunjungan
+    {
         $attributes = Arr::only($data, self::GUEST_FIELDS);
         $attributes['tanda_tangan'] = $this->newSignaturePath();
 
@@ -29,61 +29,61 @@ class KunjunganService
         $this->writeSignature($attributes['tanda_tangan'], $data['tanda_tangan']);
 
         return $kunjungan;
-     }
+    }
 
-     public function submitFromDisplay(DisplayDevice $device, array $data): ?Kunjungan
-     {
-         return DB::transaction(function () use ($device, $data) {
+    public function submitFromDisplay(DisplayDevice $device, array $data): ?Kunjungan
+    {
+        return DB::transaction(function () use ($device, $data) {
             $device = DisplayDevice::query()->whereKey($device->getKey())->lockForUpdate()->firstOrFail();
             
             if (! $device->tampilkan_form || $device->formWindowStale() || $device->kunjungan_menunggu_id !== null) {
-               return null;
+            return null;
             }
 
             $kunjungan = $this->recordFromDisplay($data, $device->ditampilkan_oleh);
             $device->forceFill(['tampilkan_form' => false])->save();
 
             return $kunjungan;
-         });
-     }
+        });
+    }
 
-     public function recordWithoutSignature(array $data, User $petugas, string $reason): Kunjungan
-     {
-         if (! array_key_exists($reason, Kunjungan::NO_SIGNATURE_REASONS)) {
+    public function recordWithoutSignature(array $data, User $petugas, string $reason): Kunjungan
+    {
+        if (! array_key_exists($reason, Kunjungan::NO_SIGNATURE_REASONS)) {
             throw new InvalidArgumentException("Alasan tanpa tanda tangan [{$reason}] tidak dikenal.");
-         }
+        }
 
-         return $this->store(
+        return $this->store(
             Arr::only($data, [...self::GUEST_FIELDS, 'catatan_petugas']),
             Kunjungan::SUMBER_FRONT_OFFICE,
             filled($data['waktu_datang'] ?? null) ? Carbon::parse($data['waktu_datang']) : now(),
             $petugas->id,
             ['alasan_tanpa_ttd' => $reason],
-         );
-     }
+        );
+    }
 
-     private function newSignaturePath(): string
-     {
-          return 'tanda-tangan/'.now()->format('Y/m').'/'.Str::uuid().'.png';
-     }
+    private function newSignaturePath(): string
+    {
+        return 'tanda-tangan/'.now()->format('Y/m').'/'.Str::uuid().'.png';
+    }
 
-     // Called as the last step inside the transaction, so a database failure leaves no orphan file.
-     private function writeSignature(string $path, string $dataUrl): void
-     {
-          Storage::disk('local')->put($path, base64_decode(Str::after($dataUrl, 'base64,'), true));
-     }
+    // Called as the last step inside the transaction, so a database failure leaves no orphan file.
+    private function writeSignature(string $path, string $dataUrl): void
+    {
+        Storage::disk('local')->put($path, base64_decode(Str::after($dataUrl, 'base64,'), true));
+    }
 
-     public function closeStaleForm(DisplayDevice $device): bool
-     {
-         return DisplayDevice::query()
+    public function closeStaleForm(DisplayDevice $device): bool
+    {
+        return DisplayDevice::query()
             ->whereKey($device->getKey())
             ->where('tampilkan_form', true)
             ->where('updated_at', '<', today())
             ->update(['tampilkan_form' => false]) === 1;
-     }
+    }
 
-     private function store(array $attributes, string $sumberInput, CarbonInterface $waktuDatang, ?string $dicatatOleh = null, array $sistemAttributes = []): Kunjungan
-     {
+    private function store(array $attributes, string $sumberInput, CarbonInterface $waktuDatang, ?string $dicatatOleh = null, array $sistemAttributes = []): Kunjungan
+    {
         $kunjungan = new Kunjungan($attributes);
 
         $kunjungan->forceFill([
@@ -94,104 +94,131 @@ class KunjunganService
         ])->save();
 
         return $kunjungan;
-     }
+    }
 
-     public function requestSignature(array $data, User $petugas): Kunjungan
-   {
-      return DB::transaction(function () use ($data, $petugas) {
-         $device = DisplayDevice::query()
-               ->availableForSignature()
-               ->lockForUpdate()
-               ->first();
+    public function requestSignature(array $data, User $petugas): Kunjungan
+    {
+        return DB::transaction(function () use ($data, $petugas) {
+            $device = DisplayDevice::query()
+                ->availableForSignature()
+                ->lockForUpdate()
+                ->first();
 
-         if (! $device) {
-               throw new DisplayUnavailableException();
-         }
+            if (! $device) {
+                throw new DisplayUnavailableException();
+            }
 
-         $kunjungan = $this->store(
-               Arr::only($data, [...self::GUEST_FIELDS, 'catatan_petugas']),
-               Kunjungan::SUMBER_FRONT_OFFICE,
-               filled($data['waktu_datang'] ?? null) ? Carbon::parse($data['waktu_datang']) : now(),
-               $petugas->id,
-         );
+            $kunjungan = $this->store(
+                Arr::only($data, [...self::GUEST_FIELDS, 'catatan_petugas']),
+                Kunjungan::SUMBER_FRONT_OFFICE,
+                filled($data['waktu_datang'] ?? null) ? Carbon::parse($data['waktu_datang']) : now(),
+                $petugas->id,
+            );
 
-         $device->forceFill(['kunjungan_menunggu_id' => $kunjungan->id])->save();
+            $device->forceFill(['kunjungan_menunggu_id' => $kunjungan->id])->save();
 
-         return $kunjungan;
-      });
-   }
+            return $kunjungan;
+        });
+    }
 
-   public function recordSignature(DisplayDevice $device, string $signatureDataUrl): ?Kunjungan
-   {
-      return DB::transaction(function () use ($device, $signatureDataUrl) {
-         $device = DisplayDevice::query()->whereKey($device->getKey())->lockForUpdate()->firstOrFail();
-         $kunjungan = $device->kunjunganMenunggu;
+    public function requestSignatureFor(Kunjungan $kunjungan): Kunjungan
+    {
+        return DB::transaction(function () use ($kunjungan) {
+            $device = DisplayDevice::query()
+                ->availableForSignature()
+                ->lockForUpdate()
+                ->first();
+            
+            if (! $device) {
+                throw new DisplayUnavailableException();
+            }
 
-         if (! $kunjungan || filled($kunjungan->tanda_tangan)) {
-               return null;
-         }
+            $kunjungan = Kunjungan::query()
+                ->whereKey($kunjungan->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+            
+            if (! $kunjungan->canRequestSignature()) {
+                throw new InvalidArgumentException('Kunjungan ini tidak dapat diminta tanda tangan.');
+            }
 
-         $path = $this->newSignaturePath();
+            $kunjungan->forceFill(['alasan_tanpa_ttd' => null])->touch();
+            $device->forceFill(['kunjungan_menunggu_id' => $kunjungan->id])->save();
 
-         $kunjungan->forceFill(['tanda_tangan' => $path])->save();
-         $device->forceFill(['kunjungan_menunggu_id' => null])->save();
-         $this->writeSignature($path, $signatureDataUrl);
+            return $kunjungan;
+        });
+    }
 
-         return $kunjungan;
-      });
-   }
+    public function recordSignature(DisplayDevice $device, string $signatureDataUrl): ?Kunjungan
+    {
+        return DB::transaction(function () use ($device, $signatureDataUrl) {
+            $device = DisplayDevice::query()->whereKey($device->getKey())->lockForUpdate()->firstOrFail();
+            $kunjungan = $device->kunjunganMenunggu;
 
-   public function cancelSignatureRequest(?string $reason = null): bool
-   {
-      if ($reason !== null && ! in_array($reason, [Kunjungan::REASON_GUEST_LEFT, Kunjungan::REASON_GUEST_REFUSED], true)) {
-         throw new InvalidArgumentException("Alasan pembatalan [{$reason}] tidak dikenal.");
-      }
+            if (! $kunjungan || filled($kunjungan->tanda_tangan)) {
+                return null;
+            }
 
-      return DB::transaction(function () use ($reason) {
-         $device = DisplayDevice::query()
-            ->whereNotNull('kunjungan_menunggu_id')
-            ->lockForUpdate()
-            ->first();
+            $path = $this->newSignaturePath();
 
-         if (! $device) {
-               return false;
-         }
+            $kunjungan->forceFill(['tanda_tangan' => $path])->save();
+            $device->forceFill(['kunjungan_menunggu_id' => null])->save();
+            $this->writeSignature($path, $signatureDataUrl);
 
-         $this->releaseSignatureRequest(
-               $device,
-               $device->isConnected()
-                  ? ($reason ?? Kunjungan::REASON_GUEST_LEFT)
-                  : Kunjungan::REASON_DISPLAY_UNAVAILABLE,
-         );
+            return $kunjungan;
+        });
+    }
 
-         return true;
-      });
+    public function cancelSignatureRequest(?string $reason = null): bool
+    {
+        if ($reason !== null && ! in_array($reason, [Kunjungan::REASON_GUEST_LEFT, Kunjungan::REASON_GUEST_REFUSED], true)) {
+            throw new InvalidArgumentException("Alasan pembatalan [{$reason}] tidak dikenal.");
+        }
 
-   }
+        return DB::transaction(function () use ($reason) {
+            $device = DisplayDevice::query()
+                ->whereNotNull('kunjungan_menunggu_id')
+                ->lockForUpdate()
+                ->first();
 
-   public function expireSignatureRequest(DisplayDevice $device): bool
-   {
-      return DB::transaction(function () use ($device) {
-         $device = DisplayDevice::query()->whereKey($device->getKey())->lockForUpdate()->firstOrFail();
+            if (! $device) {
+                return false;
+            }
 
-         if (! $device->signatureRequestExpired()) {
-            return false;
-         }
+            $this->releaseSignatureRequest(
+                $device,
+                $device->isConnected()
+                    ? ($reason ?? Kunjungan::REASON_GUEST_LEFT)
+                    : Kunjungan::REASON_DISPLAY_UNAVAILABLE,
+            );
 
-         $this->releaseSignatureRequest(
-            $device,
-            $device->isConnected() ? Kunjungan::REASON_TIMEOUT : Kunjungan::REASON_DISPLAY_UNAVAILABLE,
-         );
+            return true;
+        });
 
-         return true;
-         
-      });
-   }
+    }
 
-   private function releaseSignatureRequest(DisplayDevice $device, string $reason): void
-   {
-      $device->kunjunganMenunggu?->forceFill(['alasan_tanpa_ttd' => $reason])->save();
-      $device->forceFill(['kunjungan_menunggu_id' => null])->save();
-   }
+    public function expireSignatureRequest(DisplayDevice $device): bool
+    {
+        return DB::transaction(function () use ($device) {
+            $device = DisplayDevice::query()->whereKey($device->getKey())->lockForUpdate()->firstOrFail();
 
+            if (! $device->signatureRequestExpired()) {
+                return false;
+            }
+
+            $this->releaseSignatureRequest(
+                $device,
+                $device->isConnected() ? Kunjungan::REASON_TIMEOUT : Kunjungan::REASON_DISPLAY_UNAVAILABLE,
+            );
+
+            return true;
+            
+        });
+    }
+
+    private function releaseSignatureRequest(DisplayDevice $device, string $reason): void
+    {
+        $device->kunjunganMenunggu?->forceFill(['alasan_tanpa_ttd' => $reason])->save();
+        $device->forceFill(['kunjungan_menunggu_id' => null])->save();
+    }
 }

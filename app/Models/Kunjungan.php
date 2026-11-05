@@ -69,6 +69,13 @@ class Kunjungan extends Model
         return $this->display_menunggu_exists ?? $this->displayMenunggu()->exists();
     }
 
+    public function canRequestSignature(): bool
+    {
+        return blank($this->tanda_tangan)
+            && $this->waktu_datang->isToday()
+            && ! $this->isWaitingForSignature();
+    }
+
     public function signatureStatusLabel(): string
     {
         return match (true) {
