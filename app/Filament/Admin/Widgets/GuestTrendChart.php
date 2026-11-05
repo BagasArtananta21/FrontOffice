@@ -4,7 +4,6 @@ namespace App\Filament\Admin\Widgets;
 
 use App\Filament\Concerns\ResolvesDateRange;
 use App\Models\Kunjungan;
-use Carbon\CarbonInterface;
 use Carbon\CarbonPeriod;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
@@ -34,15 +33,16 @@ class GuestTrendChart extends ChartWidget
 
         $perDay = Kunjungan::query()
             ->whereBetween('waktu_datang', [$start, $end])
-            ->pluck('waktu_datang')
-            ->countBy(fn (CarbonInterface $time)=>$time->toDateString());
-        
+            ->selectRaw('DATE(waktu_datang) as visit_date, COUNT(*) as total')
+            ->groupBy('visit_date')
+            ->pluck('total', 'visit_date');
+
         $labels = [];
         $values = [];
 
         foreach (CarbonPeriod::create($start->copy()->startOfDay(), $end->copy()->startOfDay()) as $day){
             $labels[] = $day->translatedFormat('d M');
-            $values[] = $perDay->get($day->toDateString(), 0);
+            $values[] = (int) $perDay->get($day->toDateString(), 0);
         }
 
         return [

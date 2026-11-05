@@ -39,21 +39,6 @@ class FormatNomorSurat extends Model
             ->orderByDesc('berlaku_sejak');
     }
 
-    public function statusLabel(): string
-    {
-        if ($this->berlaku_sejak -> isFuture()) {
-            return 'Terjadwal';
-        }
-
-        $berlaku = static::query()
-            ->withoutGlobalScope('opd')
-            ->where('opd_id', $this->opd_id)
-            ->berlakuPada(now())
-            ->value('id');
-        
-        return $berlaku === $this->id ? 'Berlaku' : 'Riwayat';
-    }
-
     protected function casts(): array
     {
         return [
