@@ -80,7 +80,7 @@ class UserForm
                     ->default(true)
                     ->disabled(fn (?User $record) => self::isOwnAccount($record))
                     ->helperText(fn (?User $record) => self::isOwnAccount($record)
-                        ? 'Peran tidak dapat dinonaktifkan pada akun sendiri.'
+                        ? 'Pengguna tidak dapat dinonaktifkan pada akun sendiri.'
                         : null),
             ]);
     }
