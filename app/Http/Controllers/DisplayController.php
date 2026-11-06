@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DisplayDevice;
 use App\Models\Bidang;
 use App\Models\Kunjungan;
+use App\Exceptions\SignatureStorageException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
@@ -97,7 +98,7 @@ class DisplayController extends Controller
 
         try {
             $kunjungan = $kunjunganService->submitFromDisplay($device, $request->validated());
-        } catch (QueryException $e) {
+        } catch (QueryException|SignatureStorageException $e) {
             report($e);
 
             return back()
@@ -125,7 +126,7 @@ class DisplayController extends Controller
 
         try {
             $kunjungan = $kunjunganService->recordSignature($device, $validated['tanda_tangan']);
-        } catch (QueryException $e) {
+        } catch (QueryException|SignatureStorageException $e) {
             report($e);
 
             return back()->withErrors(['form' => 'Terjadi kesalahan. Silakan coba lagi atau hubungi petugas.']);

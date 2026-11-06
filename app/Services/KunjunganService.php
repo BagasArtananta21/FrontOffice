@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Kunjungan;
 use App\Models\User;
+use App\Exceptions\SignatureStorageException;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
@@ -67,10 +68,16 @@ class KunjunganService
         return 'tanda-tangan/'.now()->format('Y/m').'/'.Str::uuid().'.png';
     }
 
-    // Called as the last step inside the transaction, so a database failure leaves no orphan file.
     private function writeSignature(string $path, string $dataUrl): void
     {
-        Storage::disk('local')->put($path, base64_decode(Str::after($dataUrl, 'base64,'), true));
+        $binary = base64_decode(Str::after($dataUrl, 'base64,'), true);
+        $disk = Storage::disk('local');
+
+        if ($binary === false || ! $disk->put($path, $binary)) {
+            $disk->delete($path);
+
+            throw new SignatureStorageException("Tanda tangan tidak dapat ditulis ke [{$path}].");
+        }
     }
 
     public function closeStaleForm(DisplayDevice $device): bool
