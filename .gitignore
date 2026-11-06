@@ -33,3 +33,4 @@ CLAUDE.md
 /.agents
 skills-lock.json
 /.claude
+*.bak
