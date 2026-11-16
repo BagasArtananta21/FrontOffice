@@ -11,6 +11,7 @@ class AddSecurityHeader
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
+        $r2URL = rtrim((string) config('filesystems.disks.r2.url'), '/');
 
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('Content-Security-Policy', "frame-ancestors 'self'");

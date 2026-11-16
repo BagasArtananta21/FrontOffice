@@ -17,15 +17,12 @@
         @include('display.partials.signature-request')
     @else
         <section x-show="! showForm" x-cloak class="fixed inset-0 bg-black">
-            <video
-                src="{{ asset('videos/profil.mp4') }}"
-                x-effect="showForm ? $el.pause() : $el.play().catch(() => {})"
-                autoplay
-                muted
-                loop
-                playsinline
-                class="h-full w-full object-cover"
-                >
+            @php
+                $r2BaseUrl = rtrim((string) config('filesystems.disks.r2.url'), '/');
+            @endphp
+
+            <video class="h-full w-full object-cover" autoplay muted loop playsinline preload="metadata">
+                <source src="{{ $r2BaseUrl }}/profil.mp4" type="video/mp4">
             </video>
         </section>
 
