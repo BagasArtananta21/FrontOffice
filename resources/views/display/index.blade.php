@@ -18,12 +18,16 @@
     @else
         <section x-show="! showForm" x-cloak class="fixed inset-0 bg-black">
             @php
-                $r2BaseUrl = rtrim((string) config('filesystems.disks.r2.url'), '/');
+                $r2BaseUrl = config('filesystems.r2_public_url');
             @endphp
 
-            <video class="h-full w-full object-cover" autoplay muted loop playsinline preload="metadata">
+            <video
+                x-effect="showForm ? $el.pause() : $el.play().catch(() => {})"
+                class="h-full w-full object-cover"
+                autoplay muted loop playsinline preload="auto">
                 <source src="{{ $r2BaseUrl }}/profil.mp4" type="video/mp4">
             </video>
+
         </section>
 
         <section x-show="showForm" x-cloak class="flex h-screen flex-col overflow-hidden bg-page px-10 py-18">
