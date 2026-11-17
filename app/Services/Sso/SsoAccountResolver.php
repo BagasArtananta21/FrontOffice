@@ -30,11 +30,14 @@ class SsoAccountResolver
 
     private function linkByNip(SsoIdentity $identity): User
     {
+    // TODO(sso): Staff without a NIP (honorer) currently are rejected as not registered.
+    // Not decided yet. Possible fallback: match by email, but only if SSO sends
+    // a verified email (email_verified claim) that equals users.email exactly.
         if ($identity->nip === null || trim($identity->nip) === '') {
             throw SsoLoginRejected::notRegistered();
         }
 
-        $user = User::query()->where('nip', $identity->nip)->first();
+        $user = User::query()->where('nip', trim($identity->nip))->first();
 
         if ($user === null) {
             throw SsoLoginRejected::notRegistered();
@@ -66,6 +69,8 @@ class SsoAccountResolver
             throw SsoLoginRejected::userInactive();
         }
 
+        //TODO: Super Admin either can Sign in with SSO or not. if not then we need to check if the user is super admin and throw an exception.
+        //Super Admin may sign in with SSO because they still part of ASN.
         if ($user->isSuperAdmin()) {
             return;
         }
@@ -73,5 +78,8 @@ class SsoAccountResolver
         if ($user->opd?->aktif !== true) {
             throw SsoLoginRejected::opdInactive();
         }
+
+        
     }
+
 }

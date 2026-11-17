@@ -225,4 +225,16 @@ class SsoAccountResolverTest extends TestCase
 
         $this->assertNull($this->storedSubject($user));
     }
+    
+    public function test_a_nip_with_surrounding_spaces_still_matches(): void
+    {
+        $user = $this->userWith(nip: '199001012015031002');
+
+        $resolved = $this->resolver()->resolve(new SsoIdentity('sub-baru', nip: ' 199001012015031002 '));
+
+        $this->assertTrue($resolved->is($user));
+        $this->assertSame('sub-baru', $this->storedSubject($user));
+    }
+
+    //TODO: update the test if super admin not allowed sign in with SSO
 }
