@@ -9,6 +9,7 @@ use App\Services\Sso\SsoAccountResolver;
 use App\Services\Sso\SsoIdentity;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\Support\BuildsFixtures;
 use Tests\TestCase;
 
@@ -225,7 +226,7 @@ class SsoAccountResolverTest extends TestCase
 
         $this->assertNull($this->storedSubject($user));
     }
-    
+
     public function test_a_nip_with_surrounding_spaces_still_matches(): void
     {
         $user = $this->userWith(nip: '199001012015031002');
@@ -236,5 +237,54 @@ class SsoAccountResolverTest extends TestCase
         $this->assertSame('sub-baru', $this->storedSubject($user));
     }
 
-    //TODO: update the test if super admin not allowed sign in with SSO
+    private function superAdminWith(?string $nip, ?string $subject = null, bool $aktif = true): User
+    {
+        $user = $this->makeUser(null, role: 'super_admin', aktif: $aktif);
+        $user->forceFill(['nip' => $nip, 'sso_subject_id' => $subject])->save();
+
+        return $user->refresh();
+    }
+
+    // TODO(sso-super-admin): not decided whether super admins may sign in
+    // through SSO. These two tests pin the current behaviour (allowed). If the
+    // decision is "local login only", they turn red: add a rejection reason
+    // to SsoLoginRejected and rewrite them to assert it.
+
+    #[Group('pending-decision')]
+    public function test_a_super_admin_matched_by_subject_may_sign_in(): void
+    {
+        $superAdmin = $this->superAdminWith(nip: '198501012009011001', subject: 'sub-super');
+
+        $resolved = $this->resolver()->resolve(new SsoIdentity('sub-super'));
+
+        $this->assertTrue($resolved->is($superAdmin));
+        $this->assertTrue($resolved->isSuperAdmin());
+        $this->assertNull($resolved->opd_id);
+        $this->assertSame('sub-super', $this->storedSubject($superAdmin));
+    }
+
+    #[Group('pending-decision')]
+    public function test_a_super_admin_matched_by_nip_may_sign_in_and_is_linked(): void
+    {
+        $superAdmin = $this->superAdminWith(nip: '198501012009011001');
+
+        $resolved = $this->resolver()->resolve(new SsoIdentity('sub-super', nip: '198501012009011001'));
+
+        $this->assertTrue($resolved->is($superAdmin));
+        $this->assertTrue($resolved->isSuperAdmin());
+        $this->assertNull($resolved->opd_id);
+        $this->assertSame('sub-super', $this->storedSubject($superAdmin));
+    }
+
+    public function test_an_inactive_super_admin_is_rejected_and_not_linked(): void
+    {
+        $superAdmin = $this->superAdminWith(nip: '198501012009011001', aktif: false);
+
+        $this->assertRejected(
+            new SsoIdentity('sub-super', nip: '198501012009011001'),
+            SsoLoginRejected::REASON_USER_INACTIVE,
+        );
+
+        $this->assertNull($this->storedSubject($superAdmin));
+    }
 }
