@@ -134,13 +134,11 @@ class DisplayTenantTest extends TestCase
     {
         $stale = '2026-01-01 00:00:00';
         $this->updateDevice('token-a', ['terakhir_aktif' => $stale]);
-        $this->updateDevice('token-a-2', ['terakhir_aktif' => $stale]);
         $this->updateDevice('token-b', ['terakhir_aktif' => $stale]);
 
         $this->withCookie(DisplayDevice::COOKIE, 'token-a')->get(route('display.status'))->assertOk();
 
         $this->assertNotSame($stale, (string) DB::table('display_devices')->where('id', $this->deviceId('token-a'))->value('terakhir_aktif'));
-        $this->assertSame($stale, (string) DB::table('display_devices')->where('id', $this->deviceId('token-a-2'))->value('terakhir_aktif'));
         $this->assertSame($stale, (string) DB::table('display_devices')->where('id', $this->deviceId('token-b'))->value('terakhir_aktif'));
     }
 

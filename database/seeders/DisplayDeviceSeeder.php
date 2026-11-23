@@ -2,28 +2,28 @@
 
 namespace Database\Seeders;
 
-use App\Models\DisplayDevice;
 use App\Models\Opd;
+use App\Services\DisplayDeviceService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class DisplayDeviceSeeder extends Seeder
 {
-    public function run(): void
+    public function run(DisplayDeviceService $displays): void
     {
-        $opd = Opd::where('kode_opd', 'DISKOMINFOSANTI')->firstOrFail();
+        $opds = Opd::query()
+            ->whereDoesntHave('displayDevices', fn (Builder $query) => $query->withoutGlobalScope('opd'))
+            ->get();
 
-        app()->instance('current_opd_id', $opd->id);
+        foreach ($opds as $opd) {
+            app()->instance('current_opd_id', $opd->id);
 
-        $token = Str::random(40);
-
-        DisplayDevice::firstOrNew(['nama' => 'Pc Lobby'])
-            ->forceFill([
-                'token_hash' => hash('sha256', $token),
-                'aktif' => true,
-            ]) ->save();
-
-        $this->command->warn('Token display: '.$token);
-        app()->forgetInstance('current_opd_id');
+            try {
+                $device = $displays->provisionFor($opd);
+                $this->command?->warn("PIN display {$opd->kode_opd}: {$device->pin}");
+            } finally {
+                app()->forgetInstance('current_opd_id');
+            }
+        }
     }
 }

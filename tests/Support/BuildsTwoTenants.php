@@ -4,11 +4,13 @@ namespace Tests\Support;
 
 use App\Models\Opd;
 use App\Models\User;
+use App\Services\DisplayDeviceService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Crypt;
 
 /**
  * Two OPDs ("a" and "b"), each with an admin, two bidang, two visits, two
- * display devices (tokens token-a, token-a-2 / token-b, token-b-2), two
+ * display devices (tokens token-a/token-b ), two
  * format versions and two letter numbers. Counters come from the triggers.
  */
 trait BuildsTwoTenants
@@ -25,6 +27,21 @@ trait BuildsTwoTenants
 
     protected User $adminB;
 
+    protected const DISPLAY_PIN = '482913';
+
+    protected function giveDevicePin(string $pin = self::DISPLAY_PIN): void 
+    {
+        $this->updateDevice([
+            'pin' => Crypt::encryptString($pin),
+            'pin_hmac' => DisplayDeviceService::hmac($pin),
+        ]);
+    }
+
+    protected function updateDevice(array $overrides): void
+    {
+        $this->updateDevice(['token_hash' => null]);
+    }
+
     protected function seedTwoTenants(): void
     {
         $this->opdA = $this->makeOpd('AAA');
@@ -40,11 +57,10 @@ trait BuildsTwoTenants
             $firstFormat = $this->insertFormat($opd->id, $this->superAdmin->id, '2026-01-01');
             $this->insertFormat($opd->id, $this->superAdmin->id, '2026-06-01');
 
+            $this ->insertDisplay($opd->id, "token-{$key}");
+
             $this->insertVisit($opd->id, '2026-10-15 09:00:00');
             $this->insertVisit($opd->id, '2026-10-15 10:00:00');
-
-            $this->insertDisplay($opd->id, "token-{$key}");
-            $this->insertDisplay($opd->id, "token-{$key}-2");
 
             $this->insertLetter(['opd_id' => $opd->id, 'format_nomor_surat_id' => $firstFormat, 'dibuat_oleh' => $this->superAdmin->id]);
             $this->insertLetter(['opd_id' => $opd->id, 'format_nomor_surat_id' => $firstFormat, 'dibuat_oleh' => $this->superAdmin->id]);

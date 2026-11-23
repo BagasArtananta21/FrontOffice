@@ -112,4 +112,32 @@ class UniqueConstraintTest extends TestCase
 
         $this->assertSame(1, DB::table('display_devices')->count());
     }
+
+    public function test_an_opd_can_only_have_one_display(): void
+    {
+        $this->insertDisplay($this->opdA->id, 'token-pertama');
+
+        $this->assertDuplicateRejected(fn () => $this->insertDisplay($this->opdA->id, 'token-kedua'));
+
+        $this->assertSame(1, DB::table('display_devices')->count());
+    }
+
+    public function test_displays_without_a_paired_pc_may_both_have_an_empty_token_hash(): void
+    {
+        $this->insertDisplay($this->opdA->id, 'abaikan', ['token_hash' => null]);
+        $this->insertDisplay($this->opdB->id, 'abaikan', ['token_hash' => null]);
+
+        $this->assertSame(2, DB::table('display_devices')->whereNull('token_hash')->count());
+    }
+
+    public function test_display_pin_hmac_is_unique_across_opds(): void
+    {
+        $hmac = str_repeat('a', 64);
+        $this->insertDisplay($this->opdA->id, 'token-a', ['pin_hmac' => $hmac]);
+
+        $this->assertDuplicateRejected(fn () => $this->insertDisplay($this->opdB->id, 'token-b', ['pin_hmac' => $hmac]));
+
+        $this->assertSame(1, DB::table('display_devices')->count());
+    }
+
 }

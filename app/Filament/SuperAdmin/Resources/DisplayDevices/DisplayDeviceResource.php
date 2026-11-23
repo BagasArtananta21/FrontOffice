@@ -88,12 +88,6 @@ class DisplayDeviceResource extends Resource
                     ->badge()
                     ->state(fn (DisplayDevice $record) => $record->isConnected() ? 'Terhubung' : 'Tidak terhubung')
                     ->color(fn (DisplayDevice $record) => $record->isConnected() ? 'success' : 'gray'),
-                    
-                TextColumn::make('tampilkan_form')
-                    ->label('Tampilan')
-                    ->badge()
-                    ->formatStateUsing(fn (bool $state) => $state ? 'Form Tamu' : 'Idle')
-                    ->color(fn (bool $state) => $state ? 'info' : 'gray'),
 
                 IconColumn::make('aktif')
                     ->label('Status')

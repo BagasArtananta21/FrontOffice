@@ -23,40 +23,41 @@
         <div class="w-full max-w-4xl rounded-xl border border-slate-200 bg-white p-10 shadow-[0_8px_24px_rgba(15,44,89,0.08)]">
             <h1 class="text-center text-3xl font-semibold text-primary">Pasangkan Display Tamu</h1>
             <p class="mx-auto mt-3 max-w-md text-center text-lg text-ink">
-                Masukkan token perangkat untuk menghubungkan layar ini ke buku tamu.
+                Masukkan PIN display yang tampil di panel admin untuk menghubungkan layar ini ke buku tamu.
             </p>
 
             <form method="POST" action="{{ route('display.pair.store') }}" class="mt-8">
                 @csrf
 
-                <label for="token" class="mb-2 block text-sm font-semibold uppercase tracking-wide text-primary">
-                    Token Perangkat
+                <label for="pin" class="mb-2 block text-sm font-semibold uppercase tracking-wide text-primary">
+                    PIN Display
                 </label>
 
                 <div class="relative">
                     <img src="{{ asset('images/icons/key.svg') }}" alt="" class="pointer-events-none absolute left-5 top-1/2 size-6 -translate-y-1/2">
                     <input
-                        id="token"
+                        id="pin"
                         type="text"
-                        name="token"
-                        value="{{ old('token') }}"
+                        name="pin"
+                        inputmode="numeric"
+                        pattern="[0-9]{6}"
+                        maxlength="6"
                         autocomplete="off"
-                        autocapitalize="off"
-                        spellcheck="false"
                         autofocus
                         required
-                        @error('token') aria-invalid="true" aria-describedby="token-error" @enderror
+                        @error('pin') aria-invalid="true" aria-describedby="pin-error" @enderror
                         @class([
-                            'h-14 w-full rounded-md border bg-white pl-14 pr-5 text-lg text-ink focus:border-tertiary focus:outline-none',
-                            'border-inactive' => ! $errors->has('token'),
-                            'border-danger' => $errors->has('token'),
+                            'h-14 w-full rounded-md border bg-white pl-14 pr-5 text-2xl tracking-[0.5em] tabular-nums text-ink focus:border-tertiary focus:outline-none',
+                            'border-inactive' => ! $errors->has('pin'),
+                            'border-danger' => $errors->has('pin'),
                         ])
                     >
                 </div>
 
-                @error('token')
-                    <p id="token-error" class="mt-2 text-base font-medium text-danger">{{ $message }}</p>
+                @error('pin')
+                    <p id="pin-error" class="mt-2 text-base font-medium text-danger">{{ $message }}</p>
                 @enderror
+
 
                 <button
                     type="submit"
@@ -71,8 +72,8 @@
 
                 <ol class="mt-4 grid grid-cols-3 gap-4">
                     @foreach ([
-                        'Minta token ke pengelola sistem',
-                        'Masukkan token di kolom di atas',
+                        'Buka panel admin, lihat PIN di bagian Status Display',
+                        'Ketik 6 angka PIN di kolom di atas',
                         'Tekan Pasangkan Perangkat',
                     ] as $title)
                         <li class="flex gap-3 rounded-md border border-slate-200 bg-page p-4">
@@ -83,7 +84,7 @@
                 </ol>
 
                 <p class="mt-4 text-sm text-ink">
-                    Token hanya ditampilkan satu kali. Bila hilang, minta pengelola sistem membuat ulang token.
+                    PIN cukup dimasukkan sekali. Setelah itu, layar ini dikenali otomatis.
                 </p>
             </div>
         </div>

@@ -5,9 +5,12 @@ namespace App\Filament\SuperAdmin\Resources\Opds\Pages;
 use App\Filament\SuperAdmin\Resources\Opds\OpdResource;
 use App\Models\Opd;
 use App\Filament\Support\SweetAlert;
+use App\Services\DisplayDeviceService;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class ManageOpds extends ManageRecords
 {
@@ -22,11 +25,15 @@ class ManageOpds extends ManageRecords
                 ->successNotification(null)
                 ->using(function (array $data, $livewire, CreateAction $action) {
                     try {
-                        $opd = new Opd();
-                        $opd->forceFill($data)->save();
+                        return DB::transaction(function () use ($data) {
+                            $opd = new Opd();
+                            $opd->forceFill($data)->save();
+                            
+                            app(DisplayDeviceService::class)->provisionFor($opd);
 
-                        return $opd;
-                    } catch (QueryException $e) {
+                            return $opd;
+                        });
+                    } catch (QueryException|RuntimeException $e) {
                         report($e);
                         SweetAlert::error(
                             $livewire,

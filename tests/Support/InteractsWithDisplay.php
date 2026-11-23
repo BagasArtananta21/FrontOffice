@@ -2,12 +2,15 @@
 
 namespace Tests\Support;
 
+use App\Services\DisplayDeviceService;
 use App\Models\DisplayDevice;
 use App\Models\Opd;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
+use Illuminate\Support\Facades\Crypt;
+
 
 /**
  * One OPD, one officer and one paired display device for HTTP and service tests.
@@ -18,6 +21,8 @@ trait InteractsWithDisplay
     use BuildsFixtures;
 
     protected const DISPLAY_TOKEN = 'token-uji-perangkat-display';
+
+    protected const DISPLAY_PIN = '482913';
 
     protected const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
@@ -33,9 +38,7 @@ trait InteractsWithDisplay
 
         $this->opd = $this->makeOpd('UJI');
         $this->officer = $this->makeUser($this->opd);
-        $this->deviceId = $this->insertDisplay($this->opd->id, self::DISPLAY_TOKEN, [
-            'ditampilkan_oleh' => $this->officer->id,
-        ]);
+        $this->insertDisplay($this->opd->id, self::DISPLAY_TOKEN);
     }
 
     protected function updateDevice(array $changes): void
@@ -100,5 +103,18 @@ trait InteractsWithDisplay
             'tanda_tangan' => self::PNG,
             ...$payload,
         ]);
+    }
+
+    protected function giveDevicePin(string $pin = self::DISPLAY_PIN): void
+    {
+        $this->updateDevice([
+            'pin' => Crypt::encryptString($pin),
+            'pin_hmac' => DisplayDeviceService::hmac($pin),
+        ]);
+    }
+
+    protected function unpairDevice(): void
+    {
+        $this->updateDevice(['token_hash' => null]);
     }
 }

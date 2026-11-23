@@ -13,7 +13,6 @@ class DatabaseSeeder extends Seeder
                 OpdSeeder::class,
                 UserSeeder::class,
                 BidangSeeder::class,
-                DisplayDeviceSeeder::class,
                 FormatNomorSuratSeeder::class,
             ]);
 
@@ -25,6 +24,7 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        $this->call(DisplayDeviceSeeder::class);
     }
 
     

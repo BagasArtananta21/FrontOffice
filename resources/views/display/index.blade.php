@@ -10,27 +10,26 @@
 </head>
 <body
     class="min-h-screen"
-    x-data="displayScreen('{{ route('display.status') }}', @js(! $summary && ($initialShowForm || $errors->any())), @js($waitingKey), @js($notice))"
+    x-data="displayScreen('{{ route('display.status') }}', @js($waitingKey), @js($notice), @js($reloadKey))"
     x-init="start()"
 >
     @if ($summary)
         @include('display.partials.signature-request')
     @else
-        <section x-show="! showForm" x-cloak class="fixed inset-0 bg-black">
+        <section x-show="screensaver" x-cloak x-on:click="wake()" class="fixed inset-0 z-50 cursor-pointer bg-black">
             @php
                 $r2BaseUrl = config('filesystems.r2_public_url');
             @endphp
 
             <video
-                x-effect="showForm ? $el.pause() : $el.play().catch(() => {})"
+                x-effect="screensaver ? $el.play().catch(() => {}) : $el.pause()"
                 class="h-full w-full object-cover"
-                autoplay muted loop playsinline preload="auto">
+                muted loop playsinline preload="auto">
                 <source src="{{ $r2BaseUrl }}/profil.mp4" type="video/mp4">
             </video>
-
         </section>
 
-        <section x-show="showForm" x-cloak class="flex h-screen flex-col overflow-hidden bg-page px-10 py-18">
+        <section class="flex h-screen flex-col overflow-hidden bg-page px-10 py-18">
             <div class="mx-auto w-full max-w-7xl">
                 <h1 class="text-3xl font-semibold text-primary">Formulir Buku Tamu - {{ $opd->kode_opd }}</h1>
                 <p class="mt-2 text-xl text-ink">Kolom bertanda <span class="text-danger">*</span> wajib diisi.</p>

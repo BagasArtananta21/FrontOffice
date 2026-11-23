@@ -5,18 +5,22 @@ namespace App\Filament\Admin\Widgets;
 use App\Filament\Support\SweetAlert;
 use App\Models\DisplayDevice;
 use App\Models\Kunjungan;
+use App\Services\DisplayDeviceService;
 use App\Services\KunjunganService;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Arr;
+use Illuminate\Support\HtmlString;
+use InvalidArgumentException;
 use Livewire\Attributes\Locked;
+use RuntimeException;
 
 class DisplayStatus extends Widget implements HasActions, HasSchemas
 {
@@ -34,55 +38,6 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
     public function mount(): void
     {
         $this->watchedKunjunganId = $this->waitingKunjunganId();
-    }
-
-    public function setDisplayForm(bool $tampilkan): void{
-        $devices = $this->devices();
-
-        if ($devices->isEmpty()) {
-            SweetAlert::warning(
-                $this, 
-                'Display Belum Terdaftar', 
-                'Belum ada perangkat display aktif untuk OPD ini'
-            );
-            return;
-        }
-
-        if ($devices->contains(fn (DisplayDevice $device) => $device->kunjungan_menunggu_id !== null)) {
-            SweetAlert::warning(
-                $this,
-                'Menunggu Tanda Tangan',
-                'Batalkan permintaan tanda tangan dulu sebelum mengubah tampilan display.'
-            );
-            return;
-        }
-
-        DisplayDevice::query()->where('aktif', true)->update(
-            $tampilkan
-                ? ['tampilkan_form' => true, 'ditampilkan_oleh' => Auth::id()]
-                : ['tampilkan_form' => false],
-        );
-
-
-        if (! $tampilkan) {
-            SweetAlert::info($this, 'Display Kembali ke Layar Idle');
-            return;
-        }
-
-        if (! $devices->contains(fn (DisplayDevice $device) => $device->isConnected())) {
-            SweetAlert::warning(
-                $this, 
-                'Display Tidak Terhubung', 
-                'Form akan tampil begitu display terhubung kembali'
-            );
-            return;
-        }
-
-        SweetAlert::success(
-            $this, 
-            'Form Tamu Ditampilkan', 
-            'Form tamu akan tampil di layar display dalam beberapa detik'
-        );
     }
 
     public function cancelSignatureAction(): Action
@@ -126,6 +81,144 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
                     'Kunjungan tetap tercatat tanpa tanda tangan. Display kembali ke layar idle.'
                 );
             });
+    }
+
+    /**
+     * PIN baru didekripsi saat modal dibuka (action di-mount), jadi tidak ikut
+     * terkirim di HTML widget sebelum tombol ditekan.
+     */
+    public function showPinAction(): Action
+    {
+        return Action::make('showPin')
+            ->label('Lihat PIN')
+            ->icon('heroicon-o-key')
+            ->modalHeading('PIN Display')
+            ->modalDescription('Ketik PIN ini di halaman pemasangan pada PC display. Jangan bagikan ke orang lain.')
+            ->modalContent(fn (): Htmlable => $this->pinContent())
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Tutup')
+            ->visible(fn (): bool => $this->device() !== null);
+    }
+
+    public function reloadAction(): Action
+    {
+        return Action::make('reload')
+            ->label('Muat ulang display')
+            ->icon('heroicon-o-arrow-path-rounded-square')
+            ->requiresConfirmation()
+            ->modalHeading('Muat Ulang Display')
+            ->modalDescription('Halaman di PC display akan dimuat ulang. Isian form yang sedang diketik tamu akan hilang.')
+            ->modalSubmitActionLabel('Muat ulang')
+            ->visible(fn (): bool => $this->device()?->isPaired() === true)
+            ->action(function (): void {
+                $device = $this->device();
+
+                if ($device === null) {
+                    return;
+                }
+
+                app(DisplayDeviceService::class)->requestReload($device);
+
+                if (! $device->isConnected()) {
+                    SweetAlert::warning(
+                        $this,
+                        'Display Tidak Terhubung',
+                        'Display akan dimuat ulang begitu terhubung kembali.'
+                    );
+                    return;
+                }
+
+                SweetAlert::success(
+                    $this,
+                    'Display Dimuat Ulang',
+                    'Halaman display akan dimuat ulang dalam beberapa detik.'
+                );
+            });
+    }
+
+    public function regeneratePinAction(): Action
+    {
+        return Action::make('regeneratePin')
+            ->label('Ganti PIN')
+            ->icon('heroicon-o-arrow-path')
+            ->requiresConfirmation()
+            ->modalHeading('Ganti PIN Display')
+            ->modalDescription('PIN lama tidak bisa dipakai lagi. Display yang sedang terpasang tetap berjalan.')
+            ->modalSubmitActionLabel('Ganti PIN')
+            ->visible(fn (): bool => $this->device() !== null)
+            ->action(function (): void {
+                $device = $this->device();
+
+                if ($device === null) {
+                    return;
+                }
+
+                try {
+                    app(DisplayDeviceService::class)->assignNewPin($device);
+                } catch (RuntimeException $e) {
+                    report($e);
+                    SweetAlert::error(
+                        $this,
+                        'Gagal Mengganti PIN',
+                        'Terjadi kesalahan saat mengganti PIN. Silakan coba lagi.'
+                    );
+                    return;
+                }
+
+                SweetAlert::success(
+                    $this,
+                    'PIN Diganti',
+                    'PIN baru sudah berlaku. Tekan Lihat PIN untuk melihatnya.'
+                );
+            });
+    }
+
+    public function unpairAction(): Action
+    {
+        return Action::make('unpair')
+            ->label('Putuskan display')
+            ->icon('heroicon-o-link-slash')
+            ->color('danger')
+            ->requiresConfirmation()
+            ->modalHeading('Putuskan Display')
+            ->modalDescription('PC display yang sekarang terpasang akan terputus. Pakai ini bila PC display diganti atau browser-nya dibersihkan, lalu masukkan PIN lagi di PC display.')
+            ->modalSubmitActionLabel('Putuskan')
+            ->visible(fn (): bool => $this->device()?->isPaired() === true)
+            ->action(function (): void {
+                $device = $this->device();
+
+                if ($device === null) {
+                    return;
+                }
+
+                try {
+                    app(DisplayDeviceService::class)->unpair($device);
+                } catch (InvalidArgumentException) {
+                    SweetAlert::warning(
+                        $this,
+                        'Menunggu Tanda Tangan',
+                        'Batalkan permintaan tanda tangan dulu sebelum memutuskan display.'
+                    );
+                    return;
+                }
+
+                SweetAlert::success(
+                    $this,
+                    'Display Diputuskan',
+                    'Masukkan PIN di PC display untuk memasangnya lagi.'
+                );
+            });
+    }
+
+    private function pinContent(): Htmlable
+    {
+        $pin = $this->device()?->pin;
+
+        if ($pin === null) {
+            return new HtmlString('<p class="text-center text-sm text-gray-500">PIN belum dibuat. Tekan Ganti PIN untuk membuatnya.</p>');
+        }
+
+        return new HtmlString('<p class="text-center text-4xl font-bold tracking-[0.3em] tabular-nums text-gray-950">'.e($pin).'</p>');
     }
 
     public function checkSignatureRequest(): void
@@ -174,6 +267,14 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
             ->get();
     }
 
+    /**
+     * Satu OPD satu display (revisi 18 Nov), jadi cukup baris pertama.
+     */
+    protected function device(): ?DisplayDevice
+    {
+        return $this->devices()->first();
+    }
+
     protected function getViewData(): array
     {
         $devices = $this->devices();
@@ -181,8 +282,9 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
 
         return [
             'terdaftar' => $devices->isNotEmpty(),
+            'terpasang' => $devices->first()?->isPaired() === true,
+            'pairUrl' => route('display.pair'),
             'terhubung' => $devices->contains(fn (DisplayDevice $device) => $device->isConnected()),
-            'menampilkanForm' => $devices->first()?->tampilkan_form === true,
             'menungguNamaTamu' => $waitingDevice?->kunjunganMenunggu?->nama_tamu,
         ];
     }

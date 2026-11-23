@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\InteractsWithDisplay;
 use Tests\TestCase;
+use Illuminate\Testing\TestResponse;
 
 class PairingTest extends TestCase
 {
@@ -30,101 +31,20 @@ class PairingTest extends TestCase
         ];
     }
 
+    private function pinError(): ?string
+    {
+        $session = app('session.store');
+        $session->start();
+
+        return $session->get('errors')?->first('pin');
+    }
+
+
     public function test_the_pairing_page_is_open_without_a_cookie(): void
     {
         $this->withoutVite();
 
         $this->get(route('display.pair'))->assertOk();
-    }
-
-    public function test_a_valid_token_sets_a_long_lived_encrypted_cookie_and_goes_to_the_display(): void
-    {
-        $response = $this->post(route('display.pair.store'), ['token' => self::DISPLAY_TOKEN]);
-
-        $response->assertRedirect(route('display.show'));
-        $response->assertCookie(DisplayDevice::COOKIE, self::DISPLAY_TOKEN);
-        $this->assertGreaterThan(now()->addDays(300)->getTimestamp(), $response->getCookie(DisplayDevice::COOKIE)->getExpiresTime());
-        $this->assertNotSame(self::DISPLAY_TOKEN, $response->getCookie(DisplayDevice::COOKIE, false)->getValue());
-    }
-
-    public function test_the_token_is_stored_as_a_sha256_hash_and_the_hash_is_not_a_valid_token(): void
-    {
-        $this->assertSame(hash('sha256', self::DISPLAY_TOKEN), $this->deviceRow()['token_hash']);
-
-        $this->post(route('display.pair.store'), ['token' => hash('sha256', self::DISPLAY_TOKEN)])
-            ->assertSessionHasErrors('token')
-            ->assertCookieMissing(DisplayDevice::COOKIE);
-    }
-
-    public static function unusableTokens(): array
-    {
-        return [
-            'unknown token' => ['token-yang-salah'],
-            'empty token' => [''],
-            'token with different case' => [strtoupper(self::DISPLAY_TOKEN)],
-        ];
-    }
-
-    #[DataProvider('unusableTokens')]
-    public function test_it_rejects_a_token_that_does_not_match_any_device(string $token): void
-    {
-        $this->post(route('display.pair.store'), ['token' => $token])
-            ->assertSessionHasErrors('token')
-            ->assertCookieMissing(DisplayDevice::COOKIE);
-    }
-
-    public function test_it_rejects_a_request_without_a_token(): void
-    {
-        $this->post(route('display.pair.store'))->assertSessionHasErrors('token');
-    }
-
-    public function test_it_rejects_the_token_of_a_deactivated_device(): void
-    {
-        $this->updateDevice(['aktif' => false]);
-
-        $this->post(route('display.pair.store'), ['token' => self::DISPLAY_TOKEN])
-            ->assertSessionHasErrors('token')
-            ->assertCookieMissing(DisplayDevice::COOKIE);
-    }
-
-    public function test_it_rejects_the_token_of_a_device_whose_opd_is_inactive(): void
-    {
-        $this->opd->forceFill(['aktif' => false])->save();
-
-        $this->post(route('display.pair.store'), ['token' => self::DISPLAY_TOKEN])
-            ->assertSessionHasErrors('token')
-            ->assertCookieMissing(DisplayDevice::COOKIE);
-    }
-
-    public function test_pairing_is_throttled_to_five_attempts_a_minute_even_for_a_valid_token(): void
-    {
-        for ($attempt = 1; $attempt <= 5; $attempt++) {
-            $this->post(route('display.pair.store'), ['token' => 'tebakan-'.$attempt])->assertStatus(302);
-        }
-
-        $this->post(route('display.pair.store'), ['token' => self::DISPLAY_TOKEN])
-            ->assertStatus(429)
-            ->assertCookieMissing(DisplayDevice::COOKIE);
-    }
-
-    public function test_a_valid_pairing_counts_towards_the_throttle_too(): void
-    {
-        for ($attempt = 1; $attempt <= 5; $attempt++) {
-            $this->post(route('display.pair.store'), ['token' => self::DISPLAY_TOKEN])->assertRedirect(route('display.show'));
-        }
-
-        $this->post(route('display.pair.store'), ['token' => self::DISPLAY_TOKEN])->assertStatus(429);
-    }
-
-    public function test_the_throttle_window_reopens_after_a_minute(): void
-    {
-        for ($attempt = 1; $attempt <= 6; $attempt++) {
-            $this->post(route('display.pair.store'), ['token' => 'tebakan-'.$attempt]);
-        }
-
-        $this->travel(61)->seconds();
-
-        $this->post(route('display.pair.store'), ['token' => self::DISPLAY_TOKEN])->assertRedirect(route('display.show'));
     }
 
     #[DataProvider('displayRoutes')]
@@ -203,4 +123,152 @@ class PairingTest extends TestCase
         $this->updateDevice(['aktif' => false]);
         $this->asDisplay()->get(route('login'))->assertOk();
     }
+
+    private function pair(?string $pin = self::DISPLAY_PIN): TestResponse
+    {
+        return $this->post(route('display.pair.store'), $pin === null ? [] : ['pin' => $pin]);
+    }
+
+    private function readyToPair(): void
+    {
+        $this->unpairDevice();
+        $this->giveDevicePin();
+    }
+
+    public function test_a_valid_pin_pairs_an_unpaired_display_with_a_new_long_lived_token(): void
+    {
+        $this->readyToPair();
+
+        $response = $this->pair();
+
+        $response->assertRedirect(route('display.show'));
+        $cookie = $response->getCookie(DisplayDevice::COOKIE);
+        $token = $cookie->getValue();
+        $this->assertSame(40, strlen($token));
+        $this->assertNotSame(self::DISPLAY_PIN, $token);
+        $this->assertSame(hash('sha256', $token), $this->deviceRow()['token_hash']);
+        $this->assertGreaterThan(now()->addDays(300)->getTimestamp(), $cookie->getExpiresTime());
+
+        $this->asDisplay($token)->get(route('display.status'))->assertOk();
+    }
+
+    public static function unusablePins(): array
+    {
+        return [
+            'wrong pin' => ['000000'],
+            'too short' => ['48291'],
+            'too long' => ['4829130'],
+            'letters' => ['abcdef'],
+            'empty' => [''],
+        ];
+    }
+
+    #[DataProvider('unusablePins')]
+    public function test_an_unusable_pin_pairs_nothing(string $pin): void
+    {
+        $this->readyToPair();
+
+        $this->pair($pin)
+            ->assertSessionHasErrors('pin')
+            ->assertCookieMissing(DisplayDevice::COOKIE);
+
+        $this->assertNull($this->deviceRow()['token_hash']);
+    }
+
+    public function test_a_request_without_a_pin_is_rejected(): void
+    {
+        $this->readyToPair();
+
+        $this->pair(null)->assertSessionHasErrors('pin');
+    }
+
+    public function test_a_correct_pin_is_refused_while_the_display_is_already_paired(): void
+    {
+        $this->giveDevicePin();
+
+        $this->pair()
+            ->assertSessionHasErrors('pin')
+            ->assertCookieMissing(DisplayDevice::COOKIE);
+
+        $this->assertSame(hash('sha256', self::DISPLAY_TOKEN), $this->deviceRow()['token_hash']);
+    }
+
+    public function test_a_wrong_pin_and_a_pin_in_use_get_the_same_message(): void
+    {
+        $this->giveDevicePin();
+
+        $this->pair('000000')->assertSessionHasErrors('pin');
+        $wrong = $this->pinError();
+
+        $this->pair()->assertSessionHasErrors('pin');
+        $inUse = $this->pinError();
+
+        $this->assertNotNull($wrong);
+        $this->assertSame($wrong, $inUse);
+    }
+
+
+    public function test_the_pin_is_not_kept_in_the_session(): void
+    {
+        $this->pair('000000')->assertSessionHasErrors('pin');
+
+        $session = app('session.store');
+        $session->start();
+        $this->assertArrayNotHasKey('pin', $session->getOldInput());
+    }
+
+    public function test_pairing_again_after_unpairing_replaces_the_old_token(): void
+    {
+        $this->readyToPair();
+        $first = $this->pair()->getCookie(DisplayDevice::COOKIE)->getValue();
+
+        $this->unpairDevice();
+        $second = $this->pair()->getCookie(DisplayDevice::COOKIE)->getValue();
+
+        $this->assertNotSame($first, $second);
+        $this->asDisplay($first)->get(route('display.status'))->assertForbidden();
+        $this->asDisplay($second)->get(route('display.status'))->assertOk();
+    }
+
+    public function test_the_pin_of_a_deactivated_device_pairs_nothing(): void
+    {
+        $this->readyToPair();
+        $this->updateDevice(['aktif' => false]);
+
+        $this->pair()->assertSessionHasErrors('pin')->assertCookieMissing(DisplayDevice::COOKIE);
+    }
+
+    public function test_the_pin_of_a_device_whose_opd_is_inactive_pairs_nothing(): void
+    {
+        $this->readyToPair();
+        $this->opd->forceFill(['aktif' => false])->save();
+
+        $this->pair()->assertSessionHasErrors('pin')->assertCookieMissing(DisplayDevice::COOKIE);
+    }
+
+    public function test_pairing_is_throttled_to_five_attempts_a_minute_even_for_a_valid_pin(): void
+    {
+        $this->readyToPair();
+
+        for ($attempt = 1; $attempt <= 5; $attempt++) {
+            $this->pair('00000'.$attempt)->assertStatus(302);
+        }
+
+        $this->pair()->assertStatus(429)->assertCookieMissing(DisplayDevice::COOKIE);
+        $this->assertNull($this->deviceRow()['token_hash']);
+    }
+
+    public function test_the_throttle_window_reopens_after_a_minute(): void
+    {
+        $this->readyToPair();
+
+        for ($attempt = 1; $attempt <= 6; $attempt++) {
+            $this->pair('00000'.$attempt);
+        }
+
+        $this->travel(61)->seconds();
+
+        $this->pair()->assertRedirect(route('display.show'));
+    }
+
 }

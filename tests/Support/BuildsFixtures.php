@@ -7,11 +7,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-/**
- * Small data builders for tests. The insert* helpers go straight to the
- * query builder so global scopes, model events and fillable rules never get
- * in the way (the numbering triggers live in the database anyway).
- */
 trait BuildsFixtures
 {
     private int $fixtureCounter = 0;
@@ -172,7 +167,6 @@ trait BuildsFixtures
             'opd_id' => $opdId,
             'nama' => 'PC Lobi',
             'token_hash' => hash('sha256', $plainToken),
-            'tampilkan_form' => false,
             'aktif' => true,
             'terakhir_aktif' => now(),
             'created_at' => now(),

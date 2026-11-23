@@ -9,18 +9,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('display_devices', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
-            $table->string('nama');                       
-            $table->string('token_hash', 64)->unique();
-            $table->boolean('tampilkan_form')->default(false);
-            $table->foreignUuid('ditampilkan_oleh')->nullable()->constrained('users')->restrictOnDelete();
-            $table->foreignUuid('kunjungan_menunggu_id')->nullable()->constrained('kunjungan')->nullOnDelete();
-            $table->timestamp('terakhir_aktif')->nullable();
+        $table->uuid('id')->primary();
+        $table->foreignUuid('opd_id')->constrained('opd')->restrictOnDelete();
+        $table->string('nama');
+        $table->string('token_hash', 64)->nullable()->unique();
+        $table->text('pin')->nullable();
+        $table->string('pin_hmac', 64)->nullable()->unique();
+        $table->foreignUuid('kunjungan_menunggu_id')->nullable()->constrained('kunjungan')->nullOnDelete();
+        $table->timestamp('terakhir_aktif')->nullable();
+        $table->timestamp('muat_ulang_diminta_pada')->nullable();
 
-            $table->boolean('aktif')->default(false);
-            $table->timestamps();
-        });
+        $table->boolean('aktif')->default(false);
+        $table->timestamps();
+
+        $table->unique('opd_id');
+    });
     }
 
     public function down(): void

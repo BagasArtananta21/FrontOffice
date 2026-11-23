@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('role', 20)->default('admin_fo')->after('password');
             $table->string('sso_subject_id')->nullable()->unique()->after('role');
             $table->boolean('aktif')->default(true)->after('sso_subject_id');
+            $table->timestamp('terakhir_login_pada')->nullable()->after('aktif');
         });
     }
 
@@ -23,7 +24,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dropConstrainedForeignId('opd_id');
-            $table->dropColumn(['nip', 'role', 'sso_subject_id', 'aktif']);
+            $table->dropColumn(['nip', 'role', 'sso_subject_id', 'aktif', 'terakhir_login_pada']);
         });
     }
 };

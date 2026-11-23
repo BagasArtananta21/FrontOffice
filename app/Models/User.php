@@ -59,6 +59,7 @@ class User extends Authenticatable implements FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'aktif' => 'boolean',
+            'terakhir_login_pada' => 'datetime',
         ];
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DisplayDevice;
 use App\Models\Bidang;
 use App\Models\Kunjungan;
+use App\Services\DisplayDeviceService;
 use App\Exceptions\SignatureStorageException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\RedirectResponse;
@@ -20,6 +21,8 @@ use App\Rules\SignatureImage;
 
 class DisplayController extends Controller
 {
+    private const PAIR_FAILED = 'PIN tidak valid atau tidak dapat digunakan. Bila PIN sudah benar, coba tekan "Putuskan Display" di panel admin, lalu coba lagi.';
+
     private const TIMEOUT_NOTICE = [
         'title' => 'Waktu tanda tangan habis',
         'text' => 'Kunjungan Anda tetap tercatat tanpa tanda tangan.',
@@ -32,25 +35,23 @@ class DisplayController extends Controller
     public function show(Request $request): View {
         /** @var DisplayDevice $device */
         $device = $request->attributes->get('display_device');
-        $this->closeStaleForm($device);
         $expiredNow = $this->releaseExpiredSignatureRequest($device);
         $waiting = $device->kunjunganMenunggu;
 
         return view('display.index', [
             'opd' => $device->opd,
             'bidang' => Bidang::active()->orderBy('nama_bidang')->get(['id', 'nama_bidang']),
-            'initialShowForm' => $device->tampilkan_form,
             'waitingKey' => $device->waitingKey(),
             'summary' => $waiting ? $this->visitSummary($waiting) : null,
             'notice' => ($expiredNow || session('display_notice') === 'timeout') ? self::TIMEOUT_NOTICE : null,
             'signatureSecondsLeft' => $device->signatureSecondsLeft(),
+            'reloadKey' => $device->reloadKey(),
         ]);
     }
 
     public function status(Request $request): JsonResponse {
         /** @var DisplayDevice $device */
         $device = $request->attributes->get('display_device');
-        $this->closeStaleForm($device);
 
         if ($this->releaseExpiredSignatureRequest($device)) {
             session()->flash('display_notice', 'timeout');
@@ -64,26 +65,28 @@ class DisplayController extends Controller
 
         return response()->json([
             'status' => 'ok',
-            'tampilkan_form' => $device->tampilkan_form,
             'waiting_key' => $device->waitingKey(),
             'csrf_token' => csrf_token(),
+            'reload_key' => $device->reloadKey(),
         ]);
     }
 
-    public function pair(Request $request): RedirectResponse {
-        $validated = $request->validate([
-            'token' => ['required', 'string'],
-        ]);
-    
-        if (!DisplayDevice::findActiveByToken($validated['token'])) {
-            Log::warning('Pairing Display Gagal', ['ip' => $request->ip()]);
-            throw ValidationException::withMessages([
-                'token' => 'Token tidak valid.',
-            ]);
+    public function pair(Request $request, DisplayDeviceService $displays): RedirectResponse {
+        $validated = $request->validate(
+            ['pin' => ['required', 'string', 'digits:6']],
+            ['pin.digits' => 'PIN terdiri dari 6 angka.'],
+            ['pin' => 'PIN'],
+        );
+
+        $token = $displays->pair($validated['pin']);
+
+        if ($token === null) {
+            Log::warning('Pemasangan Display Gagal', ['ip' => $request->ip()]);
+            throw ValidationException::withMessages(['pin' => self::PAIR_FAILED]);
         }
 
         return redirect()->route('display.show')
-            ->withCookie(cookie()->forever(DisplayDevice::COOKIE, $validated['token']));
+            ->withCookie(cookie()->forever(DisplayDevice::COOKIE, $token));
     }
 
     public function unpair(): RedirectResponse {

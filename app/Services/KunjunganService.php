@@ -36,17 +36,26 @@ class KunjunganService
     {
         return DB::transaction(function () use ($device, $data) {
             $device = DisplayDevice::query()->whereKey($device->getKey())->lockForUpdate()->firstOrFail();
-            
-            if (! $device->tampilkan_form || $device->formWindowStale() || $device->kunjungan_menunggu_id !== null) {
-            return null;
+
+            if ($device->kunjungan_menunggu_id !== null) {
+                return null;
             }
 
-            $kunjungan = $this->recordFromDisplay($data, $device->ditampilkan_oleh);
-            $device->forceFill(['tampilkan_form' => false])->save();
-
-            return $kunjungan;
+            return $this->recordFromDisplay($data, $this->lastLoggedInOfficerId($device->opd_id));
         });
     }
+
+    private function lastLoggedInOfficerId(string $opdId): ?string
+    {
+        return User::query()
+            ->where('opd_id', $opdId)
+            ->where('role', 'admin_fo')
+            ->where('aktif', true)
+            ->whereNotNull('terakhir_login_pada')
+            ->orderByDesc('terakhir_login_pada')
+            ->value('id');
+    }
+
 
     public function recordWithoutSignature(array $data, User $petugas, string $reason): Kunjungan
     {

@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
-#[Fillable(['nama', 'tampilkan_form', 'aktif'])]
-#[Hidden(['token_hash'])]
+#[Fillable(['nama', 'aktif'])]
+#[Hidden(['token_hash', 'pin', 'pin_hmac'])]
 class DisplayDevice extends Model
 {
     use BelongsToOpd, HasUuids;
@@ -32,7 +32,6 @@ class DisplayDevice extends Model
     {
         return $query->where('aktif', true)
             ->connected()
-            ->where('tampilkan_form', false)
             ->whereNull('kunjungan_menunggu_id');
     }
 
@@ -40,6 +39,16 @@ class DisplayDevice extends Model
     {
         return $this->terakhir_aktif !== null
             && $this->terakhir_aktif->greaterThanOrEqualTo(now()->subSeconds(self::CONNECTED_WITHIN_SECONDS));
+    }
+
+    public function isPaired(): bool
+    {
+        return $this->token_hash !== null;
+    }
+
+    public function reloadKey(): ?int
+    {
+        return $this->muat_ulang_diminta_pada?->timestamp;
     }
 
     public static function findActiveByToken(?string $token): ?self {
@@ -69,11 +78,6 @@ class DisplayDevice extends Model
         return $kunjungan ? $kunjungan->id.'@'.$kunjungan->updated_at->timestamp : null;    
     }
 
-    public function formWindowStale(): bool
-    {
-        return $this->tampilkan_form && $this->updated_at->lt(today());
-    }
-
     public function signatureRequestExpired(): bool
     {
         $kunjungan = $this->kunjunganMenunggu;
@@ -97,9 +101,10 @@ class DisplayDevice extends Model
 
     protected function casts(): array {
         return [
-            'tampilkan_form' => 'boolean',
             'terakhir_aktif' => 'datetime',
-            'aktif' => 'boolean'
+            'aktif' => 'boolean',
+            'pin' => 'encrypted',
+            'muat_ulang_diminta_pada' => 'datetime',
         ];
     }
 }

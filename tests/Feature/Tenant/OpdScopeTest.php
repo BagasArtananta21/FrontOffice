@@ -60,6 +60,11 @@ class OpdScopeTest extends TestCase
         return $cases;
     }
 
+    public static function createableModels(): array
+    {
+        return array_diff_key(self::models(), ['display device' => true]);
+    }
+
     private function table(string $class): string
     {
         return (new $class())->getTable();
@@ -222,7 +227,7 @@ class OpdScopeTest extends TestCase
         Bidang::acrossOpd();
     }
 
-    #[DataProvider('models')]
+    #[DataProvider('createableModels')]
     public function test_creating_fills_opd_id_from_the_logged_in_user(string $class): void
     {
         $this->actingAs($this->adminB);
@@ -234,7 +239,7 @@ class OpdScopeTest extends TestCase
         $this->assertSame($this->opdB->id, DB::table($model->getTable())->where('id', $model->id)->value('opd_id'));
     }
 
-    #[DataProvider('models')]
+    #[DataProvider('createableModels')]
     public function test_creating_fills_opd_id_from_a_bound_context(string $class): void
     {
         app()->instance('current_opd_id', $this->opdA->id);
@@ -245,7 +250,7 @@ class OpdScopeTest extends TestCase
         $this->assertSame($this->opdA->id, DB::table($model->getTable())->where('id', $model->id)->value('opd_id'));
     }
 
-    #[DataProvider('models')]
+    #[DataProvider('createableModels')]
     public function test_creating_accepts_an_explicit_opd_id_that_matches_the_context(string $class): void
     {
         $this->actingAs($this->adminA);
@@ -280,7 +285,7 @@ class OpdScopeTest extends TestCase
         $this->assertCreationRefused($this->unsavedModel($class));
     }
 
-    #[DataProvider('models')]
+    #[DataProvider('createableModels')]
     public function test_a_super_admin_creates_into_the_opd_named_explicitly(string $class): void
     {
         $this->actingAs($this->superAdmin);
@@ -306,5 +311,5 @@ class OpdScopeTest extends TestCase
         app()->instance('current_opd_id', $this->opdA->id);
 
         $this->assertCreationRefused($this->unsavedModel($class)->forceFill(['opd_id' => $this->opdB->id]));
-    }
+    } 
 }

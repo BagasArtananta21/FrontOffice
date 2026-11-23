@@ -19,7 +19,6 @@ class StoreVisitSuccessTest extends TestCase
 
         $this->setUpDisplay();
         $this->travelTo('2026-10-15 09:30:00');
-        $this->showForm();
     }
 
     private function onlyVisit(): object
@@ -29,8 +28,15 @@ class StoreVisitSuccessTest extends TestCase
         return DB::table('kunjungan')->first();
     }
 
+    private function lastVisitOfficer(): ?string
+    {
+        return DB::table('kunjungan')->orderByDesc('created_at')->value('dicatat_oleh');
+    }
+
     public function test_it_stores_the_visit_with_the_system_columns_filled_by_the_server(): void
     {
+        $this->officer->forceFill(['terakhir_login_pada' => now()])->save();
+
         $this->submitVisit()->assertRedirect(route('display.confirmation'));
 
         $visit = $this->onlyVisit();
@@ -46,27 +52,10 @@ class StoreVisitSuccessTest extends TestCase
         $this->assertSame('Konsultasi', $visit->keperluan);
     }
 
-    public function test_it_records_the_officer_who_last_pressed_show_form(): void
-    {
-        $newer = $this->makeUser($this->opd);
-        $this->updateDevice(['ditampilkan_oleh' => $newer->id]);
-
-        $this->submitVisit()->assertRedirect(route('display.confirmation'));
-
-        $this->assertSame($newer->id, $this->onlyVisit()->dicatat_oleh);
-    }
-
-    public function test_it_stores_a_visit_even_when_no_officer_is_recorded_on_the_device(): void
-    {
-        $this->updateDevice(['ditampilkan_oleh' => null]);
-
-        $this->submitVisit()->assertRedirect(route('display.confirmation'));
-
-        $this->assertNull($this->onlyVisit()->dicatat_oleh);
-    }
-
     public function test_it_ignores_system_columns_posted_by_the_browser(): void
     {
+        $this->officer->forceFill(['terakhir_login_pada' => now()])->save();
+
         $stranger = $this->makeUser($this->makeOpd('LAIN'));
 
         $this->submitVisit([
@@ -110,18 +99,9 @@ class StoreVisitSuccessTest extends TestCase
         $this->assertLessThan(100, strlen($this->onlyVisit()->tanda_tangan));
     }
 
-    public function test_it_closes_the_form_after_a_successful_submit(): void
-    {
-        $this->submitVisit();
-
-        $this->assertFalse((bool) $this->deviceRow()['tampilkan_form']);
-        $this->assertNull($this->deviceRow()['kunjungan_menunggu_id']);
-    }
-
     public function test_successive_visits_get_successive_numbers(): void
     {
         $this->submitVisit(['nama_tamu' => 'Tamu Satu'])->assertRedirect(route('display.confirmation'));
-        $this->showForm();
         $this->submitVisit(['nama_tamu' => 'Tamu Dua'])->assertRedirect(route('display.confirmation'));
 
         $numbers = DB::table('kunjungan')->orderBy('nomor_kunjungan')->pluck('nomor_kunjungan', 'nama_tamu')->all();
@@ -151,7 +131,7 @@ class StoreVisitSuccessTest extends TestCase
             ->assertDontSee('20261015-0001');
     }
 
-    public function test_the_confirmation_page_sends_the_screen_back_to_idle_by_itself(): void
+    public function test_the_confirmation_page_sends_the_screen_back_to_form_by_itself(): void
     {
         $this->withoutVite();
 
@@ -172,7 +152,8 @@ class StoreVisitSuccessTest extends TestCase
 
     public function test_the_throttle_counts_per_device_and_not_per_address(): void
     {
-        $this->insertDisplay($this->opd->id, 'token-perangkat-kedua');
+        $other = $this->makeOpd('LAIN');
+        $this->insertDisplay($other->id, 'token-perangkat-kedua');
 
         for ($attempt = 1; $attempt <= 6; $attempt++) {
             $this->submitVisit();
@@ -207,9 +188,42 @@ class StoreVisitSuccessTest extends TestCase
         }
 
         $this->travel(61)->seconds();
-        $this->showForm();
 
         $this->submitVisit(['nama_tamu' => 'Tamu Setelah Menunggu'])->assertRedirect(route('display.confirmation'));
         $this->assertDatabaseHas('kunjungan', ['nama_tamu' => 'Tamu Setelah Menunggu']);
     }
+
+    public function test_a_display_visit_is_recorded_by_the_officer_who_logged_in_last(): void
+    {
+        $earlier = $this->makeUser($this->opd);
+        $later = $this->makeUser($this->opd);
+        $earlier->forceFill(['terakhir_login_pada' => '2026-11-23 07:00:00'])->save();
+        $later->forceFill(['terakhir_login_pada' => '2026-11-23 08:00:00'])->save();
+
+        $this->submitVisit()->assertRedirect(route('display.confirmation'));
+
+        $this->assertSame($later->id, $this->lastVisitOfficer());
+    }
+
+    public function test_inactive_officers_and_officers_of_other_opds_are_skipped(): void
+    {
+        $active = $this->makeUser($this->opd);
+        $inactive = $this->makeUser($this->opd, aktif: false);
+        $foreign = $this->makeUser($this->makeOpd('LAIN'));
+        $active->forceFill(['terakhir_login_pada' => '2026-11-23 07:00:00'])->save();
+        $inactive->forceFill(['terakhir_login_pada' => '2026-11-23 09:00:00'])->save();
+        $foreign->forceFill(['terakhir_login_pada' => '2026-11-23 10:00:00'])->save();
+
+        $this->submitVisit()->assertRedirect(route('display.confirmation'));
+
+        $this->assertSame($active->id, $this->lastVisitOfficer());
+    }
+
+    public function test_a_display_visit_has_no_officer_when_nobody_has_logged_in(): void
+    {
+        $this->submitVisit()->assertRedirect(route('display.confirmation'));
+
+        $this->assertNull($this->lastVisitOfficer());
+    }
+
 }

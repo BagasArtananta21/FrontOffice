@@ -10,7 +10,7 @@ class AuthService
 {
     public function attempt(string $email, string $password, bool $remember = false): bool
     {
-        return Auth::attempt([
+        $authentication = Auth::attempt([
             'email' => $email,
             'password' => $password,
             'aktif' => true,
@@ -19,8 +19,13 @@ class AuthService
                       ->orWhereHas('opd', fn (Builder $opd) => $opd->active());
             }),
         ], $remember);
-    }
 
+        if ($authentication) {
+            Auth::user()->forceFill(['terakhir_login_pada' => now()])->save();
+        }
+
+        return $authentication;
+    }
 
     public function panelUrlFor(User $user): string
     {

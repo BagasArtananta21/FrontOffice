@@ -3,10 +3,14 @@ import SignaturePad from "signature_pad";
 import Swal from "sweetalert2";
 
 window.Alpine = Alpine;
-Alpine.data('displayScreen', (statusUrl, initialShowForm = false, waitingKey = null, notice = null) => ({
-    showForm: initialShowForm,
+
+const IDLE_SCREENSAVER_MS = 5 * 60 * 1000; 
+
+Alpine.data('displayScreen', (statusUrl, waitingKey = null, notice = null, reloadKey = null) => ({
+    screensaver: false,
     offline: false,
     submitting: false,
+    idleTimer: null,
 
     start(){
         if (notice) {
@@ -27,8 +31,31 @@ Alpine.data('displayScreen', (statusUrl, initialShowForm = false, waitingKey = n
             });
         }
 
+        this.watchActivity();
         this.poll();
         setInterval(() => this.poll(), 3000);
+    },
+
+    resetIdleTimer(){
+        clearTimeout(this.idleTimer);
+        this.idleTimer = setTimeout(() => { this.screensaver = true }, IDLE_SCREENSAVER_MS);
+    },
+
+    wake(){
+        this.screensaver = false;
+        this.resetIdleTimer();
+    },
+
+    watchActivity(){
+        ['pointerdown', 'pointermove', 'keydown', 'wheel'].forEach((event) => {
+            window.addEventListener(event, () => {
+                if (!this.screensaver) {
+                    this.resetIdleTimer();
+                }
+            }, {passive: true});
+        });
+
+        this.resetIdleTimer();
     },
 
     async poll(){
@@ -60,11 +87,12 @@ Alpine.data('displayScreen', (statusUrl, initialShowForm = false, waitingKey = n
                 window.location.reload();
                 return;
             }
-            if (this.showForm && !data.tampilkan_form){
-                this.$refs.guestForm?.reset();
-            }
 
-            this.showForm = data.tampilkan_form;
+            if ((data.reload_key ?? null) !== reloadKey){
+                window.location.reload();
+                return;
+            }
+            
             this.offline = false;
         } catch {
             this.offline = true;
@@ -89,7 +117,6 @@ Alpine.data('signaturePad', (initial = null) => ({
         });
 
         this.$el.closest('form')?.addEventListener('reset', () => this.clear());
-        this.$watch('showForm', (visible) => visible && this.$nextTick(() => this.resize()));
         window.addEventListener('resize', () => this.resize());
         this.$nextTick(() => this.resize());
     },
