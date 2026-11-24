@@ -18,6 +18,7 @@ return new class extends Migration
         $table->foreignUuid('kunjungan_menunggu_id')->nullable()->constrained('kunjungan')->nullOnDelete();
         $table->timestamp('terakhir_aktif')->nullable();
         $table->timestamp('muat_ulang_diminta_pada')->nullable();
+        $table->timestamp('bersihkan_form_diminta_pada')->nullable();
 
         $table->boolean('aktif')->default(false);
         $table->timestamps();

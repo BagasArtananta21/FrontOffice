@@ -57,7 +57,7 @@ class SignatureExpiryOnPollTest extends TestCase
 
         $this->asDisplay()->get(route('display.status'))
             ->assertOk()
-            ->assertJson(['status' => 'ok', 'tampilkan_form' => false, 'waiting_key' => null])
+            ->assertJson(['status' => 'ok', 'waiting_key' => null])
             ->assertSessionHas('display_notice', 'timeout');
 
         $this->assertNull($this->deviceRow()['kunjungan_menunggu_id']);

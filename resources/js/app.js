@@ -6,11 +6,12 @@ window.Alpine = Alpine;
 
 const IDLE_SCREENSAVER_MS = 5 * 60 * 1000; 
 
-Alpine.data('displayScreen', (statusUrl, waitingKey = null, notice = null, reloadKey = null) => ({
+Alpine.data('displayScreen', (statusUrl, waitingKey = null, notice = null, reloadKey = null, clearFormKey = null) => ({
     screensaver: false,
     offline: false,
     submitting: false,
     idleTimer: null,
+    clearFormKey,
 
     start(){
         if (notice) {
@@ -58,6 +59,27 @@ Alpine.data('displayScreen', (statusUrl, waitingKey = null, notice = null, reloa
         this.resetIdleTimer();
     },
 
+    clearForm(){
+        const form = this.$refs.guestForm;
+
+        if (!form) {
+            return;
+        }
+
+        form.querySelectorAll('input:not([type="hidden"]), textarea').forEach((field) => {
+            if (field.type === 'radio' || field.type === 'checkbox') {
+                field.checked = false;
+            } else {
+                field.value = '';
+            }
+        });
+        form.querySelectorAll('select').forEach((field) => { field.selectedIndex = 0; });
+        document.querySelectorAll('[data-display-error]').forEach((el) => el.remove());
+
+        window.dispatchEvent(new CustomEvent('display-clear-form'));
+    },
+
+
     async poll(){
         if (this.submitting){
             return;
@@ -92,6 +114,11 @@ Alpine.data('displayScreen', (statusUrl, waitingKey = null, notice = null, reloa
                 window.location.reload();
                 return;
             }
+
+            if ((data.clear_form_key ?? null) !== this.clearFormKey){
+                this.clearFormKey = data.clear_form_key ?? null;
+                this.clearForm();
+            }
             
             this.offline = false;
         } catch {
@@ -119,6 +146,7 @@ Alpine.data('signaturePad', (initial = null) => ({
         this.$el.closest('form')?.addEventListener('reset', () => this.clear());
         window.addEventListener('resize', () => this.resize());
         this.$nextTick(() => this.resize());
+        window.addEventListener('display-clear-form', () => this.clear());
     },
 
     resize(){

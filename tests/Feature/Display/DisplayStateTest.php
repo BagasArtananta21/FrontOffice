@@ -3,6 +3,7 @@
 namespace Tests\Feature\Display;
 
 use App\Models\DisplayDevice;
+use App\Services\DisplayDeviceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -41,26 +42,14 @@ class DisplayStateTest extends TestCase
         return now()->subSeconds($seconds)->format('Y-m-d H:i:s');
     }
 
-    public function test_status_reports_idle_when_the_form_is_not_requested(): void
+    public function test_status_reports_no_waiting_key_while_nothing_is_awaited(): void
     {
         $status = $this->pollStatus();
 
         $this->assertSame('ok', $status['status']);
-        $this->assertFalse($status['tampilkan_form']);
         $this->assertNull($status['waiting_key']);
+        $this->assertArrayNotHasKey('tampilkan_form', $status);
     }
-
-    public function test_status_reports_the_form_when_the_officer_asked_for_it(): void
-    {
-        $this->showForm();
-
-        $status = $this->pollStatus();
-
-        $this->assertSame('ok', $status['status']);
-        $this->assertTrue($status['tampilkan_form']);
-        $this->assertNull($status['waiting_key']);
-    }
-
 
     public function test_status_reports_a_waiting_key_while_a_signature_is_awaited(): void
     {
@@ -68,7 +57,6 @@ class DisplayStateTest extends TestCase
 
         $status = $this->pollStatus();
 
-        $this->assertFalse($status['tampilkan_form']);
         $this->assertSame($visitId.'@'.strtotime('2026-10-15 09:59:00'), $status['waiting_key']);
     }
 
@@ -83,23 +71,45 @@ class DisplayStateTest extends TestCase
         $this->assertNotSame($before, $this->pollStatus()['waiting_key']);
     }
 
-    public function test_the_page_starts_on_idle_when_nothing_is_requested(): void
+    public function test_the_page_always_starts_on_the_guest_form(): void
     {
         $this->asDisplay()->get(route('display.show'))
             ->assertOk()
-            ->assertViewHas('initialShowForm', false)
             ->assertViewHas('summary', null)
-            ->assertViewHas('waitingKey', null);
+            ->assertViewHas('waitingKey', null)
+            ->assertViewMissing('initialShowForm')
+            ->assertSee(route('display.kunjungan.store'), false);
     }
 
-    public function test_the_page_starts_on_the_form_when_requested(): void
+    public function test_the_page_and_the_status_start_with_the_same_reload_and_clear_keys(): void
     {
-        $this->showForm();
+        $this->updateDevice([
+            'muat_ulang_diminta_pada' => '2026-10-15 09:00:00',
+            'bersihkan_form_diminta_pada' => '2026-10-15 09:30:00',
+        ]);
 
         $this->asDisplay()->get(route('display.show'))
-            ->assertOk()
-            ->assertViewHas('initialShowForm', true)
-            ->assertViewHas('summary', null);
+            ->assertViewHas('reloadKey', strtotime('2026-10-15 09:00:00'))
+            ->assertViewHas('clearFormKey', strtotime('2026-10-15 09:30:00'));
+
+        $status = $this->pollStatus();
+        $this->assertSame(strtotime('2026-10-15 09:00:00'), $status['reload_key']);
+        $this->assertSame(strtotime('2026-10-15 09:30:00'), $status['clear_form_key']);
+    }
+
+    public function test_a_new_reload_or_clear_request_changes_the_keys_the_display_polls(): void
+    {
+        $before = $this->pollStatus();
+        $this->assertNull($before['reload_key']);
+        $this->assertNull($before['clear_form_key']);
+
+        $service = app(DisplayDeviceService::class);
+        $service->requestReload($this->device());
+        $service->requestFormClear($this->device());
+
+        $after = $this->pollStatus();
+        $this->assertSame(strtotime(self::NOW), $after['reload_key']);
+        $this->assertSame(strtotime(self::NOW), $after['clear_form_key']);
     }
 
     public function test_the_page_shows_a_summary_without_phone_and_address_while_waiting_for_a_signature(): void
@@ -127,14 +137,14 @@ class DisplayStateTest extends TestCase
         $response->assertDontSee('081234567890')->assertDontSee('Jalan Rahasia 99');
     }
 
-    public function test_a_waiting_request_wins_over_the_form_flag_on_the_page(): void
+    public function test_a_waiting_request_replaces_the_guest_form_on_the_page(): void
     {
-        $this->showForm();
         $this->makeWaitingVisit();
 
         $this->asDisplay()->get(route('display.show'))
-            ->assertViewHas('initialShowForm', true)
-            ->assertViewHas('summary', fn (array $summary) => $summary['Nama'] === 'Tamu Menunggu');
+            ->assertViewHas('summary', fn (array $summary) => $summary['Nama'] === 'Tamu Menunggu')
+            ->assertSee(route('display.signature.store'), false)
+            ->assertDontSee(route('display.kunjungan.store'), false);
     }
 
     public function test_polling_writes_terakhir_aktif_when_it_was_never_set(): void
@@ -221,7 +231,6 @@ class DisplayStateTest extends TestCase
             'not connected' => [fn (self $test) => ['terakhir_aktif' => $test->secondsAgo(31)]],
             'never reported' => [fn () => ['terakhir_aktif' => null]],
             'deactivated' => [fn () => ['aktif' => false]],
-            'the form is open' => [fn () => ['tampilkan_form' => true]],
         ];
     }
 

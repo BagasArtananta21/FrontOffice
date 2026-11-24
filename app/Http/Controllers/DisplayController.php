@@ -46,6 +46,7 @@ class DisplayController extends Controller
             'notice' => ($expiredNow || session('display_notice') === 'timeout') ? self::TIMEOUT_NOTICE : null,
             'signatureSecondsLeft' => $device->signatureSecondsLeft(),
             'reloadKey' => $device->reloadKey(),
+            'clearFormKey' => $device->clearFormKey(),
         ]);
     }
 
@@ -68,6 +69,7 @@ class DisplayController extends Controller
             'waiting_key' => $device->waitingKey(),
             'csrf_token' => csrf_token(),
             'reload_key' => $device->reloadKey(),
+            'clear_form_key' => $device->clearFormKey(),
         ]);
     }
 
@@ -151,13 +153,6 @@ class DisplayController extends Controller
             'Pegawai yang dituju' => $kunjungan->pegawai_tujuan,
             'Keperluan' => $kunjungan->keperluan,
         ], fn ($value) => filled($value));
-    }
-
-    private function closeStaleForm(DisplayDevice $device): void
-    {
-        if ($device->formWindowStale() && app(KunjunganService::class)->closeStaleForm($device)) {
-            $device->refresh();
-        }
     }
 
     private function releaseExpiredSignatureRequest(DisplayDevice $device): bool

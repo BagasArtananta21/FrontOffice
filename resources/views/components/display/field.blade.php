@@ -11,6 +11,6 @@
     {{ $slot }}
 
     @error($name)
-        <p class="mt-2 text-lg text-danger">{{ $message }}</p>
+        <p data-display-error class="mt-2 text-lg text-danger">{{ $message }}</p>
     @enderror
 </div>

@@ -142,7 +142,6 @@ class ManualVisitWithoutSignatureTest extends TestCase
     public function test_manual_and_display_visits_share_one_monthly_sequence(): void
     {
         $this->service()->recordWithoutSignature($this->guestData(), $this->officer, Kunjungan::REASON_GUEST_LEFT);
-        $this->showForm();
         $this->submitVisit()->assertRedirect(route('display.confirmation'));
         $this->service()->recordWithoutSignature($this->guestData(['nama_tamu' => 'Tamu Ketiga']), $this->officer, Kunjungan::REASON_GUEST_REFUSED);
 

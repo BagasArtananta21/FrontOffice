@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
 
         return [
             Limit::perMinute(5)->by('ip:'.$request->ip()),
-            Limit::perMinute(1)->by('email:'.$email),
+            Limit::perMinute(5)->by('email:'.$email),
         ];
     });
 

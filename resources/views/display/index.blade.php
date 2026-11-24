@@ -10,7 +10,7 @@
 </head>
 <body
     class="min-h-screen"
-    x-data="displayScreen('{{ route('display.status') }}', @js($waitingKey), @js($notice), @js($reloadKey))"
+    x-data="displayScreen('{{ route('display.status') }}', @js($waitingKey), @js($notice), @js($reloadKey), @js($clearFormKey))"
     x-init="start()"
 >
     @if ($summary)
@@ -35,7 +35,7 @@
                 <p class="mt-2 text-xl text-ink">Kolom bertanda <span class="text-danger">*</span> wajib diisi.</p>
 
                 @error('form')
-                    <div role="alert" class="mt-4 rounded-md bg-danger/10 px-5 py-4 text-xl font-medium text-danger">{{ $message }}</div>
+                    <div role="alert" data-display-error class="mt-4 rounded-md bg-danger/10 px-5 py-4 text-xl font-medium text-danger">{{ $message }}</div>
                 @enderror
 
                 <form x-ref="guestForm" @submit="submitting = true" method="POST" action="{{ route('display.kunjungan.store') }}" class="mt-6 grid grid-cols-2 content-start gap-x-10 gap-y-8">

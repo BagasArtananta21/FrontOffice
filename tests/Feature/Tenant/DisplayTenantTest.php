@@ -3,6 +3,7 @@
 namespace Tests\Feature\Tenant;
 
 use App\Models\DisplayDevice;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -34,9 +35,9 @@ class DisplayTenantTest extends TestCase
         DB::table('display_devices')->where('id', $this->deviceId($token))->update($changes);
     }
 
-    private function showFormOn(string $token, string $officerId): void
+    private function markLoggedIn(User $officer, string $when): void
     {
-        $this->updateDevice($token, ['tampilkan_form' => true, 'ditampilkan_oleh' => $officerId]);
+        $officer->forceFill(['terakhir_login_pada' => $when])->save();
     }
 
     private function submitAs(string $token, array $overrides = []): TestResponse
@@ -63,9 +64,14 @@ class DisplayTenantTest extends TestCase
         return $visitId;
     }
 
+    /**
+     * Petugas B login lebih akhir, tetapi kunjungan display A tetap dicatat atas
+     * petugas OPD A (dicatat_oleh = admin FO OPD itu yang terakhir login).
+     */
     public function test_it_stores_the_visit_under_the_opd_of_the_display_token_even_if_the_request_names_another_opd(): void
     {
-        $this->showFormOn('token-a', $this->adminA->id);
+        $this->markLoggedIn($this->adminA, '2026-10-15 07:00:00');
+        $this->markLoggedIn($this->adminB, '2026-10-15 09:00:00');
         $visitsOfBBefore = DB::table('kunjungan')->where('opd_id', $this->opdB->id)->count();
 
         $this->submitAs('token-a', ['opd_id' => $this->opdB->id])->assertRedirect(route('display.confirmation'));
@@ -79,18 +85,15 @@ class DisplayTenantTest extends TestCase
 
     public function test_it_rejects_a_bidang_of_another_opd_and_stores_nothing(): void
     {
-        $this->showFormOn('token-a', $this->adminA->id);
 
         $this->submitAs('token-a', ['bidang_id' => $this->bidangIdOf($this->opdB, 'PKP')])
             ->assertSessionHasErrors('bidang_id');
 
         $this->assertDatabaseMissing('kunjungan', ['nama_tamu' => 'Tamu Lintas OPD']);
-        $this->assertDatabaseHas('display_devices', ['id' => $this->deviceId('token-a'), 'tampilkan_form' => true]);
     }
 
     public function test_it_accepts_a_bidang_of_its_own_opd(): void
     {
-        $this->showFormOn('token-b', $this->adminB->id);
         $bidangId = $this->bidangIdOf($this->opdB, 'SDP');
 
         $this->submitAs('token-b', ['bidang_id' => $bidangId])->assertRedirect(route('display.confirmation'));
@@ -105,7 +108,6 @@ class DisplayTenantTest extends TestCase
     public function test_it_rejects_an_inactive_bidang_of_its_own_opd(): void
     {
         $inactive = $this->insertBidang($this->opdA->id, 'NONAKTIF', false);
-        $this->showFormOn('token-a', $this->adminA->id);
 
         $this->submitAs('token-a', ['bidang_id' => $inactive])->assertSessionHasErrors('bidang_id');
 
@@ -114,17 +116,14 @@ class DisplayTenantTest extends TestCase
 
     public function test_the_status_endpoint_reports_only_the_device_of_the_token(): void
     {
-        $this->updateDevice('token-a', ['tampilkan_form' => true]);
-        $this->updateDevice('token-b', ['tampilkan_form' => false]);
         $waitingOfB = $this->makeWaitingVisit($this->opdB, 'token-b', 'Tamu Menunggu B');
 
         $this->withCookie(DisplayDevice::COOKIE, 'token-a')->get(route('display.status'))
             ->assertOk()
-            ->assertJson(['tampilkan_form' => true, 'waiting_key' => null]);
+            ->assertJson(['waiting_key' => null]);
 
         $keyOfB = $this->withCookie(DisplayDevice::COOKIE, 'token-b')->get(route('display.status'))
             ->assertOk()
-            ->assertJson(['tampilkan_form' => false])
             ->json('waiting_key');
 
         $this->assertStringStartsWith($waitingOfB.'@', $keyOfB);

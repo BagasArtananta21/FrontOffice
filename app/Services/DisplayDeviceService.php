@@ -101,7 +101,7 @@ class DisplayDeviceService
             $locked = DisplayDevice::query()->whereKey($device->id)->lockForUpdate()->firstOrFail();
     
             if ($locked->kunjungan_menunggu_id !== null) {
-                throw new InvalidArgumentException('Batalakan permintaan tanda tangan dulu sebelum memutuskan display.');
+                throw new InvalidArgumentException('Batalkan permintaan tanda tangan dulu sebelum memutuskan display.');
             }
     
             $locked->forceFill([
@@ -117,5 +117,13 @@ class DisplayDeviceService
             ->whereKey($device->id)
             ->toBase()
             ->update(['muat_ulang_diminta_pada' => now()]);
+    }
+
+    public function requestFormClear(DisplayDevice $device): void
+    {
+        DisplayDevice::query()
+            ->whereKey($device->id)
+            ->toBase()
+            ->update(['bersihkan_form_diminta_pada' => now()]);
     }
 }

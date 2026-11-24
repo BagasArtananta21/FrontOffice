@@ -7,7 +7,7 @@
         'border-l-gray-300' => ! $active,
     ])>
         <div class="flex items-start justify-between gap-3">
-            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Display Lobi</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Display Lobby</p>
             <div class="flex items-center gap-1">
                 @if ($terdaftar)
                     <x-filament-actions::group
@@ -68,11 +68,13 @@
                 </span>
             </p>
 
-            @if ($menungguNamaTamu)
-                <div class="mt-auto pt-4">
+            <div class="mt-auto pt-4">
+                @if ($menungguNamaTamu)
                     {{ $this->cancelSignatureAction }}
-                </div>
-            @endif
+                @else
+                    {{ $this->clearFormAction }}
+                @endif
+            </div>
 
         @endif
     </div>

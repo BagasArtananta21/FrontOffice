@@ -102,9 +102,27 @@ class DisplayStatusWidgetTest extends TestCase
         Livewire::test(DisplayStatus::class)
             ->callAction('reload')
             ->callAction('regeneratePin')
+            ->callAction('clearForm')
             ->callAction('unpair');
 
         $this->assertSame($snapshot, $this->rawRow('display_devices', $otherDevice));
         $this->assertNull(DB::table('display_devices')->where('id', $this->deviceId)->value('token_hash'));
     }
+
+    public function test_clear_form_changes_the_key_the_display_polls(): void
+    {
+        $this->assertNull($this->asDisplay()->get(route('display.status'))->json('clear_form_key'));
+
+        Livewire::test(DisplayStatus::class)->callAction('clearForm');
+
+        $this->assertNotNull($this->asDisplay()->get(route('display.status'))->json('clear_form_key'));
+    }
+
+    public function test_clear_form_is_hidden_while_a_guest_is_waiting_to_sign(): void
+    {
+        $this->makeWaitingVisit();
+
+        Livewire::test(DisplayStatus::class)->assertDontSee('Bersihkan formulir');
+    }
+
 }

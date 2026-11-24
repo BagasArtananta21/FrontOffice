@@ -128,7 +128,6 @@ class SignatureReRequestTest extends TestCase
         return [
             'display not connected' => [['terakhir_aktif' => '2026-10-15 09:29:00']],
             'display never reported' => [['terakhir_aktif' => null]],
-            'guest form is open' => [['tampilkan_form' => true]],
             'display deactivated' => [['aktif' => false]],
         ];
     }

@@ -78,15 +78,11 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
                 SweetAlert::info(
                     $this, 
                     'Permintaan Tanda Tangan Dibatalkan', 
-                    'Kunjungan tetap tercatat tanpa tanda tangan. Display kembali ke layar idle.'
+                    'Kunjungan tetap tercatat tanpa tanda tangan. Display kembali ke formulir.'
                 );
             });
     }
 
-    /**
-     * PIN baru didekripsi saat modal dibuka (action di-mount), jadi tidak ikut
-     * terkirim di HTML widget sebelum tombol ditekan.
-     */
     public function showPinAction(): Action
     {
         return Action::make('showPin')
@@ -267,9 +263,6 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
             ->get();
     }
 
-    /**
-     * Satu OPD satu display (revisi 18 Nov), jadi cukup baris pertama.
-     */
     protected function device(): ?DisplayDevice
     {
         return $this->devices()->first();
@@ -288,4 +281,44 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
             'menungguNamaTamu' => $waitingDevice?->kunjunganMenunggu?->nama_tamu,
         ];
     }
+
+    public function clearFormAction(): Action
+    {
+        return Action::make('clearForm')
+            ->label('Bersihkan formulir')
+            ->icon('heroicon-o-trash')
+            ->color('gray')
+            ->outlined()
+            ->extraAttributes(['class' => 'w-full'])
+            ->requiresConfirmation()
+            ->modalHeading('Bersihkan Formulir')
+            ->modalDescription('Semua isian di form tamu pada display, termasuk tanda tangan, akan dikosongkan.')
+            ->modalSubmitActionLabel('Bersihkan')
+            ->visible(fn (): bool => $this->device()?->isPaired() === true)
+            ->action(function (): void {
+                $device = $this->device();
+
+                if ($device === null) {
+                    return;
+                }
+
+                app(DisplayDeviceService::class)->requestFormClear($device);
+
+                if (! $device->isConnected()) {
+                    SweetAlert::warning(
+                        $this,
+                        'Display Tidak Terhubung',
+                        'Formulir akan dikosongkan begitu display terhubung kembali.'
+                    );
+                    return;
+                }
+
+                SweetAlert::success(
+                    $this,
+                    'Formulir Dibersihkan',
+                    'Form di display akan kosong dalam beberapa detik.'
+                );
+            });
+    }
+
 }

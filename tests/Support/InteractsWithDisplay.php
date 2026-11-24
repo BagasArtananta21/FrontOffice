@@ -38,7 +38,7 @@ trait InteractsWithDisplay
 
         $this->opd = $this->makeOpd('UJI');
         $this->officer = $this->makeUser($this->opd);
-        $this->insertDisplay($this->opd->id, self::DISPLAY_TOKEN);
+        $this->deviceId = $this->insertDisplay($this->opd->id, self::DISPLAY_TOKEN);
     }
 
     protected function updateDevice(array $changes): void
@@ -52,11 +52,6 @@ trait InteractsWithDisplay
     protected function deviceRow(): array
     {
         return $this->rawRow('display_devices', $this->deviceId);
-    }
-
-    protected function showForm(): void
-    {
-        $this->updateDevice(['tampilkan_form' => true]);
     }
 
     protected function makeWaitingVisit(array $overrides = []): string

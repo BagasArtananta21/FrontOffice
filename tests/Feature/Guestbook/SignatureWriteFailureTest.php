@@ -45,15 +45,15 @@ class SignatureWriteFailureTest extends TestCase
         $this->assertSame($visitId, $this->deviceRow()['kunjungan_menunggu_id']);
     }
 
-    public function test_a_failed_write_creates_no_visit_and_keeps_the_form_open(): void
+    public function test_a_failed_write_creates_no_visit_and_keeps_the_input_for_a_retry(): void
     {
-        $this->showForm();
         $this->failDiskWrites();
 
-        $this->submitVisit()->assertSessionHasErrors('form');
+        $this->submitVisit()
+            ->assertSessionHasErrors('form')
+            ->assertSessionHasInput('nama_tamu', 'Budi Santoso');
 
         $this->assertSame(0, DB::table('kunjungan')->count());
-        $this->assertSame(1, (int) $this->deviceRow()['tampilkan_form']);
     }
 
     public function test_an_undecodable_signature_is_refused_instead_of_stored_as_an_empty_file(): void

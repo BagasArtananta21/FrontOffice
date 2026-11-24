@@ -19,14 +19,12 @@ class StoreVisitValidationTest extends TestCase
         parent::setUp();
 
         $this->setUpDisplay();
-        $this->showForm();
     }
 
     private function assertRejected(): void
     {
         $this->assertSame(0, DB::table('kunjungan')->count());
         $this->assertSame([], Storage::disk('local')->allFiles());
-        $this->assertTrue((bool) $this->deviceRow()['tampilkan_form']);
     }
 
     public static function requiredFields(): array

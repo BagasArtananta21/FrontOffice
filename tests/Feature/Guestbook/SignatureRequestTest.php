@@ -121,7 +121,6 @@ class SignatureRequestTest extends TestCase
         return [
             'display not connected' => [['terakhir_aktif' => '2026-10-15 09:29:00']],
             'display never reported' => [['terakhir_aktif' => null]],
-            'guest form is open' => [['tampilkan_form' => true]],
             'display deactivated' => [['aktif' => false]],
         ];
     }
@@ -266,7 +265,6 @@ class SignatureRequestTest extends TestCase
     public function test_the_guest_form_cannot_be_submitted_while_a_signature_is_awaited(): void
     {
         $this->service()->requestSignature($this->guestData(), $this->officer);
-        $this->showForm();
 
         $this->submitVisit()->assertRedirect(route('display.show'));
 

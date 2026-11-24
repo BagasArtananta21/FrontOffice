@@ -99,12 +99,18 @@ class DisplayDevice extends Model
         return max(0, self::SIGNATURE_TIMEOUT_MINUTES * 60 - $elapsed);
     }
 
+    public function clearFormKey(): ?int
+    {
+        return $this->bersihkan_form_diminta_pada?->timestamp;
+    }
+
     protected function casts(): array {
         return [
             'terakhir_aktif' => 'datetime',
             'aktif' => 'boolean',
             'pin' => 'encrypted',
             'muat_ulang_diminta_pada' => 'datetime',
+            'bersihkan_form_diminta_pada' => 'datetime',
         ];
     }
 }

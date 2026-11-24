@@ -40,6 +40,7 @@ class StoreVisitGateTest extends TestCase
             'role' => 'admin_fo',
             'opd_id' => $opd->id,
             'aktif' => true,
+            'terakhir_login_pada' => now(),
         ])->save();
 
         $this->device = new DisplayDevice();
@@ -47,15 +48,8 @@ class StoreVisitGateTest extends TestCase
             'nama' => 'PC Uji',
             'token_hash' => hash('sha256', self::TOKEN),
             'aktif' => true,
-            'tampilkan_form' => false,
-            'ditampilkan_oleh' => $this->officer->id,
             'terakhir_aktif' => now(),
         ])->save();
-    }
-
-    private function showForm(): void
-    {
-        $this->device->forceFill(['tampilkan_form' => true])->save();
     }
 
     private function submitVisit(): TestResponse
@@ -69,17 +63,8 @@ class StoreVisitGateTest extends TestCase
             ]);
     }
 
-    public function test_submit_is_rejected_while_display_is_idle(): void
-    {
-        $this->submitVisit()->assertRedirect(route('display.show'));
-
-        $this->assertDatabaseCount('kunjungan', 0);
-    }
-
     public function test_submit_is_rejected_while_waiting_for_signature(): void
     {
-        $this->showForm();
-
         $waiting = new Kunjungan([
             'nama_tamu' => 'Tamu Menunggu',
             'jenis_kelamin' => 'laki_laki',
@@ -97,10 +82,8 @@ class StoreVisitGateTest extends TestCase
         $this->assertDatabaseCount('kunjungan', 1);
     }
 
-    public function test_submit_is_accepted_while_form_is_shown_and_closes_it(): void
+    public function test_submit_is_accepted_without_the_officer_opening_the_form(): void
     {
-        $this->showForm();
-
         $this->submitVisit()->assertRedirect(route('display.confirmation'));
 
         $this->assertDatabaseCount('kunjungan', 1);
@@ -109,19 +92,39 @@ class StoreVisitGateTest extends TestCase
             'sumber_input' => Kunjungan::SUMBER_DISPLAY,
             'dicatat_oleh' => $this->officer->id,
         ]);
-        $this->assertDatabaseHas('display_devices', [
-            'id' => $this->device->id,
-            'tampilkan_form' => false,
-        ]);
     }
 
-    public function test_replaying_the_same_submit_after_success_is_rejected(): void
+    /**
+     * Form selalu terbuka (revisi 18 Nov): tidak ada lagi jendela "satu
+     * kunjungan per Tampilkan form". Pembatas yang tersisa hanya throttle
+     * display-submit (lihat StoreVisitSuccessTest).
+     */
+    public function test_successive_submits_each_create_a_visit(): void
     {
-        $this->showForm();
-
         $this->submitVisit()->assertRedirect(route('display.confirmation'));
+        $this->submitVisit()->assertRedirect(route('display.confirmation'));
+
+        $this->assertDatabaseCount('kunjungan', 2);
+    }
+
+    public function test_submit_is_accepted_again_once_the_waiting_request_is_released(): void
+    {
+        $waiting = new Kunjungan([
+            'nama_tamu' => 'Tamu Menunggu',
+            'jenis_kelamin' => 'laki_laki',
+            'keperluan' => 'Tes',
+        ]);
+        $waiting->forceFill([
+            'waktu_datang' => now(),
+            'sumber_input' => Kunjungan::SUMBER_FRONT_OFFICE,
+        ])->save();
+
+        $this->device->forceFill(['kunjungan_menunggu_id' => $waiting->id])->save();
         $this->submitVisit()->assertRedirect(route('display.show'));
 
-        $this->assertDatabaseCount('kunjungan', 1);
+        $this->device->forceFill(['kunjungan_menunggu_id' => null])->save();
+        $this->submitVisit()->assertRedirect(route('display.confirmation'));
+
+        $this->assertDatabaseCount('kunjungan', 2);
     }
 }
