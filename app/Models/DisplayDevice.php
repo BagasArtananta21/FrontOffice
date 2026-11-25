@@ -20,8 +20,6 @@ class DisplayDevice extends Model
 
     public const CONNECTED_WITHIN_SECONDS = 30;
 
-    public const SIGNATURE_TIMEOUT_MINUTES = 5;
-
     public const COOKIE = 'display_token';
 
     public function scopeConnected(Builder $query): Builder {
@@ -83,7 +81,7 @@ class DisplayDevice extends Model
         $kunjungan = $this->kunjunganMenunggu;
 
         return $kunjungan !== null
-            && $kunjungan->updated_at->lt(now()->subMinutes(self::SIGNATURE_TIMEOUT_MINUTES));
+            && $kunjungan->updated_at->lt(now()->subMinutes(self::signatureTimeoutMinutes()));
     }
 
     public function signatureSecondsLeft(): ?int
@@ -96,7 +94,7 @@ class DisplayDevice extends Model
 
         $elapsed = (int) $kunjungan->updated_at->diffInSeconds(now());
 
-        return max(0, self::SIGNATURE_TIMEOUT_MINUTES * 60 - $elapsed);
+        return max(0, self::signatureTimeoutMinutes() * 60 - $elapsed);
     }
 
     public function clearFormKey(): ?int
@@ -121,5 +119,11 @@ class DisplayDevice extends Model
             'muat_ulang_diminta_pada' => 'datetime',
             'bersihkan_form_diminta_pada' => 'datetime',
         ];
+    }
+
+    public static function signatureTimeoutMinutes(): int
+    {
+        return app(\App\Services\SystemSettingService::class)
+            ->get(\App\Services\SystemSettingService::SIGNATURE_TIMEOUT_MINUTES);
     }
 }

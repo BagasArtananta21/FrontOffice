@@ -4,14 +4,14 @@ import Swal from "sweetalert2";
 
 window.Alpine = Alpine;
 
-const IDLE_SCREENSAVER_MS = 5 * 60 * 1000; 
-
-Alpine.data('displayScreen', (statusUrl, waitingKey = null, notice = null, reloadKey = null, clearFormKey = null) => ({
+Alpine.data('displayScreen', (statusUrl, waitingKey = null, notice = null, reloadKey = null, clearFormKey = null, idleMinutes = 5) => ({
     screensaver: false,
     offline: false,
     submitting: false,
     idleTimer: null,
+    idleMs: idleMinutes * 60 * 1000,
     clearFormKey,
+
 
     start(){
         if (notice) {
@@ -39,7 +39,7 @@ Alpine.data('displayScreen', (statusUrl, waitingKey = null, notice = null, reloa
 
     resetIdleTimer(){
         clearTimeout(this.idleTimer);
-        this.idleTimer = setTimeout(() => { this.screensaver = true }, IDLE_SCREENSAVER_MS);
+        this.idleTimer = setTimeout(() => { this.screensaver = true }, this.idleMs);
     },
 
     wake(){

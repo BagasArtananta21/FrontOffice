@@ -18,6 +18,7 @@ use Illuminate\Database\QueryException;
 use App\Http\Requests\StoreKunjunganRequest;
 use App\Services\KunjunganService;
 use App\Rules\SignatureImage;
+use App\Services\SystemSettingService;
 
 class DisplayController extends Controller
 {
@@ -47,6 +48,7 @@ class DisplayController extends Controller
             'signatureSecondsLeft' => $device->signatureSecondsLeft(),
             'reloadKey' => $device->reloadKey(),
             'clearFormKey' => $device->clearFormKey(),
+            'idleMinutes' => app(SystemSettingService::class)->get(SystemSettingService::IDLE_SCREENSAVER_MINUTES),
         ]);
     }
 
@@ -168,7 +170,9 @@ class DisplayController extends Controller
     }
 
     public function confirmation(): View {
-        return view('display.confirmation');
+        return view('display.confirmation', [
+            'seconds' => app(SystemSettingService::class)->get(SystemSettingService::CONFIRMATION_SECONDS),
+        ]);
     }
     
 }

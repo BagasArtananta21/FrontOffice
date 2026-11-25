@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="refresh" content="5;url={{ route('display.show') }}">
+    <meta http-equiv="refresh" content="{{ $seconds }};url={{ route('display.show') }}">
     <title>{{ config('app.name') }}</title>
     <link rel="icon" href="{{ asset('images/logo.jpeg') }}">
     @fonts
@@ -41,7 +41,7 @@
     <div class="absolute inset-x-0 bottom-0">
         <p class="mb-5 text-2xl font-semibold text-ink">Layar akan kembali otomatis</p>
         <div class="h-3 bg-success/15">
-            <div class="h-full origin-left bg-success animate-countdown"></div>
+            <div style="animation-duration: {{ $seconds }}s" class="h-full origin-left bg-success animate-countdown"></div>
         </div>
     </div>
 

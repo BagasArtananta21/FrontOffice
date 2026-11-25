@@ -275,7 +275,7 @@ class DisplayStateTest extends TestCase
     {
         $this->makeWaitingVisit(['created_at' => $this->secondsAgo(3600), 'updated_at' => $this->secondsAgo($age)]);
 
-        $this->assertSame(5, DisplayDevice::SIGNATURE_TIMEOUT_MINUTES);
+        $this->assertSame(5, DisplayDevice::signatureTimeoutMinutes());
         $this->assertSame($expectedExpired, $this->device()->signatureRequestExpired());
     }
 

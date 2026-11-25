@@ -229,7 +229,7 @@ class DisplayStatus extends Widget implements HasActions, HasSchemas
 
         if ($this->watchedKunjunganId !== null && $this->watchedKunjunganId !== $current) {
             $kunjungan = Kunjungan::find($this->watchedKunjunganId);
-            $minutes = DisplayDevice::SIGNATURE_TIMEOUT_MINUTES;
+            $minutes = DisplayDevice::signatureTimeoutMinutes();
 
             $message = match ($kunjungan?->alasan_tanpa_ttd) {
                 Kunjungan::REASON_TIMEOUT => "{$kunjungan->nama_tamu} tidak menandatangani dalam {$minutes} menit.",
