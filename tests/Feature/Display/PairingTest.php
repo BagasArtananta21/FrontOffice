@@ -111,7 +111,7 @@ class PairingTest extends TestCase
     {
         $this->withoutVite();
 
-        $this->get('/')->assertRedirect(route('login'));
+        $this->get('/')->assertOk()->assertSee(route('display.pair'), false);
         $this->get(route('login'))->assertOk();
     }
 

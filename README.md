@@ -4,7 +4,7 @@ Prototipe proyek magang di Diskominfo (Diskominfosanti) Kabupaten Buleleng, Bali
 
 Sistem ini punya dua modul:
 
-- **Buku Tamu** — tamu mengisi form dan tanda tangan di PC display lobi; petugas Front Office (FO) memantau dan menginput lewat panel admin.
+- **Buku Tamu** — tamu mengisi form dan tanda tangan di PC ; petugas Front Office (FO) memantau dan menginput lewat panel admin.
 - **Penomoran Surat** — menerbitkan nomor surat (seperti buku agenda digital). Sistem hanya menerbitkan nomor, tidak membuat atau menyimpan dokumen surat.
 
 Dirancang multi-tenant (data dipisah per OPD); data awal hanya untuk Diskominfosanti.

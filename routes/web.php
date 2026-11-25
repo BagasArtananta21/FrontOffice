@@ -10,7 +10,7 @@ Route::get('/', function (Request $request) {
     $user = $request->user();
 
     if (! $user) {
-        return redirect()->route('login');
+        return view('landing');
     }
 
     return redirect()->to(app(AuthService::class)->panelUrlFor($user)) ;
