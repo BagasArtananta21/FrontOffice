@@ -52,6 +52,8 @@ class NomorSuratResource extends Resource
 
     protected static ?string $slug = 'nomor-surat';
 
+    protected static bool $shouldRegisterNavigation = false;
+
     public const DATE_BASES = [
         'surat' => 'Tanggal Surat',
         'terbit' => 'Tanggal Terbit',

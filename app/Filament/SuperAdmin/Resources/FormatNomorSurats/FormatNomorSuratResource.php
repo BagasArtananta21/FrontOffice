@@ -48,6 +48,8 @@ class FormatNomorSuratResource extends Resource
 
     protected static ?string $slug = 'format-nomor-surat';
 
+    protected static bool $shouldRegisterNavigation = false;
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([

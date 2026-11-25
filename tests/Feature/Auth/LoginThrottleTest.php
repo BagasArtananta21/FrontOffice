@@ -28,7 +28,7 @@ class LoginThrottleTest extends TestCase
 
     public function test_it_limits_attempts_per_email_across_many_ips(): void
     {
-        for ($i = 1; $i <= 20; $i++) {
+        for ($i = 1; $i <= 5; $i++) {
             $email = $i % 2 === 0 ? 'TARGET@example.com' : 'target@example.com';
 
             $this->attempt($email, "10.0.1.{$i}")->assertStatus(302);
@@ -39,10 +39,23 @@ class LoginThrottleTest extends TestCase
 
     public function test_other_emails_are_not_affected_by_a_throttled_email(): void
     {
-        for ($i = 1; $i <= 20; $i++) {
+        for ($i = 1; $i <= 5; $i++) {
             $this->attempt('target@example.com', "10.0.2.{$i}");
         }
 
         $this->attempt('lain@example.com', '10.0.2.200')->assertStatus(302);
+    }
+
+    public function test_the_email_limit_reopens_after_a_minute(): void
+    {
+        for ($i = 1; $i <= 5; $i++) {
+            $this->attempt('target@example.com', "10.0.3.{$i}");
+        }
+
+        $this->attempt('target@example.com', '10.0.3.200')->assertStatus(429);
+
+        $this->travel(61)->seconds();
+
+        $this->attempt('target@example.com', '10.0.3.201')->assertStatus(302);
     }
 }

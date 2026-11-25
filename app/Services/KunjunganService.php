@@ -89,15 +89,6 @@ class KunjunganService
         }
     }
 
-    public function closeStaleForm(DisplayDevice $device): bool
-    {
-        return DisplayDevice::query()
-            ->whereKey($device->getKey())
-            ->where('tampilkan_form', true)
-            ->where('updated_at', '<', today())
-            ->update(['tampilkan_form' => false]) === 1;
-    }
-
     private function store(array $attributes, string $sumberInput, CarbonInterface $waktuDatang, ?string $dicatatOleh = null, array $sistemAttributes = []): Kunjungan
     {
         $kunjungan = new Kunjungan($attributes);

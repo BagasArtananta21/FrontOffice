@@ -169,7 +169,7 @@ class KunjunganResource extends Resource
                     ->disableOptionWhen(fn (string $value) => $value === self::SIGNATURE_DISPLAY && self::signatureDisplayState() !== 'available')
                     ->helperText(fn () => match (self::signatureDisplayState()) {
                         'available' => 'Tamu memeriksa data lalu tanda tangan di display.',
-                        'busy' => 'Display sedang dipakai. Tunggu sampai kembali ke layar idle.',
+                        'busy' => 'Display sedang menunggu tanda tangan tamu lain.',
                         default => 'Display tidak terhubung.',
                     })
                     ->required()

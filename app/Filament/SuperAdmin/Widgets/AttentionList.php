@@ -3,7 +3,6 @@
 namespace App\Filament\SuperAdmin\Widgets;
 
 use App\Filament\SuperAdmin\Resources\Opds\OpdResource;
-use App\Filament\SuperAdmin\Resources\FormatNomorSurats\FormatNomorSuratResource;
 use App\Models\DisplayDevice;
 use Filament\Widgets\Widget;
 use Illuminate\Database\Eloquent\Builder;
@@ -37,15 +36,6 @@ class AttentionList extends Widget
                 'url' => OpdResource::getUrl(),
             ]);
         
-        $withoutFormat = Opd::active()
-            ->whereDoesntHave('formatNomorSurat', fn (Builder $query) => $query->where('berlaku_sejak', '<=', today()))
-            ->orderBy('nama_opd')
-            ->get()
-            ->map(fn (Opd $opd) => [
-                'message' => "{$opd->nama_opd} belum punya format nomor surat yang berlaku",
-                'url' => FormatNomorSuratResource::getUrl(),
-            ]);
-        
         $withoutAdmin = Opd::active()
             ->whereDoesntHave('users', fn (Builder $query) => $query->where('role', 'admin_fo')->where('aktif', true))
             ->orderBy('nama_opd')
@@ -56,7 +46,7 @@ class AttentionList extends Widget
             ]);
         
         return [
-            'items' => $disconnected->concat($withoutFormat)->concat($withoutAdmin),
+            'items' => $disconnected->concat($withoutAdmin),
         ];
     }
 }
