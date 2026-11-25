@@ -10,7 +10,7 @@
 </head>
 <body
     class="min-h-screen"
-    x-data="displayScreen('{{ route('display.status') }}', @js($waitingKey), @js($notice), @js($reloadKey), @js($clearFormKey)), @js($idleMinutes)"
+    x-data="displayScreen('{{ route('display.status') }}', @js($waitingKey), @js($notice), @js($reloadKey), @js($clearFormKey), @js($idleMinutes))"
     x-init="start()"
 >
     @if ($summary)

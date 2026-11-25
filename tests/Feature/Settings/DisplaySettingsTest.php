@@ -51,4 +51,13 @@ class DisplaySettingsTest extends TestCase
             ->assertSee('content="12;url=', false)
             ->assertSee('animation-duration: 12s', false);
     }
+
+    public function test_the_idle_minutes_are_an_argument_of_the_display_component(): void
+    {
+        app(Settings::class)->update([Settings::IDLE_SCREENSAVER_MINUTES => 7]);
+
+        $html = $this->asDisplay()->get(route('display.show'))->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('/x-data="displayScreen\([^"]*, 7\)"/', $html);
+    }
 }
