@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['kode_opd', 'nama_opd', 'alamat_opd', 'logo'])]
 class Opd extends Model
@@ -25,9 +26,9 @@ class Opd extends Model
         return $this->hasMany(Bidang::class);
     }
 
-    public function displayDevices(): HasMany
+    public function displayDevice(): HasOne
     {
-        return $this->hasMany(DisplayDevice::class);
+        return $this->hasOne(DisplayDevice::class);
     }
 
     public function kunjungan(): HasMany

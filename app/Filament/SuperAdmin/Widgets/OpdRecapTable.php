@@ -27,7 +27,7 @@ class OpdRecapTable extends TableWidget
             ->query(function () {
                 [$start, $end] = $this->dateRange();
 
-                return Opd::query()->withCount([
+                return Opd::query()->with('displayDevice')->withCount([
                     'kunjungan' => fn (Builder $query) => $query->whereBetween('waktu_datang', [$start, $end]),
                     'nomorSurat as nomor_terbit_count' => fn (Builder $query) =>$query
                         ->where('status', NomorSurat::STATUS_TERBIT)
@@ -35,8 +35,6 @@ class OpdRecapTable extends TableWidget
                     'nomorSurat as nomor_batal_count' => fn (Builder $query) => $query
                         ->where('status', NomorSurat::STATUS_BATAL)
                         ->whereBetween('tanggal_terbit', [$start, $end]),
-                    'displayDevices as display_total_count' => fn (Builder $query) => $query->where('aktif', true),
-                    'displayDevices as display_connected_count' => fn (Builder $query) => $query->where('aktif', true)->connected(),
                     'users as admin_count' => fn (Builder $query) => $query->where('role', 'admin_fo')->where('aktif', true),
                 ]);
             })
@@ -66,12 +64,8 @@ class OpdRecapTable extends TableWidget
                 TextColumn::make('display')
                     ->label('Display')
                     ->badge()
-                    ->state(fn (Opd $record) => match (true) {
-                        $record->display_total_count === 0 => 'Belum ada',
-                        $record->display_connected_count > 0 => "Terhubung {$record->display_connected_count}/{$record->display_total_count}",
-                        default => 'Terputus',
-                    })
-                    ->color(fn (Opd $record) => $record->display_connected_count > 0 ? 'success' : 'gray'),
+                    ->state(fn (Opd $record) => $record->displayDevice?->statusLabel() ?? '-')
+                    ->color(fn (Opd $record) => $record->displayDevice?->isConnected() ? 'success' : 'gray'),
 
                 TextColumn::make('admin_count')
                     ->label('Admin Aktif')

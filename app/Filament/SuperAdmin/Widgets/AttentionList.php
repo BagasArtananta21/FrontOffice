@@ -2,7 +2,7 @@
 
 namespace App\Filament\SuperAdmin\Widgets;
 
-use App\Filament\SuperAdmin\Resources\DisplayDevices\DisplayDeviceResource;
+use App\Filament\SuperAdmin\Resources\Opds\OpdResource;
 use App\Filament\SuperAdmin\Resources\FormatNomorSurats\FormatNomorSuratResource;
 use App\Models\DisplayDevice;
 use Filament\Widgets\Widget;
@@ -29,10 +29,12 @@ class AttentionList extends Widget
                 ->orWhere('terakhir_aktif', '<', now()->subDay()))
             ->get()
             ->map(fn (DisplayDevice $device) => [
-                'message' => $device->terakhir_aktif
-                    ? "Display {$device->nama} ({$device->opd->kode_opd}) terakhir terhubung {$device->terakhir_aktif->diffForHumans()}"
-                    : "Display {$device->nama} ({$device->opd->kode_opd}) belum pernah terhubung",
-                'url' => DisplayDeviceResource::getUrl(),
+                'message' => match (true) {
+                    ! $device->isPaired() => "Display {$device->opd->kode_opd} belum dipasang",
+                    $device->terakhir_aktif === null => "Display {$device->opd->kode_opd} belum pernah terhubung",
+                    default => "Display {$device->opd->kode_opd} terakhir terhubung {$device->terakhir_aktif->diffForHumans()}",
+                },
+                'url' => OpdResource::getUrl(),
             ]);
         
         $withoutFormat = Opd::active()

@@ -12,7 +12,7 @@ class DisplayDeviceSeeder extends Seeder
     public function run(DisplayDeviceService $displays): void
     {
         $opds = Opd::query()
-            ->whereDoesntHave('displayDevices', fn (Builder $query) => $query->withoutGlobalScope('opd'))
+            ->whereDoesntHave('displayDevice', fn (Builder $query) => $query->withoutGlobalScope('opd'))
             ->get();
 
         foreach ($opds as $opd) {

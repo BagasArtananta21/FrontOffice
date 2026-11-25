@@ -12,12 +12,14 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\Eloquent\Builder;
 
 class OpdsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('displayDevice'))
             ->defaultSort('nama_opd')
             ->columns([
                 ImageColumn::make('logo')
@@ -47,6 +49,15 @@ class OpdsTable
                     ->label('Jumlah User')
                     ->counts('users')
                     ->alignCenter(),
+
+                TextColumn::make('display_status')
+                    ->label('Status Display')
+                    ->badge()
+                    ->state(fn (Opd $record) => $record->displayDevice?->statusLabel() ?? '-')
+                    ->color(fn (Opd $record) => $record->displayDevice?->isConnected() ? 'success' : 'gray')
+                    ->tooltip(fn (Opd $record) => $record->displayDevice?->terakhir_aktif
+                        ? 'Terakhir aktif '.$record->displayDevice->terakhir_aktif->diffForHumans()
+                        : 'Belum pernah terhubung'),
 
                 IconColumn::make('aktif')
                     ->label('Aktif'),

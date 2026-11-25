@@ -104,6 +104,15 @@ class DisplayDevice extends Model
         return $this->bersihkan_form_diminta_pada?->timestamp;
     }
 
+    public function statusLabel(): string
+    {
+        return match (true) {
+            ! $this->isPaired() => 'Belum terpasang',
+            $this->isConnected() => 'Terhubung',
+            default => 'Tidak terhubung',
+        };
+    }
+
     protected function casts(): array {
         return [
             'terakhir_aktif' => 'datetime',
