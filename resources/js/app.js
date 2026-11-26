@@ -12,7 +12,6 @@ Alpine.data('displayScreen', (statusUrl, waitingKey = null, notice = null, reloa
     idleMs: idleMinutes * 60 * 1000,
     clearFormKey,
 
-
     start(){
         if (notice) {
             Swal.fire({
@@ -192,6 +191,25 @@ Alpine.data('signatureCountdown', (seconds) => ({
         return `${minutes}:${secs}`;
     },
 }))
+
+Alpine.data('slideshow', (total, seconds) => ({
+    index: 0,
+    timer: null,
+    init() {
+        this.$watch('screensaver', (on) => (on ? this.play() : this.stop()));
+    },
+    play() {
+        this.stop();
+        this.index = 0;
+        if (total > 1) {
+            this.timer = setInterval(() => { this.index = (this.index + 1) % total; }, seconds * 1000);
+        }
+    },
+    stop() {
+        clearInterval(this.timer);
+        this.timer = null;
+    },
+}));
 
 Alpine.start();
 

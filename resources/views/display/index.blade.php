@@ -17,16 +17,21 @@
         @include('display.partials.signature-request')
     @else
         <section x-show="screensaver" x-cloak x-on:click="wake()" class="fixed inset-0 z-50 cursor-pointer bg-black">
-            @php
-                $r2BaseUrl = config('filesystems.r2_public_url');
-            @endphp
-
-            <video
-                x-effect="screensaver ? $el.play().catch(() => {}) : $el.pause()"
-                class="h-full w-full object-cover"
-                muted loop playsinline preload="auto">
-                <source src="{{ $r2BaseUrl }}/profil.mp4" type="video/mp4">
-            </video>
+            @if ($slides->isNotEmpty())
+                <div x-data="slideshow({{ $slides->count() }}, {{ $slideSeconds }})" class="relative h-full w-full">
+                    @foreach ($slides as $slide)
+                        <img src="{{ $slide->url() }}" alt=""
+                            x-show="index === {{ $loop->index }}"
+                            x-transition.opacity.duration.700ms
+                            class="absolute inset-0 h-full w-full object-contain">
+                    @endforeach
+                </div>
+            @else
+                <div class="flex h-full w-full flex-col items-center justify-center gap-8 bg-white">
+                    <img src="{{ $opd->logo ? asset('storage/'.$opd->logo) : asset('images/icons/logo-placeholder.svg') }}" alt="" class="h-48 w-auto">
+                    <p class="text-5xl font-bold text-primary">{{ $opd->nama_opd }}</p>
+                </div>
+            @endif
         </section>
 
         <section class="flex h-screen flex-col overflow-hidden bg-page px-10 py-18">

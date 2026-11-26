@@ -16,6 +16,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Database\QueryException;
 use App\Http\Requests\StoreKunjunganRequest;
+use App\Models\SlideIdle;
 use App\Services\KunjunganService;
 use App\Rules\SignatureImage;
 use App\Services\SystemSettingService;
@@ -49,6 +50,8 @@ class DisplayController extends Controller
             'reloadKey' => $device->reloadKey(),
             'clearFormKey' => $device->clearFormKey(),
             'idleMinutes' => app(SystemSettingService::class)->get(SystemSettingService::IDLE_SCREENSAVER_MINUTES),
+            'slides' => SlideIdle::query()->orderBy('urutan')->get(),
+            'slideSeconds' => app(SystemSettingService::class)->get(SystemSettingService::SLIDE_DURATION_SECONDS),
         ]);
     }
 
