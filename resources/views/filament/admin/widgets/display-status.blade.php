@@ -10,11 +10,13 @@
             <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Display Lobby</p>
             <div class="flex items-center gap-1">
                 @if ($terdaftar)
-                    <x-filament-actions::group
-                        :actions="[$this->showPinAction, $this->reloadAction, $this->regeneratePinAction, $this->unpairAction]"
-                        tooltip="Pengaturan display"
-                        color="gray"
-                    />
+                    <div wire:ignore wire:key="display-menu-{{ $terpasang ? 'paired' : 'unpaired' }}">
+                        <x-filament-actions::group
+                            :actions="[$this->showPinAction, $this->reloadAction, $this->regeneratePinAction, $this->unpairAction]"
+                            tooltip="Pengaturan display"
+                            color="gray"
+                        />
+                    </div>
                 @endif
                 <span @class([
                     'flex size-9 items-center justify-center rounded-lg',

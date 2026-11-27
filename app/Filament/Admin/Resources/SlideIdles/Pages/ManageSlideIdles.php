@@ -11,6 +11,7 @@ use App\Services\SystemSettingService;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 use InvalidArgumentException;
+use League\Csv\Query\QueryException;
 
 class ManageSlideIdles extends ManageRecords
 {
@@ -39,12 +40,12 @@ class ManageSlideIdles extends ManageRecords
                                 $e->getMessage()
                             );
                             $action->halt();
-                        } catch (SlideStorageException $e) {
+                        } catch (SlideStorageException|QueryException $e) {
                             report($e);
                             SweetAlert::error(
                                 $livewire,
                                 'Gagal Menambahkan Slide',
-                                'Terjadi kesalahan saat menyimpan slide. Silahkan coba lagi.'
+                                'Terjadi kesalahan saat menyimpan slide. Silakan coba lagi.'
                             );
                             $action->halt();
                         }
